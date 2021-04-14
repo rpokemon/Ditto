@@ -1,0 +1,26 @@
+# Base Ditto configuration file
+#   You can override these options in custom override files
+
+!Config
+
+  BOT: !Config
+    ALLOW_MENTIONS_AS_PREFIX: yes
+    PREFIX: '!'
+    TOKEN: ~
+    # INTENTS:  # Map a dictionary of intents
+
+  LOGGING: !Config
+    LOG_LEVEL: 'INFO'
+    WEBHOOK_URI: ~
+  
+  DATABASE: !Config
+    # Database Settings: Set either a DSN or Hostname, Username, Password and Database
+    APPLICATION_NAME: 'Ditto'
+    DSN: ~ 
+    HOSTNAME: ~
+    USERNAME: ~
+    PASSWORD: ~
+    DATABASE: ~
+
+  EXTENSIONS:
+    'jishaku': ~

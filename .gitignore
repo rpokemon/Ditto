@@ -1,1 +1,10 @@
 *.py[cod]
+
+# Config override files
+config.*.yml
+!config.override.example.yml
+
+# Secret cogs
+cogs/secret/*
+
+!.gitkeep
