@@ -7,6 +7,7 @@ on:
       - 'poetry.lock'
       - 'start.py'
       - 'ditto/**'
+      - '**.yml'
 
 jobs:
   run:
@@ -14,6 +15,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: harmon758/postgresql-action@v1
+        with:
+          postgresql db: test
+          postgresql password: password
       - uses: actions/setup-python@v2
       - uses: snok/install-poetry@v1.1.2
         with:
