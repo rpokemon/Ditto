@@ -6,7 +6,7 @@
   BOT: !Config
     ALLOW_MENTIONS_AS_PREFIX: yes
     PREFIX: '!'
-    TOKEN: ~
+    TOKEN: !ENV BOT_TOKEN
     # INTENTS:  # Map a dictionary of intents
 
   LOGGING: !Config
@@ -16,7 +16,7 @@
   DATABASE: !Config
     # Database Settings: Set either a DSN or Hostname, Username, Password and Database
     APPLICATION_NAME: 'Ditto'
-    DSN: ~ 
+    DSN: !ENV POSTGRES_DSN
     HOSTNAME: ~
     USERNAME: ~
     PASSWORD: ~
