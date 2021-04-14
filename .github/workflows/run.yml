@@ -22,7 +22,7 @@ jobs:
         id: cached-dependecies
         with:
           path: .venv
-          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}-no-dev
       - name: Validate pyproject.toml
         run: poetry check
       - name: Install dependencies
