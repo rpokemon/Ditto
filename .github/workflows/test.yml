@@ -7,6 +7,9 @@ on:
       - 'poetry.lock'
       - 'ditto/**'
       - 'tests/**'
+  pull_request:
+    branches:
+      - rewrite
 
 jobs:
   test:

@@ -6,6 +6,9 @@ on:
       - 'pyproject.toml'
       - 'mypy.ini'
       - '**.py'
+  pull_request:
+    branches:
+      - rewrite
 
 
 jobs:
