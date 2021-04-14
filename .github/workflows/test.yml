@@ -13,4 +13,4 @@ jobs:
       - name: Install dependencies
         run: poetry install
       - name: Test Utility Functions
-        run: pytest
+        run: poetry run pytest

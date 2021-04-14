@@ -13,4 +13,4 @@ jobs:
       - name: Install dependencies
         run: poetry install
       - name: Lint py files
-        run: black --check .
+        run: poetry run black --check .
