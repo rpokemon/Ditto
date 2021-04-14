@@ -6,7 +6,7 @@ import ditto
 CI_TEST = "--ci" in sys.argv
 
 
-def main():
+def main() -> None:
     if CI_TEST:
         ...
 

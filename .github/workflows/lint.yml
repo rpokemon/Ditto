@@ -1,5 +1,12 @@
 name: "Linter"
-on: [push]
+on:
+  push:
+    paths:
+      - '.github/workflows/lint.yml'
+      - 'pyproject.toml'
+      - 'mypy.ini'
+      - '**.py'
+
 
 jobs:
   test:
@@ -7,10 +14,21 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
-      - uses: abatilo/actions-poetry@v2.0.0
+      - uses: snok/install-poetry@v1.1.2
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+      - uses: actions/cache@v2
+        id: cached-dependecies
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
       - name: Validate pyproject.toml
         run: poetry check
       - name: Install dependencies
+        if: steps.cached-dependecies.outputs.cache-hit != 'true'
         run: poetry install
       - name: Lint py files
         run: poetry run black --check .
+      - name: Type check files
+        run: poetry run mypy .
