@@ -10,7 +10,7 @@
     # INTENTS:  # Map a dictionary of intents
 
   LOGGING: !Config
-    LOG_LEVEL: 'INFO'
+    LOG_LEVEL: !ENV LOG_LEVEL
     WEBHOOK_URI: ~
   
   DATABASE: !Config

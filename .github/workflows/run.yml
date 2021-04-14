@@ -38,3 +38,4 @@ jobs:
         env:
           BOT_TOKEN: ${{secrets.DISCORD_BOT_TOKEN}}
           POSTGRES_DSN: postgres://postgres:password@localhost/test
+          LOG_LEVEL: DEBUG
