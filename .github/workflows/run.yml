@@ -1,0 +1,18 @@
+name: "Runner"
+on: [push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+      - uses: abatilo/actions-poetry@v2.0.0
+      - name: Validate pyproject.toml
+        run: poetry check
+      - name: Install dependencies
+        run: poetry install --no-dev
+      - name: Run bot
+        run: poetry run start --ci
+        env:
+          BOT_TOKEN: ${{secrets.DISCORD_BOT_TOKEN}}

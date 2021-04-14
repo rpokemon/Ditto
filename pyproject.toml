@@ -1,0 +1,43 @@
+[tool.poetry]
+name = "Ditto"
+version = "0.0.1a"
+description = "A Discord bot template for Discord.py version 1.7+"
+authors = ["bijij <josh@josh-is.gay>"]
+license = "MIT"
+readme = "README.rst"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+donphan = "^3.0"
+"discord.py" = "^1.7"
+
+[tool.poetry.dev-dependencies]
+black = "^20.8b1"
+mypy = ">=0.800"
+pytest = "^6.2.3"
+
+[tool.poetry.scripts]
+start = "start:main"
+test = "test:main"
+
+[tool.black]
+line-length = 159
+target-version = ["py38"]
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.mypy_cache
+  | \.pytest_cache
+  | \.venv
+)/
+'''
+
+[tool.pytest.ini_options]
+addopts = "--capture=no --assert=plain --strict-markers --tb native"
+testpaths = "tests"
+filterwarnings = "default"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
