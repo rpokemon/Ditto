@@ -88,7 +88,16 @@ class BotBase(commands.bot.BotBase, discord.Client):
         if isinstance(error, commands.CommandNotFound):
             return
 
-        if isinstance(error, ()):
+        if isinstance(
+            error,
+            (
+                commands.CheckFailure,
+                commands.UserInputError,
+                commands.CommandOnCooldown,
+                commands.MaxConcurrencyReached,
+                commands.DisabledCommand,
+            ),
+        ):
             await ctx.send(
                 embed=discord.Embed(
                     color=discord.Colour.red(),
@@ -99,6 +108,9 @@ class BotBase(commands.bot.BotBase, discord.Client):
             return
 
         error = error.__cause__  # type: ignore
+
+        if error is None:
+            return
 
         await ctx.send(
             embed=discord.Embed(
