@@ -7,10 +7,11 @@
     ALLOW_MENTIONS_AS_PREFIX: yes
     PREFIX: '!'
     TOKEN: !ENV BOT_TOKEN
+    IGNORE_BOTS: yes
     # INTENTS:  # Map a dictionary of intents
 
   LOGGING: !Config
-    LOG_LEVEL: !ENV LOG_LEVEL
+    LOG_LEVEL: INFO
     WEBHOOK_URI: ~
   
   DATABASE: !Config
@@ -23,4 +24,12 @@
     DATABASE: ~
 
   EXTENSIONS:
+    # 3rd Party Extensions
     'jishaku': ~
+
+    # Core Extensions
+    'cogs.core.admin': ~
+    'cogs.core.info': ~
+
+    # Logging Extensions
+    'cogs.logging.stats': ~

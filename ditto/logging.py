@@ -1,7 +1,6 @@
 import datetime
 import logging
 
-from discord import Embed, Colour
 import discord
 
 from .utils.webhooks import EmbedWebhookLogger
@@ -14,11 +13,11 @@ ZWSP = "\N{ZERO WIDTH SPACE}"
 
 class WebhookHandler(logging.Handler):
     _colours = {
-        logging.DEBUG: Colour.light_grey(),
-        logging.INFO: Colour.gold(),
-        logging.WARNING: Colour.orange(),
-        logging.ERROR: Colour.red(),
-        logging.CRITICAL: Colour.dark_red(),
+        logging.DEBUG: discord.Colour.light_grey(),
+        logging.INFO: discord.Colour.gold(),
+        logging.WARNING: discord.Colour.orange(),
+        logging.ERROR: discord.Colour.red(),
+        logging.CRITICAL: discord.Colour.dark_red(),
     }
 
     def __init__(self, webhook_url: str, level: int = logging.NOTSET) -> None:
@@ -32,7 +31,7 @@ class WebhookHandler(logging.Handler):
         message = message[:1987] + "..." if len(message) > 1987 else message
 
         self._webhook_logger.log(
-            Embed(
+            discord.Embed(
                 colour=self._colours.get(record.levelno, discord.Embed.Empty),
                 title=record.name,
                 description=f"```py\n{message}\n```",

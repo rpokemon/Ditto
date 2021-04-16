@@ -12,13 +12,15 @@ from discord.ext.alternatives import converter_dict  # type: ignore
 
 from donphan import MaybeAcquire, create_pool, create_tables, create_types, create_views  # type: ignore
 
-from .config import CONFIG, Config, load_global_config
+from .config import CONFIG, load_global_config
 from .context import Context
 from .help import EmbedHelpCommand
 from .logging import WebhookHandler
+from .types import CONVERTERS
 
 
 __all__ = (
+    "BotBase",
     "Bot",
     "AutoShardedBot",
 )
@@ -66,6 +68,10 @@ class BotBase(commands.bot.BotBase, discord.Client):
             command_prefix=prefix, help_command=EmbedHelpCommand(), allowed_mentions=allowed_mentions, intents=intents
         )
 
+        # Add extra converters
+        self.converters |= CONVERTERS
+
+        # Add extensions
         for extension in CONFIG.EXTENSIONS.keys():
             try:
                 self.load_extension(extension)
@@ -126,6 +132,9 @@ class BotBase(commands.bot.BotBase, discord.Client):
         )
 
     async def process_commands(self, message: discord.Message) -> None:
+        if CONFIG.BOT.IGNORE_BOTS and message.author.bot:
+            return
+
         if message.author == self.user:
             return
 
