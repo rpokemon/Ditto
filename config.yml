@@ -5,13 +5,13 @@
 
   BOT: !Config
     ALLOW_MENTIONS_AS_PREFIX: yes
-    PREFIX: '!'
+    PREFIX: !ENV BOT_PREFIX
     TOKEN: !ENV BOT_TOKEN
     IGNORE_BOTS: yes
     # INTENTS:  # Map a dictionary of intents
 
   LOGGING: !Config
-    LOG_LEVEL: INFO
+    LOG_LEVEL: !ENV LOG_LEVEL
     WEBHOOK_URI: !ENV LOG_WEBHOOK_URI
   
   DATABASE: !Config

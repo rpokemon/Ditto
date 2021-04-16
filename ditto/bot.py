@@ -12,7 +12,7 @@ from discord.ext.alternatives import converter_dict  # type: ignore
 
 from donphan import MaybeAcquire, create_pool, create_tables, create_types, create_views  # type: ignore
 
-from .config import CONFIG, load_global_config
+from .config import CONFIG, Config, load_global_config
 from .context import Context
 from .help import EmbedHelpCommand
 from .logging import WebhookHandler
@@ -40,7 +40,8 @@ class BotBase(commands.bot.BotBase, discord.Client):
 
         # Setup logging
         self.log = logging.getLogger()
-        self.log.setLevel(CONFIG.LOGGING.LOG_LEVEL)
+        if CONFIG.LOGGING.LOG_LEVEL is not None:
+            self.log.setLevel(CONFIG.LOGGING.LOG_LEVEL)
 
         webhook_uri = CONFIG.LOGGING.WEBHOOK_URI
         if webhook_uri is not None:
@@ -58,12 +59,15 @@ class BotBase(commands.bot.BotBase, discord.Client):
             intents = discord.Intents.default()
 
         # Setup bot instance.
+        allow_mentions_as_prefix = getattr(CONFIG.BOT, "ALLOW_MENTIONS_AS_PREFIX", False)
         self.prefix = CONFIG.BOT.PREFIX
-        prefix = (
-            commands.when_mentioned_or(self.prefix)
-            if getattr(CONFIG.BOT, "ALLOW_MENTIONS_AS_PREFIX", False)
-            else self.prefix
-        )
+        if self.prefix is None:
+            if not allow_mentions_as_prefix:
+                raise RuntimeError("No prefix has been set, set one with a config override.")
+            prefix = commands.when_mentioned
+        else:
+            prefix = commands.when_mentioned_or(self.prefix) if allow_mentions_as_prefix else self.prefix
+
         super().__init__(
             command_prefix=prefix, help_command=EmbedHelpCommand(), allowed_mentions=allowed_mentions, intents=intents
         )
