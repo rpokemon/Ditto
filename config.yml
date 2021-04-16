@@ -12,7 +12,7 @@
 
   LOGGING: !Config
     LOG_LEVEL: INFO
-    WEBHOOK_URI: ~
+    WEBHOOK_URI: !ENV LOG_WEBHOOK_URI
   
   DATABASE: !Config
     # Database Settings: Set either a DSN or Hostname, Username, Password and Database
