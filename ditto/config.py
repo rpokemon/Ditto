@@ -47,7 +47,7 @@ def env_var_constructor(loader: yaml.Loader, node: yaml.ScalarNode) -> Optional[
 def generate_constructor(func: Callable[..., Any]) -> Callable[[yaml.Loader, yaml.ScalarNode], Object]:
     def constructor(loader: yaml.Loader, node: yaml.ScalarNode) -> Object:
         ids = [int(x) for x in loader.construct_scalar(node).split()]  # type: ignore
-        return Object(ids[0], func(*ids))
+        return Object(ids[0], lambda: func(*ids))
 
     return constructor
 
