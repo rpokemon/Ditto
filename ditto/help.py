@@ -25,7 +25,7 @@ class EmbedHelpCommand(commands.DefaultHelpCommand, Generic[T]):
         me = self.context.me  # type: ignore
 
         self.paginator.colour = me.colour
-        self.paginator.set_author(name=f"{me} Help Manual", icon_url=me.avatar_url)  # type: ignore
+        self.paginator.set_author(name=f"{me} Help Manual", icon_url=str(me.avatar_url))
 
         self.paginator.set_footer(text=self.get_ending_note())
 

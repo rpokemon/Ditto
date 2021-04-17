@@ -7,8 +7,6 @@ from typing import Any, Callable, Optional, Union
 import discord
 import yaml
 
-from .utils.message import RawMessage
-
 
 __all__ = (
     "CONFIG",
@@ -115,7 +113,7 @@ DISCORD_CONSTRUCTORS: dict[str, Callable[..., Any]] = {
     "Channel": lambda g, c: _bot.get_guild(g).get_channel(c),  # type: ignore
     "Member": lambda g, m: _bot.get_guild(g).get_member(m),  # type: ignore
     "Role": lambda g, r: _bot.get_guild(g).get_role(r),  # type: ignore
-    "Message": lambda g, c, m: RawMessage(_bot, _bot.get_guild(g).get_channel(c), m),  # type: ignore
+    "Message": lambda g, c, m: discord.PartialMessage(channel=_bot.get_guild(g).get_channel(c), id=m),  # type: ignore
 }
 
 for key, func in DISCORD_CONSTRUCTORS.items():
