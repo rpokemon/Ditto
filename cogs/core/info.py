@@ -107,12 +107,12 @@ class Info(Cog):
         vocal_channels = [channel for channel in server.channels if isinstance(channel, get_args(VocalGuildChannel))]
         store_channels = [channel for channel in server.channels if isinstance(channel, discord.StoreChannel)]
         channels = f"""{len(server.channels)}
-    Categories: {self.summarise_channels(server.categories)}
-    Text: {self.summarise_channels(server.text_channels)}
-    Vocal: {len(vocal_channels)}
-        Voice: {self.summarise_channels(server.voice_channels)}
-        Stage: {self.summarise_channels(server.stage_channels)}
-    Store: {self.summarise_channels(store_channels)}"""
+    - Categories: {self.summarise_channels(server.categories)}
+    - Text: {self.summarise_channels(server.text_channels)}
+    - Vocal: {len(vocal_channels)}
+    --- Voice: {self.summarise_channels(server.voice_channels)}
+    --- Stage: {self.summarise_channels(server.stage_channels)}
+    - Store: {self.summarise_channels(store_channels)}"""
         embed.add_field(name="Channels:", value=channels, inline=False)
 
         embed.add_field(name="Roles:", value=self.summarise_roles(server.roles))
@@ -300,11 +300,11 @@ class Info(Cog):
         vocal_channels = [channel for channel in channel.channels if isinstance(channel, get_args(VocalGuildChannel))]
         store_channels = [channel for channel in channel.channels if isinstance(channel, discord.StoreChannel)]
         channels = f"""{len(channel.channels)}
-    Text: {self.summarise_channels(channel.text_channels)}
-    Vocal: {len(vocal_channels)}
-        Voice: {self.summarise_channels(channel.voice_channels)}
-        Stage: {self.summarise_channels(channel.stage_channels)}
-    Store: {self.summarise_channels(store_channels)}"""
+    - Text: {self.summarise_channels(channel.text_channels)}
+    - Vocal: {len(vocal_channels)}
+    --- Voice: {self.summarise_channels(channel.voice_channels)}
+    --- Stage: {self.summarise_channels(channel.stage_channels)}
+    - Store: {self.summarise_channels(store_channels)}"""
         embed.add_field(name="Channels:", value=channels, inline=False)
 
         await ctx.send(embed=embed)
