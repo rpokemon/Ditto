@@ -52,7 +52,7 @@ class Admin(Cog):
         if jsk_load is None:
             raise commands.CommandNotFound()
         else:
-            await ctx.invoke(jsk_load, extensions=extensions)
+            await ctx.invoke(jsk_load, *extensions)
 
     @commands.command()
     async def unload(self, ctx: Context, *extensions: Extension) -> None:
@@ -63,7 +63,7 @@ class Admin(Cog):
         if jsk_unload is None:
             raise commands.CommandNotFound()
         else:
-            await ctx.invoke(jsk_unload, extensions=extensions)
+            await ctx.invoke(jsk_unload, *extensions)
 
     @commands.group(invoke_without_command=False)
     async def reload(self, ctx: Context, *extensions: Extension) -> None:
@@ -74,7 +74,7 @@ class Admin(Cog):
         if jsk_reload is None:
             raise commands.CommandNotFound()
         else:
-            await ctx.invoke(jsk_reload, extensions=extensions)
+            await ctx.invoke(jsk_reload, *extensions)
 
     @reload.command(name="config")
     async def reload_config(self, ctx: Context):
