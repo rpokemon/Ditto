@@ -3,7 +3,6 @@ import datetime
 from typing import Union, cast, get_args, Optional
 
 import discord
-from discord import guild
 from discord.channel import CategoryChannel, StageChannel, StoreChannel, TextChannel, VoiceChannel
 from discord.ext import commands
 from PIL import Image  # type: ignore
@@ -58,6 +57,24 @@ class Info(Cog):
             skip_first=skip_first,
         )
 
+    @staticmethod
+    def _object_info(item: DiscordObject) -> discord.Embed:
+        embed = discord.Embed()
+
+        embed.set_author(name=f"Information on {item}:")
+
+        embed.add_field(name="ID:", value=str(item.id))
+        embed.add_field(name="Created At:", value=str(item.created_at))
+
+        return embed
+
+    @classmethod
+    def _server_object_info(cls, item: Union[discord.Role, GuildChannel]) -> discord.Embed:
+        embed = cls._object_info(item)
+        embed.add_field(name="Server:", value=str(item.guild))
+
+        return embed
+
     @commands.command()
     async def server_info(self, ctx: Context, *, server: Optional[discord.Guild] = None) -> None:
         """Get information on a server.
@@ -72,13 +89,10 @@ class Info(Cog):
         if server != ctx.guild and not await ctx.user_in_guild(server):
             raise commands.BadArgument("You cannot retrieve information on a server you are not in.")
 
-        embed = discord.Embed()
-
-        embed.set_author(name=f"Information on {server}:")
+        embed = self._object_info(server)
         embed.set_thumbnail(url=str(server.icon_url))
-        embed.add_field(name="ID:", value=str(server.id))
+
         embed.add_field(name="Voice Region:", value=str(server.region))
-        embed.add_field(name="Created At:", value=str(server.created_at))
 
         owner = server.owner
         if owner is None:
@@ -86,7 +100,7 @@ class Info(Cog):
         embed.add_field(name="Owner:", value=owner.mention)
 
         if server.chunked:
-            embed.add_field(name="Members:", value=self.summarise_members(server.members))
+            embed.add_field(name="Members:", value=self.summarise_members(server.members), inline=False)
         else:
             embed.add_field(name="Members:", value=str(server.member_count))
 
@@ -135,11 +149,10 @@ class Info(Cog):
         `role`: The role to get information on by name, ID, or mention.
         """
 
-        embed = discord.Embed(colour=role.colour if role.colour.value else discord.Embed.Empty)
-        embed.set_author(name=f"Information on {role}:")
-        embed.add_field(name="ID:", value=str(role.id))
-        embed.add_field(name="Server:", value=str(role.guild))
-        embed.add_field(name="Created At:", value=str(role.created_at))
+        embed = self._server_object_info(role)
+        if role.colour.value:
+            embed.colour = role.colour
+
         embed.add_field(
             name="Permissions:",
             value=f"[Permissions list](https://discordapi.com/permissions.html#{role.permissions.value})",
@@ -153,11 +166,17 @@ class Info(Cog):
 
         await ctx.send(embed=embed)
 
-    @staticmethod
-    def _channel_info(channel: GuildChannel) -> discord.Embed:
-        embed = discord.Embed()
+    @classmethod
+    def _channel_info(cls, channel: GuildChannel) -> discord.Embed:
+        embed = cls._server_object_info(channel)
 
-        # TODO: this
+        embed.add_field(name="Position", value=str(channel.position))
+
+        if not isinstance(channel, discord.CategoryChannel):
+            embed.add_field(name="Category", value=str(channel.category))
+
+        if not isinstance(channel, get_args(VocalGuildChannel)):
+            embed.add_field(name="Is NSFW:", value=str(channel.is_nsfw()))  # type: ignore
 
         return embed
 
@@ -174,7 +193,10 @@ class Info(Cog):
 
         embed = self._channel_info(channel)
 
-        # TODO: this
+        embed.add_field(name="Topic", value=str(channel.topic) or "None Set")
+
+        slowmode_delay = f"{channel.slowmode_delay} seconds" if channel.slowmode_delay else "Disabled"
+        embed.add_field(name="Slowmode Delay", value=slowmode_delay)
 
         await ctx.send(embed=embed)
 
@@ -182,7 +204,14 @@ class Info(Cog):
     def _vocal_channel_info(cls, channel: VocalGuildChannel) -> discord.Embed:
         embed = cls._channel_info(channel)
 
-        # TODO: this
+        embed.add_field(name="Voice Region:", value=str(channel.rtc_region or "Automatic"))
+        embed.add_field(name="Bitrate", value=f"{channel.bitrate//1024}Kbps")
+        embed.add_field(name="User Limit", value=str(channel.user_limit))
+
+        if channel.guild.chunked:
+            embed.add_field(name="Members:", value=cls.summarise_members(channel.members), inline=False)
+        else:
+            embed.add_field(name="Members:", value=str(len(channel.voice_states)))
 
         return embed
 
@@ -205,8 +234,6 @@ class Info(Cog):
 
         embed = self._vocal_channel_info(channel)
 
-        # TODO: this
-
         await ctx.send(embed=embed)
 
     @commands.command()
@@ -227,8 +254,6 @@ class Info(Cog):
             raise commands.BadArgument("You cannot retrieve information on a server you are not in.")
 
         embed = self._vocal_channel_info(channel)
-
-        # TODO: this
 
         await ctx.send(embed=embed)
 
@@ -272,7 +297,15 @@ class Info(Cog):
 
         embed = self._channel_info(channel)
 
-        # TODO: this
+        vocal_channels = [channel for channel in channel.channels if isinstance(channel, get_args(VocalGuildChannel))]
+        store_channels = [channel for channel in channel.channels if isinstance(channel, discord.StoreChannel)]
+        channels = f"""{len(channel.channels)}
+    Text: {self.summarise_channels(channel.text_channels)}
+    Vocal: {len(vocal_channels)}
+        Voice: {self.summarise_channels(channel.voice_channels)}
+        Stage: {self.summarise_channels(channel.stage_channels)}
+    Store: {self.summarise_channels(store_channels)}"""
+        embed.add_field(name="Channels:", value=channels, inline=False)
 
         await ctx.send(embed=embed)
 
@@ -288,8 +321,6 @@ class Info(Cog):
             raise commands.BadArgument("You cannot retrieve information on a server you are not in.")
 
         embed = self._channel_info(channel)
-
-        # TODO: this
 
         await ctx.send(embed=embed)
 
@@ -315,16 +346,10 @@ class Info(Cog):
 
         raise commands.BadArgument(f"Could not find information on: {channel}")
 
-    @staticmethod
-    def _user_info(user: User) -> discord.Embed:
-
-        embed = discord.Embed()
-
-        embed.set_author(name=f"Information on {user}:")
+    @classmethod
+    def _user_info(cls, user: User) -> discord.Embed:
+        embed = cls._object_info(user)
         embed.set_thumbnail(url=str(user.avatar_url))
-
-        embed.add_field(name="ID:", value=str(user.id))
-        embed.add_field(name="Account Created:", value=str(user.created_at))
 
         embed.add_field(name="Is Bot:", value=yes_no(user.bot))
 
@@ -381,13 +406,8 @@ class Info(Cog):
         if isinstance(emoji, discord.PartialEmoji) and emoji.is_unicode_emoji():
             raise commands.BadArgument("Cannot retrieve information on Unicode emoji.")
 
-        embed = (
-            discord.Embed()
-            .set_author(name=f"Information on {emoji.name}:")
-            .set_thumbnail(url=str(emoji.url))
-            .add_field(name="ID:", value=str(emoji.id))
-            .add_field(name="Uploaded At:", value=str(emoji.created_at))
-        )
+        embed = self._object_info(emoji)
+        embed.set_thumbnail(url=str(emoji.url))
 
         if isinstance(emoji, discord.Emoji):
             embed.add_field(name="Server:", value=str(emoji.guild))
@@ -413,11 +433,9 @@ class Info(Cog):
             else:
                 message = ctx.message
 
-        embed = discord.Embed()
+        embed = self._object_info(message)
         embed.set_author(name="Information on message:")
 
-        embed.add_field(name="ID:", value=str(message.id))
-        embed.add_field(name="Sent:", value=str(message.created_at))
         embed.add_field(name="Server:", value=str(message.guild or "Direct Message"))  # type: ignore
         embed.add_field(name="Channel:", value=str(message.channel))
 
@@ -444,13 +462,12 @@ class Info(Cog):
         `invite`: The server invite to get information on, either by name, or the url.
         """
 
-        embed = discord.Embed()
+        embed = self._object_info(invite)
         embed.set_author(name=f"Information on invite to {invite.guild}:")
         embed.set_thumbnail(
             url=str(invite.guild.icon_url) if isinstance(invite.guild, discord.guild.Guild) else discord.Embed.Empty
         )
 
-        embed.add_field(name="Created At:", value=str(invite.created_at))
         embed.add_field(name="Created By:", value=str(invite.inviter))
         embed.add_field(
             name="Expires At:",
@@ -487,7 +504,7 @@ class Info(Cog):
         await ctx.send(embed=embed, file=discord.File(image, filename))
 
     @commands.command()
-    async def get(self, ctx: Context, *, item: DiscordObject) -> None:
+    async def get(self, ctx: Context, *, item: Union[DiscordObject, discord.Colour]) -> None:
         """Get information on something.
 
         `item`: The item to get information on; items are looked in the following order: Guild, Role, Channel, User, Emoji, Message, Invite, Colour.

@@ -58,7 +58,6 @@ DiscordObject = Union[
     Emoji,  # type: ignore
     Message,  # type: ignore
     discord.Invite,
-    discord.Colour,
 ]
 
 
