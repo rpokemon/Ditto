@@ -1,22 +1,24 @@
 import datetime
-from functools import cmp_to_key
+from ditto.utils.paginator import EmbedPaginator
 import zoneinfo
 
-from typing import cast, Optional, Union, get_args
+from typing import Any, Tuple, cast, Optional, Union, get_args
 
 import discord
-from discord.ext import commands
+from discord.ext import commands, menus  # type: ignore
 
 from ditto import BotBase, Context, Cog
 from ditto.types import User
 from ditto.db import Time_Zones
 
 from ditto.utils.strings import utc_offset, human_friendly_timestamp
+from ditto.utils.timezones import MAIN_TIMEZONES
 
 
 class Timezone(Cog):
     @commands.group(aliases=["time"], invoke_without_command=True)
     async def timezone(self, ctx: Context, *, argument: Optional[Union[zoneinfo.ZoneInfo, User]] = None) -> None:
+        """Get the current time for a user or time zone."""
         if argument is None:
             argument = zoneinfo.ZoneInfo("UTC")
 
@@ -32,6 +34,7 @@ class Timezone(Cog):
 
     @timezone.command(name="get")
     async def timezone_get(self, ctx: Context, *, user: Optional[User] = None) -> None:
+        """Get a user's time zone."""
         if user is None:
             user = ctx.author
 
@@ -48,12 +51,40 @@ class Timezone(Cog):
 
     @timezone.command(name="set")
     async def timezone_set(self, ctx: Context, *, timezone: zoneinfo.ZoneInfo) -> None:
+        """Set your time zone."""
         await Time_Zones.insert(user_id=ctx.author.id, time_zone=str(timezone), update_on_conflict=Time_Zones.time_zone)  # type: ignore
 
-        embed = discord.Embed(title=str(datetime.datetime.now(tz=timezone)))
+        local_time = human_friendly_timestamp(datetime.datetime.now(tz=timezone))
+        embed = discord.Embed(title=f"Local Time: {local_time}")
         embed.set_author(name=f"Timezone set to {timezone}")
 
         await ctx.reply(embed=embed)
+
+    @timezone.command(name="list")
+    async def timezone_list(self, ctx: Context) -> None:
+        """List all avilable time zones."""
+        embed = EmbedPaginator(max_description=512)  # type: ignore
+
+        def get_offset(t: Tuple[Any, zoneinfo.ZoneInfo]) -> float:
+            _, tzinfo = t
+
+            now = datetime.datetime.now(datetime.timezone.utc)
+
+            offset = tzinfo.utcoffset(now)
+            if offset is not None:
+                return offset.total_seconds()
+            return 0
+
+        for name, tzinfo in sorted(MAIN_TIMEZONES.items(), key=get_offset):
+            embed.add_line(f"`{name}` ({utc_offset(tzinfo)})")
+
+        await menus.MenuPages(embed).start(ctx)
+
+    @commands.command()
+    async def timezones(self, ctx: Context) -> None:
+        return await ctx.invoke(self.timezone_list)
+
+    timezones.__doc__ = timezone_list.__doc__
 
 
 def setup(bot: BotBase):

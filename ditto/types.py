@@ -10,6 +10,8 @@ from discord.ext import commands
 from jishaku.codeblocks import codeblock_converter, Codeblock  # type: ignore
 from jishaku.modules import ExtensionConverter  # type: ignore
 
+from .utils.timezones import TIMEZONE_ALIASES
+
 if TYPE_CHECKING:
     from .context import Context
 
@@ -81,8 +83,13 @@ class CommandConverter(commands.Converter):
 class ZoneInfoConverter(commands.Converter):
     @classmethod
     async def convert(cls, ctx: Context, argument: str) -> zoneinfo.ZoneInfo:  # type: ignore
+        argument = argument.replace(" ", "_").strip()
+
+        if argument in TIMEZONE_ALIASES:
+            argument = TIMEZONE_ALIASES[argument]
+
         try:
-            return zoneinfo.ZoneInfo(argument.replace(" ", "_"))
+            return zoneinfo.ZoneInfo(argument)
         except Exception:  # catch all due to BPO: 41530
             raise commands.BadArgument(f'Time Zone "{argument}" not found.')
 
