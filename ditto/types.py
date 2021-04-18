@@ -1,15 +1,18 @@
+from __future__ import annotations
+
 import zoneinfo
 
-from typing import Union
+from typing import TYPE_CHECKING, Union
 
 import discord
 from discord.ext import commands
-from discord.ext.commands.core import Command
 
 from jishaku.codeblocks import codeblock_converter, Codeblock  # type: ignore
 from jishaku.modules import ExtensionConverter  # type: ignore
 
-from .context import Context
+if TYPE_CHECKING:
+    from .context import Context
+
 
 __all__ = (
     "CONVERTERS",

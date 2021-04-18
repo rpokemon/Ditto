@@ -1,6 +1,7 @@
+import datetime
 from itertools import cycle
 
-from typing import Any, Iterator, Literal, TypeVar
+from typing import Any, Iterator, Literal, TypeVar, Union
 
 from .collections import chunk
 
@@ -63,3 +64,22 @@ def as_columns(items: list[str], /, columns: int = 2, transpose: bool = False, f
         result += row.strip() + "\n"
 
     return result
+
+
+def utc_offset(offset: Union[float, datetime.timedelta, datetime.tzinfo], /) -> str:
+    if isinstance(offset, (int, float)):
+        offset = datetime.timedelta(seconds=offset)
+    elif isinstance(offset, datetime.tzinfo):
+        now = datetime.datetime.now(datetime.timezone.utc)
+        offset = offset.utcoffset(now) or datetime.timedelta(seconds=0)
+
+    return datetime.timezone(offset).tzname(None)  # type: ignore
+
+
+def ordinal(number: int, /) -> str:
+    return f'{number}{"tsnrhtdd"[(number // 10 % 10 != 1) * (number % 10 < 4) * number % 10 :: 4]}'
+
+
+def human_friendly_timestamp(datetime: datetime.datetime, /) -> str:
+    day = datetime.day
+    return datetime.strftime(f"%I:%M%p on %A the {ordinal(day)} of %B, %Y")

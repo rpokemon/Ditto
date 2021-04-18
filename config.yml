@@ -33,3 +33,4 @@
 
     # Logging Extensions
     'cogs.logging.stats': ~
+    'cogs.logging.timezone': ~
