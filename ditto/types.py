@@ -13,7 +13,7 @@ from jishaku.modules import ExtensionConverter  # type: ignore
 from .utils.timezones import TIMEZONE_ALIASES
 
 if TYPE_CHECKING:
-    from .context import Context
+    from .core.context import Context
 
 
 __all__ = (

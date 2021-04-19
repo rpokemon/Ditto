@@ -6,7 +6,10 @@ import asyncpg  # type: ignore
 
 from donphan import Column, Table, SQLType  # type: ignore
 
-from .types import User
+from ..types import User
+
+
+__all__ = ("Time_Zones",)
 
 
 class Time_Zones(Table):

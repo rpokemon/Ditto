@@ -9,8 +9,8 @@ import donphan  # type: ignore
 import discord
 from discord.ext import commands
 
-from .db import Time_Zones
-from .utils.guild import user_in_guild
+from ..db import Time_Zones
+from ..utils.guild import user_in_guild
 
 if TYPE_CHECKING:
     from .bot import BotBase

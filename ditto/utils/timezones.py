@@ -1,6 +1,12 @@
 import zoneinfo
 
 
+__all__ = (
+    "MAIN_TIMEZONES",
+    "TIMEZONE_ALIASES",
+)
+
+
 MAIN_TZ_FILE = "res/cldr/tools/cldr-code/src/main/resources/org/unicode/cldr/util/MainTimeZones.txt"
 TZ_ALIASES_FILE = "res/cldr/tools/cldr-code/src/main/resources/org/unicode/cldr/util/data/TimeZoneAliases.txt"
 

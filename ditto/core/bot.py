@@ -1,4 +1,5 @@
 import datetime
+from ditto.utils.strings import codeblock
 import logging
 import traceback
 
@@ -6,17 +7,18 @@ from typing import Any, Callable, Dict, Optional, Type
 
 import asyncpg  # type: ignore
 import discord
+from discord import utils
 
 from discord.ext import commands
 from discord.ext.alternatives import converter_dict  # type: ignore
 
 from donphan import MaybeAcquire, create_pool, create_tables, create_types, create_views  # type: ignore
 
-from .config import CONFIG, Config, load_global_config
+from ..config import CONFIG, load_global_config
+from ..utils.logging import WebhookHandler
+from ..types import CONVERTERS
 from .context import Context
 from .help import EmbedHelpCommand
-from .logging import WebhookHandler
-from .types import CONVERTERS
 
 
 __all__ = (
@@ -126,7 +128,7 @@ class BotBase(commands.bot.BotBase, discord.Client):
             embed=discord.Embed(
                 colour=discord.Colour.dark_red(),
                 title=f"Unexpected error with command {ctx.command.qualified_name}",
-                description=f"```py\n{type(error).__name__}: {error}\n```",
+                description=codeblock(f"{type(error).__name__}: {error}", language="py"),
             )
         )
 

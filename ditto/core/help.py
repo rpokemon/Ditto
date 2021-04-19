@@ -3,7 +3,7 @@ from typing import Any, Generic, Optional, Sequence, TypeVar
 import discord
 from discord.ext import commands, menus  # type: ignore
 
-from .utils.paginator import *
+from ..utils.paginator import *
 
 __all__ = ("EmbedHelpCommand",)
 

@@ -3,7 +3,8 @@ import logging
 
 import discord
 
-from .utils.webhooks import EmbedWebhookLogger
+from ..utils.strings import codeblock
+from ..utils.webhooks import EmbedWebhookLogger
 
 __all__ = ("WebhookHandler",)
 
@@ -34,7 +35,7 @@ class WebhookHandler(logging.Handler):
             discord.Embed(
                 colour=self._colours.get(record.levelno, discord.Embed.Empty),
                 title=record.name,
-                description=f"```py\n{message}\n```",
+                description=codeblock(message, language="py"),
                 timestamp=datetime.datetime.fromtimestamp(record.created),
             ).add_field(name=ZWSP, value=f"{record.filename}:{record.lineno}")
         )
