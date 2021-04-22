@@ -16,7 +16,7 @@ class EmbedWebhookLogger:
         self._to_log = []
 
         self._session = aiohttp.ClientSession()
-        self._webhook = discord.Webhook.from_url(self._webhook_url, adapter=discord.AsyncWebhookAdapter(self._session))
+        self._webhook = discord.Webhook.from_url(self._webhook_url, session=self._session)
 
         # setup loop
         self._loop.start()
