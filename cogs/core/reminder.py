@@ -13,6 +13,7 @@ class Reminders(Cog):
     async def reminder(self, ctx: Context, *, argument: tuple[datetime.datetime, str]) -> None:
         """Set a reminder."""
         when, what = argument
+        what = what or '...'
 
         if when <= ctx.message.created_at:
             raise commands.BadArgument("You can not set a reminder in the past")
@@ -25,7 +26,7 @@ class Reminders(Cog):
 
         if event.id is not None:
             embed.set_footer(
-                text=f"Reminder ID: {event.id} | User {self.bot.prefix}reminder cancel {event.id} to cancel this reminder."
+                text=f"Reminder ID: {event.id} | Use {self.bot.prefix}reminder cancel {event.id} to cancel this reminder."
             )
 
         await ctx.reply(embed=embed)
