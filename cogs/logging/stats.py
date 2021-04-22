@@ -1,26 +1,36 @@
 import asyncio
-from collections import namedtuple
+import datetime
 
-import asyncpg  # type: ignore
-from discord.ext import commands, menus, tasks  # type: ignore
-from donphan import Column, Table, SQLType  # type: ignore
+from typing import NamedTuple
+
+import asyncpg
+from discord.ext import commands, menus, tasks
+from donphan import Column, Table, SQLType
 
 from ditto import BotBase, Cog, Context
 from ditto.utils import EmbedPaginator
 
 
-class Commands(Table, schema="logging"):  # type: ignore
-    message_id: SQLType.BigInt = Column(primary_key=True)  # type: ignore
-    guild_id: SQLType.BigInt = Column(index=True)  # type: ignore
-    channel_id: SQLType.BigInt = Column(index=True)  # type: ignore
-    user_id: SQLType.BigInt = Column(index=True)  # type: ignore
-    invoked_at: SQLType.Timestamp  # type: ignore
-    prefix: SQLType.Text  # type: ignore
-    command: SQLType.Text  # type: ignore
-    failed: SQLType.Boolean  # type: ignore
+class Commands(Table, schema="logging"):  # type: ignore[call-arg]
+    message_id: SQLType.BigInt = Column(primary_key=True)
+    guild_id: SQLType.BigInt = Column(index=True)
+    channel_id: SQLType.BigInt = Column(index=True)
+    user_id: SQLType.BigInt = Column(index=True)
+    invoked_at: SQLType.Timestamp
+    prefix: SQLType.Text
+    command: SQLType.Text
+    failed: SQLType.Boolean
 
 
-CommandInvoke = namedtuple("CommandInvoke", (column.name for column in Commands._columns))  # type: ignore
+class CommandInvoke(NamedTuple):
+    mssage_id: int
+    guild_id: int
+    channel_id: int
+    user_id: int
+    invoked_at: datetime.datetime
+    prefix: str
+    command: str
+    failed: bool
 
 
 class Stats(Cog):
@@ -33,12 +43,12 @@ class Stats(Cog):
         self.bulk_insert.start()
 
     async def cog_check(self, ctx: Context) -> bool:
-        return await commands.is_owner().predicate(ctx)  # type: ignore
+        return await commands.is_owner().predicate(ctx)
 
     @commands.command()
     async def command_history(self, ctx: Context) -> None:
         embed = EmbedPaginator(colour=ctx.me.colour, max_fields=10).set_author(
-            name="Command History:", icon_url=self.bot.user.avatar_url  # type: ignore
+            name="Command History:", icon_url=self.bot.user.avatar.url
         )
 
         commands = await Commands.fetch(order_by="invoked_at DESC", limit=100)
@@ -65,7 +75,7 @@ class Stats(Cog):
 
         guild_id = getattr(ctx.guild, "id", None)
 
-        invoke = CommandInvoke(  # type: ignore
+        invoke = CommandInvoke(
             ctx.message.id,
             guild_id,
             ctx.channel.id,

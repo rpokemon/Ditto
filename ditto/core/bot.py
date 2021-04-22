@@ -5,16 +5,14 @@ import traceback
 
 from typing import Any, Callable, Dict, Optional, Type
 
-import asyncpg  # type: ignore
+import asyncpg
 import discord
-from discord import utils
 
 from discord.ext import commands
-from discord.ext.alternatives import converter_dict  # type: ignore
-
-from donphan import MaybeAcquire, create_pool, create_tables, create_types, create_views  # type: ignore
+from discord.ext.alternatives import converter_dict
 
 from ..config import CONFIG, load_global_config
+from ..db import setup_database
 from ..utils.logging import WebhookHandler
 from ..types import CONVERTERS
 from .context import Context
@@ -38,7 +36,7 @@ class BotBase(commands.bot.BotBase, discord.Client):
     def __init__(self) -> None:
         CONFIG = load_global_config(self)
 
-        self.start_time = datetime.datetime.utcnow()
+        self.start_time = datetime.datetime.now(datetime.timezone.utc)
 
         # Setup logging
         self.log = logging.getLogger()
@@ -86,11 +84,11 @@ class BotBase(commands.bot.BotBase, discord.Client):
 
     @property
     def uptime(self) -> datetime.timedelta:
-        return datetime.datetime.utcnow() - self.start_time
+        return datetime.datetime.now(datetime.timezone.utc) - self.start_time
 
     async def on_ready(self) -> None:
         self.log.info(f"Succesfully logged in as {self.user} ({self.user.id})")
-        await self.is_owner(self.user)  # type: ignore  # fetch owner id
+        await self.is_owner(self.user)  # fetch owner id
         if self.owner_id:
             self.owner = await self.fetch_user(self.owner_id)
         if self.owner_ids:
@@ -119,10 +117,10 @@ class BotBase(commands.bot.BotBase, discord.Client):
             )
             return
 
-        error = error.__cause__  # type: ignore
-
-        if error is None:
+        if error.__cause__ is None:
             return
+
+        error = error.__cause__
 
         await ctx.send(
             embed=discord.Embed(
@@ -148,18 +146,7 @@ class BotBase(commands.bot.BotBase, discord.Client):
         await self.invoke(ctx)
 
     async def connect(self, *args, **kwargs):
-        if getattr(CONFIG.DATABASE, "DSN", None):
-            dsn = CONFIG.DATABASE.DSN
-        else:
-            dsn = f"postgres://{CONFIG.DATABASE.USERNAME}:{CONFIG.DATABASE.PASSWORD}@{CONFIG.DATABASE.HOSTNAME}/{CONFIG.DATABASE.DATABASE}"
-
-        # Connect to the DB
-        self.pool = await create_pool(dsn, server_settings={"application_name": CONFIG.DATABASE.APPLICATION_NAME})
-        async with MaybeAcquire(pool=self.pool) as conn:
-            await create_types(conn)
-            await create_tables(conn)
-            await create_views(conn)
-
+        self.pool = await setup_database()
         return await super().connect(*args, **kwargs)
 
     def run(self):

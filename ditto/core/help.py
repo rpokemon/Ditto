@@ -1,7 +1,7 @@
 from typing import Any, Generic, Optional, Sequence, TypeVar
 
 import discord
-from discord.ext import commands, menus  # type: ignore
+from discord.ext import commands, menus
 
 from ..utils.paginator import *
 
@@ -22,10 +22,10 @@ class EmbedHelpCommand(commands.DefaultHelpCommand, Generic[T]):
     async def send_pages(self) -> None:
         destination = self.get_destination()
 
-        me = self.context.me  # type: ignore
+        me = self.context.me
 
         self.paginator.colour = me.colour
-        self.paginator.set_author(name=f"{me} Help Manual", icon_url=str(me.avatar_url))
+        self.paginator.set_author(name=f"{me} Help Manual", icon_url=str(me.avatar.url))
 
         self.paginator.set_footer(text=self.get_ending_note())
 

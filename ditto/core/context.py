@@ -4,7 +4,7 @@ import zoneinfo
 
 from typing import Any, Awaitable, Optional, TYPE_CHECKING
 
-import donphan  # type: ignore
+import donphan
 
 import discord
 from discord.ext import commands
@@ -19,10 +19,10 @@ __all__ = ("Context",)
 
 
 class Context(commands.Context):
-    bot: BotBase  # type: ignore
+    bot: BotBase
 
     def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)  # type: ignore
+        super().__init__(**kwargs)
         self.db = donphan.MaybeAcquire(pool=self.bot.pool)
 
     def reply(self, *args, **kwargs):

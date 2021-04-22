@@ -1,6 +1,6 @@
 import io
 
-from PIL import Image  # type: ignore
+from PIL import Image
 
 
 __all__ = ("to_bytes",)

@@ -1,7 +1,7 @@
 from typing import Any, Generic, NamedTuple, Type, TypeVar, TypedDict
 
 import discord
-from discord.ext import commands, menus  # type: ignore
+from discord.ext import commands, menus
 
 
 __all__ = (
@@ -26,7 +26,7 @@ class EmbedPage(NamedTuple):
 
 
 class PaginatorSource(commands.Paginator, menus.PageSource, Generic[T]):
-    pages: list[T]  # type: ignore
+    pages: list[T]
 
     def get_max_pages(self) -> int:
         return len(self._pages) + (self._count != 0)
@@ -39,7 +39,15 @@ class PaginatorSource(commands.Paginator, menus.PageSource, Generic[T]):
 
 
 class EmbedPaginator(discord.Embed, PaginatorSource[EmbT]):
-    def __init__(self, *, max_size: int = 5000, max_description: int = 2048, max_fields: int = 25, cls: Type[EmbT] = discord.Embed, **kwargs: Any) -> None:  # type: ignore
+    def __init__(
+        self,
+        *,
+        max_size: int = 5000,
+        max_description: int = 2048,
+        max_fields: int = 25,
+        cls: Type[EmbT] = discord.Embed,
+        **kwargs: Any,
+    ) -> None:
         description = kwargs.pop("description", "")  # type: str
 
         self.cls = cls
@@ -82,7 +90,7 @@ class EmbedPaginator(discord.Embed, PaginatorSource[EmbT]):
         if empty:
             self._current_page.description.append("")
 
-    def add_field(self, *, name: str, value: str, inline: bool = False) -> None:  # type: ignore
+    def add_field(self, *, name: str, value: str, inline: bool = False) -> None:
         name_len = len(name)
         value_len = len(value)
 
@@ -112,26 +120,26 @@ class EmbedPaginator(discord.Embed, PaginatorSource[EmbT]):
             embed.add_field(**field)
 
         if self._pages.index(page) >= 1 and embed.author.name:
-            embed.author.name += " cont."  # type: ignore
+            embed.author.name += " cont."
 
         return embed
 
-    async def format_page(self, menu: Any, page: EmbT) -> EmbT:  # type: ignore
+    async def format_page(self, menu: Any, page: EmbT) -> EmbT:
         return page
 
     @property
-    def pages(self) -> list[EmbT]:  # type: ignore
+    def pages(self) -> list[EmbT]:  # type: ignore[return-value, override]
         if len(self._current_page.description) or len(self._current_page.fields) > 0:
             self.close_page()
 
         return [self._format_page(page) for page in self._pages]
 
     @property
-    def fields(self) -> list[discord.embeds.EmbedProxy]:  # type: ignore
+    def fields(self) -> list[discord.embeds.EmbedProxy]:
         fields = []
         for page in self._pages:
             for field in page.fields:
-                fields.append(discord.embeds.EmbedProxy(field))  # type: ignore
+                fields.append(discord.embeds.EmbedProxy(field))
         return fields
 
     def __repr__(self) -> str:

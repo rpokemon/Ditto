@@ -7,8 +7,8 @@ __all__ = (
 )
 
 
-MAIN_TZ_FILE = "res/cldr/tools/cldr-code/src/main/resources/org/unicode/cldr/util/MainTimeZones.txt"
-TZ_ALIASES_FILE = "res/cldr/tools/cldr-code/src/main/resources/org/unicode/cldr/util/data/TimeZoneAliases.txt"
+MAIN_TZ_FILE = "res/cldr/MainTimeZones.txt"
+TZ_ALIASES_FILE = "res/cldr/TimeZoneAliases.txt"
 
 # ALL_TIMEZONES: list[str] = []
 

@@ -7,8 +7,8 @@ from typing import TYPE_CHECKING, Union
 import discord
 from discord.ext import commands
 
-from jishaku.codeblocks import codeblock_converter, Codeblock  # type: ignore
-from jishaku.modules import ExtensionConverter  # type: ignore
+from jishaku.codeblocks import codeblock_converter, Codeblock
+from jishaku.modules import ExtensionConverter
 
 from .utils.timezones import TIMEZONE_ALIASES
 
@@ -35,7 +35,7 @@ VocalGuildChannel = Union[
 
 GuildChannel = Union[
     discord.TextChannel,
-    VocalGuildChannel,  # type: ignore
+    VocalGuildChannel,
     discord.CategoryChannel,
     discord.StoreChannel,
 ]
@@ -58,10 +58,10 @@ Message = Union[
 DiscordObject = Union[
     discord.Guild,
     discord.Role,
-    GuildChannel,  # type: ignore
-    User,  # type: ignore
-    Emoji,  # type: ignore
-    Message,  # type: ignore
+    GuildChannel,
+    User,
+    Emoji,
+    Message,
     discord.Invite,
 ]
 
@@ -72,7 +72,7 @@ class Extension(str):
 
 class CommandConverter(commands.Converter):
     @classmethod
-    async def convert(cls, ctx: Context, argument: str) -> commands.Command:  # type: ignore
+    async def convert(cls, ctx: Context, argument: str) -> commands.Command:
         result = ctx.bot.get_command(argument)
 
         if result is None:
@@ -82,7 +82,7 @@ class CommandConverter(commands.Converter):
 
 class ZoneInfoConverter(commands.Converter):
     @classmethod
-    async def convert(cls, ctx: Context, argument: str) -> zoneinfo.ZoneInfo:  # type: ignore
+    async def convert(cls, ctx: Context, argument: str) -> zoneinfo.ZoneInfo:
         argument = argument.replace(" ", "_").strip()
 
         if argument in TIMEZONE_ALIASES:

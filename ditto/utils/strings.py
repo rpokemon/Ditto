@@ -83,7 +83,7 @@ def utc_offset(offset: Union[float, datetime.timedelta, datetime.tzinfo], /) -> 
         now = datetime.datetime.now(datetime.timezone.utc)
         offset = offset.utcoffset(now) or datetime.timedelta(seconds=0)
 
-    return datetime.timezone(offset).tzname(None)  # type: ignore
+    return datetime.timezone(offset).tzname(None)  # type: ignore[return-value]
 
 
 def ordinal(number: int, /) -> str:

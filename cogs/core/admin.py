@@ -1,5 +1,5 @@
 from discord.ext import commands
-from jishaku.codeblocks import Codeblock  # type: ignore
+from jishaku.codeblocks import Codeblock
 
 from ditto import BotBase, Cog, Context
 from ditto.config import load_global_config
@@ -8,7 +8,7 @@ from ditto.types import Extension
 
 class Admin(Cog):
     async def cog_check(self, ctx: Context) -> bool:
-        return await commands.is_owner().predicate(ctx)  # type: ignore
+        return await commands.is_owner().predicate(ctx)
 
     @commands.command()
     async def eval(self, ctx: Context, *, code: Codeblock) -> None:

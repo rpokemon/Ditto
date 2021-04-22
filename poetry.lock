@@ -164,35 +164,29 @@ resolved_reference = "309c70222eec33acacb8c21bbb0fbe9bc57de661"
 
 [[package]]
 name = "discord.py"
-version = "1.7.1"
+version = "2.0.0a3029+g275a754a"
 description = "A Python wrapper for the Discord API"
 category = "main"
 optional = false
-python-versions = ">=3.5.3"
+python-versions = ">=3.8.0"
+develop = false
 
 [package.dependencies]
 aiohttp = ">=3.6.0,<3.8.0"
 
 [package.extras]
-docs = ["sphinx (==3.0.3)", "sphinxcontrib-trio (==1.1.2)", "sphinxcontrib-websupport"]
+docs = ["sphinx (==3.5.3)", "sphinxcontrib-trio (==1.1.2)", "sphinxcontrib-websupport"]
 voice = ["PyNaCl (>=1.3.0,<1.5)"]
 
-[[package]]
-name = "discord.py-stubs"
-version = "1.7.1"
-description = "discord.py stubs"
-category = "dev"
-optional = false
-python-versions = ">=3.6.1,<4.0.0"
-
-[package.dependencies]
-"discord.py" = ">=1.7.0,<1.8.0"
-mypy = ">=0.800"
-typing-extensions = ">=3.7.4,<4.0.0"
+[package.source]
+type = "git"
+url = "https://github.com/rapptz/discord.py"
+reference = "master"
+resolved_reference = "275a754abd781b5cc13e548b2389c66058ca8d12"
 
 [[package]]
 name = "donphan"
-version = "3.2.1"
+version = "3.3.1"
 description = "Asyncronous Database ORM for Postgres"
 category = "main"
 optional = false
@@ -244,23 +238,30 @@ python-versions = "*"
 
 [[package]]
 name = "jishaku"
-version = "1.20.0.220"
+version = "2.0.0"
 description = "A discord.py extension including useful tools for bot development and debugging."
 category = "main"
 optional = false
-python-versions = ">=3.6.0"
+python-versions = ">=3.8.0"
+develop = false
 
 [package.dependencies]
 braceexpand = ">=0.1.5"
-"discord.py" = ">=1.4.0"
+"discord.py" = ">=1.5.0"
 humanize = "*"
 import-expression = ">=1.0.0,<2.0.0"
 
 [package.extras]
 docs = ["sphinx (>=3.1.2)", "sphinxcontrib-asyncio"]
 procinfo = ["psutil"]
-test = ["coverage", "flake8", "isort (<4.3.5)", "pylint", "pytest", "pytest-cov", "pytest-mock"]
-voice = ["PyNaCl (>=1.3.0)", "youtube-dl"]
+test = ["coverage", "flake8", "isort", "pylint", "pytest", "pytest-cov", "pytest-mock"]
+voice = ["discord.py[voice] (>=1.5.0)", "youtube-dl"]
+
+[package.source]
+type = "git"
+url = "https://github.com/Gorialis/jishaku"
+reference = "master"
+resolved_reference = "f18b40d39c1700e1739b799450b8dc4532c273a5"
 
 [[package]]
 name = "multidict"
@@ -440,7 +441,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "42d030ccec59b46e6172f6d8a41dcd6bb39f315074cd6167a3a52f8615262098"
+content-hash = "5db31b8addec62f9ac4043a98ffc0763b96cc4c382a94a599eb3ab28a428d449"
 
 [metadata.files]
 aiohttp = [
@@ -543,17 +544,10 @@ discord-ext-alternatives = [
     {file = "discord_ext_alternatives-2021.4.13-py3-none-any.whl", hash = "sha256:f40a8aecd0c24c360c209b2b60638f90cdb52003390f7dc74add6980385b0bf0"},
 ]
 discord-ext-menus = []
-"discord.py" = [
-    {file = "discord.py-1.7.1-py3-none-any.whl", hash = "sha256:399b80d576a63fa901300e80080568e1d9cd9c21260ca622fd7145c0009278fa"},
-    {file = "discord.py-1.7.1.tar.gz", hash = "sha256:82bc5e6325ab7557db9c466f638c98e18be03c330f56ad9bf4c18bdcf19faf55"},
-]
-"discord.py-stubs" = [
-    {file = "discord.py-stubs-1.7.1.tar.gz", hash = "sha256:2de6d4e923f121cda62d506089d52c478bd1768d27480fe1eaab9206af5ac2a0"},
-    {file = "discord.py_stubs-1.7.1-py3-none-any.whl", hash = "sha256:9752ca1ca43a20988ab0ed95ec607a323fab9859b1c03fa1be46ceb5a291eed2"},
-]
+"discord.py" = []
 donphan = [
-    {file = "Donphan-3.2.1-py3-none-any.whl", hash = "sha256:973e262518626f69e464b3ec43b16fcc2afd466718c97efd3dd676b8d63d1f71"},
-    {file = "Donphan-3.2.1.tar.gz", hash = "sha256:78f08b01e67bcb099cc15dc07a4a370f5184ccf8a7df3c78d59867c924e9510f"},
+    {file = "Donphan-3.3.1-py3-none-any.whl", hash = "sha256:b89ee8dcda37f97ee6f2ed518052c1ae0eefa1c9ebd4534d0b11edd4296bbf42"},
+    {file = "Donphan-3.3.1.tar.gz", hash = "sha256:62387882ca8e8f425d698dc984ef60ba2585fb4e46a77fe9beded5a48090b8b6"},
 ]
 humanize = [
     {file = "humanize-3.4.1-py3-none-any.whl", hash = "sha256:c2ccaea7f8cbcd883ec420279d6e71ad20371bb36dbf5100b178d9756563289e"},
@@ -571,14 +565,7 @@ iniconfig = [
     {file = "iniconfig-1.1.1-py2.py3-none-any.whl", hash = "sha256:011e24c64b7f47f6ebd835bb12a743f2fbe9a26d4cecaa7f53bc4f35ee9da8b3"},
     {file = "iniconfig-1.1.1.tar.gz", hash = "sha256:bc3af051d7d14b2ee5ef9969666def0cd1a000e121eaea580d4a313df4b37f32"},
 ]
-jishaku = [
-    {file = "jishaku-1.20.0.220-py3-none-any.whl", hash = "sha256:2ced3fb5b5d3c82cd9e938591eb5867da06f8acefd71450a044d7e79e17e04d9"},
-    {file = "jishaku-1.20.0.220-py3.6.egg", hash = "sha256:2075e8aa8c6b24b0691df2471146b9a6a2285685639f27cb78f29bc5c4eca56b"},
-    {file = "jishaku-1.20.0.220-py3.7.egg", hash = "sha256:af565758d5ec2ab97df497bc3cd840b71660c58f66fb31d6042ce425f41849a5"},
-    {file = "jishaku-1.20.0.220-py3.8.egg", hash = "sha256:fbe6e9160df5688538becea0c32558ddccbd026cd0820cd83122c3419ec4625b"},
-    {file = "jishaku-1.20.0.220-py3.9.egg", hash = "sha256:ba4cdab5eb3893b213d0aaf82e711665d6dedab3182c6c071507f22ec7f981ff"},
-    {file = "jishaku-1.20.0.220.tar.gz", hash = "sha256:eb6d2e2fc9d4f89ca98d20be7487b3354ae745e0cf14e234d31df573054bcf9e"},
-]
+jishaku = []
 multidict = [
     {file = "multidict-5.1.0-cp36-cp36m-macosx_10_14_x86_64.whl", hash = "sha256:b7993704f1a4b204e71debe6095150d43b2ee6150fa4f44d6d966ec356a8d61f"},
     {file = "multidict-5.1.0-cp36-cp36m-manylinux1_i686.whl", hash = "sha256:9dd6e9b1a913d096ac95d0399bd737e00f2af1e1594a787e00f7975778c8b2bf"},

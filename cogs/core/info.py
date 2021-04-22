@@ -5,13 +5,13 @@ from typing import Union, cast, get_args, Optional
 import discord
 from discord.channel import CategoryChannel, StageChannel, StoreChannel, TextChannel, VoiceChannel
 from discord.ext import commands
-from PIL import Image  # type: ignore
+from PIL import Image
 
 from ditto import BotBase, Cog, Context
 from ditto.types import DiscordObject, VocalGuildChannel, GuildChannel, User, Emoji, Message
 from ditto.utils.collections import summarise_list
 from ditto.utils.images import to_bytes
-from ditto.utils.strings import codeblock, yes_no, as_columns
+from ditto.utils.strings import codeblock, yes_no, as_columns, human_friendly_timestamp
 
 
 COLOUR_INFO_IMAGE_SIZE = 128
@@ -33,7 +33,7 @@ class Info(Cog):
             embed=discord.Embed(
                 colour=ctx.me.colour,
                 description=f"I am {self.bot.user}, a bot made by {self.bot.owner}. My prefix is {self.bot.prefix}.",
-            ).set_author(name=f"About {self.bot.user.name}:", icon_url=str(self.bot.user.avatar_url))
+            ).set_author(name=f"About {self.bot.user.name}:", icon_url=str(self.bot.user.avatar.url))
         )
 
     @classmethod
@@ -46,7 +46,7 @@ class Info(Cog):
 
     @classmethod
     def summarise_channels(cls, channels: ListGuildChannel, *, max_items: int = 3, skip_first: bool = False) -> str:
-        return summarise_list(channels, lambda channel: channel.mention, max_items=max_items, skip_first=skip_first)  # type: ignore
+        return summarise_list(channels, lambda channel: channel.mention, max_items=max_items, skip_first=skip_first)
 
     @classmethod
     def summarise_emoji(cls, emojis: list[discord.Emoji], *, max_items: int = 5, skip_first: bool = False) -> str:
@@ -64,7 +64,7 @@ class Info(Cog):
         embed.set_author(name=f"Information on {item}:")
 
         embed.add_field(name="ID:", value=str(item.id))
-        embed.add_field(name="Created At:", value=str(item.created_at))
+        embed.add_field(name="Created At:", value=human_friendly_timestamp(item.created_at))
 
         return embed
 
@@ -90,7 +90,7 @@ class Info(Cog):
             raise commands.BadArgument("You cannot retrieve information on a server you are not in.")
 
         embed = self._object_info(server)
-        embed.set_thumbnail(url=str(server.icon_url))
+        embed.set_thumbnail(url=str(server.icon.url))
 
         embed.add_field(name="Voice Region:", value=str(server.region))
 
@@ -176,7 +176,7 @@ class Info(Cog):
             embed.add_field(name="Category", value=str(channel.category))
 
         if not isinstance(channel, get_args(VocalGuildChannel)):
-            embed.add_field(name="Is NSFW:", value=str(channel.is_nsfw()))  # type: ignore
+            embed.add_field(name="Is NSFW:", value=str(channel.is_nsfw()))
 
         return embed
 
@@ -349,7 +349,7 @@ class Info(Cog):
     @classmethod
     def _user_info(cls, user: User) -> discord.Embed:
         embed = cls._object_info(user)
-        embed.set_thumbnail(url=str(user.avatar_url))
+        embed.set_thumbnail(url=str(user.avatar.url))
 
         embed.add_field(name="Is Bot:", value=yes_no(user.bot))
 
@@ -370,7 +370,7 @@ class Info(Cog):
         embed = self._user_info(member)
         embed.colour = member.colour if bool(member.colour.value) else discord.Embed.Empty
 
-        embed.add_field(name="Joined Server:", value=str(member.joined_at))
+        embed.add_field(name="Joined Server:", value=human_friendly_timestamp(member.joined_at))
 
         if member.nick:
             embed.add_field(name="Nickname:", value=member.nick)
@@ -436,7 +436,7 @@ class Info(Cog):
         embed = self._object_info(message)
         embed.set_author(name="Information on message:")
 
-        embed.add_field(name="Server:", value=str(message.guild or "Direct Message"))  # type: ignore
+        embed.add_field(name="Server:", value=str(message.guild or "Direct Message"))
         embed.add_field(name="Channel:", value=str(message.channel))
 
         if isinstance(message, discord.Message):
@@ -465,13 +465,15 @@ class Info(Cog):
         embed = self._object_info(invite)
         embed.set_author(name=f"Information on invite to {invite.guild}:")
         embed.set_thumbnail(
-            url=str(invite.guild.icon_url) if isinstance(invite.guild, discord.guild.Guild) else discord.Embed.Empty
+            url=str(invite.guild.icon.url) if isinstance(invite.guild, discord.guild.Guild) else discord.Embed.Empty
         )
 
         embed.add_field(name="Created By:", value=str(invite.inviter))
         embed.add_field(
             name="Expires At:",
-            value=str(invite.created_at + datetime.timedelta(seconds=invite.max_age)) if invite.max_age else "Never",
+            value=human_friendly_timestamp(invite.created_at + datetime.timedelta(seconds=invite.max_age))
+            if invite.max_age
+            else "Never",
         )
         embed.add_field(
             name="Channel:",
@@ -491,7 +493,7 @@ class Info(Cog):
         colour = colour or discord.Colour.random()
 
         size = (COLOUR_INFO_IMAGE_SIZE,) * 2
-        image = to_bytes(Image.new("RGB", size, colour.to_rgb()))  # type: ignore
+        image = to_bytes(Image.new("RGB", size, colour.to_rgb()))
         filename = f"{colour.value:0>6x}.png"
 
         embed = discord.Embed(colour=colour)

@@ -2,9 +2,9 @@ import zoneinfo
 
 from typing import Optional
 
-import asyncpg  # type: ignore
+import asyncpg
 
-from donphan import Column, Table, SQLType  # type: ignore
+from donphan import Column, Table, SQLType
 
 from ..types import User
 
@@ -13,8 +13,8 @@ __all__ = ("Time_Zones",)
 
 
 class Time_Zones(Table):
-    user_id: SQLType.BigInt = Column(primary_key=True)  # type: ignore
-    time_zone: str = Column(nullable=False)  # type: ignore
+    user_id: SQLType.BigInt = Column(primary_key=True)
+    time_zone: str = Column(nullable=False)
 
     @classmethod
     async def get_timezone(

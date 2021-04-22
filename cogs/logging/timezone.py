@@ -5,7 +5,7 @@ import zoneinfo
 from typing import Any, Tuple, cast, Optional, Union, get_args
 
 import discord
-from discord.ext import commands, menus  # type: ignore
+from discord.ext import commands, menus
 
 from ditto import BotBase, Context, Cog
 from ditto.types import User
@@ -44,7 +44,7 @@ class Timezone(Cog):
             raise commands.BadArgument(f"{user.mention} does not have a time zone set.")
 
         embed = discord.Embed(title=human_friendly_timestamp(datetime.datetime.now(tz=timezone)))
-        embed.set_author(name=f"Time for {user.display_name}:", icon_url=str(user.avatar_url))
+        embed.set_author(name=f"Time for {user.display_name}:", icon_url=str(user.avatar.url))
         embed.set_footer(text=f"{timezone} ({utc_offset(timezone)})")
 
         await ctx.reply(embed=embed)
@@ -52,7 +52,9 @@ class Timezone(Cog):
     @timezone.command(name="set")
     async def timezone_set(self, ctx: Context, *, timezone: zoneinfo.ZoneInfo) -> None:
         """Set your time zone."""
-        await Time_Zones.insert(user_id=ctx.author.id, time_zone=str(timezone), update_on_conflict=Time_Zones.time_zone)  # type: ignore
+        await Time_Zones.insert(
+            user_id=ctx.author.id, time_zone=str(timezone), update_on_conflict=Time_Zones.time_zone
+        )
 
         local_time = human_friendly_timestamp(datetime.datetime.now(tz=timezone))
         embed = discord.Embed(title=f"Local Time: {local_time}")
@@ -63,7 +65,7 @@ class Timezone(Cog):
     @timezone.command(name="list")
     async def timezone_list(self, ctx: Context) -> None:
         """List all avilable time zones."""
-        embed = EmbedPaginator(max_description=512)  # type: ignore
+        embed: EmbedPaginator = EmbedPaginator(max_description=512)
 
         def get_offset(t: Tuple[Any, zoneinfo.ZoneInfo]) -> float:
             _, tzinfo = t
