@@ -83,8 +83,7 @@ class EventSchedulerMixin(discord.Client):
 
         # Check if the new event is scheduled for before the current one
         if self.__event_scheduler__current is not None and time < self.__event_scheduler__current.scheduled_for:
-            self._dispatch_task.cancel()
-            self._dispatch_task.start()
+            self._dispatch_task.restart()
 
         return event
 
