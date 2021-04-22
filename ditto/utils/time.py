@@ -1,10 +1,19 @@
+import datetime
 import zoneinfo
 
+from typing import Optional
+
+import humanize
+
 from .files import get_base_dir
+from .strings import ordinal
 
 __all__ = (
     "MAIN_TIMEZONES",
     "TIMEZONE_ALIASES",
+    "update_time",
+    "human_friendly_timestamp",
+    "human_friendly_timedelta",
 )
 
 
@@ -36,3 +45,16 @@ with open(BASE_DIR / TZ_ALIASES_FILE) as f:
                 continue
 
             MAIN_TIMEZONES[alias] = tzinfo
+
+
+def update_time(a: datetime.datetime, b: datetime.datetime) -> datetime.datetime:
+    return a.replace(hour=b.hour, minute=b.minute, second=b.second, microsecond=b.microsecond)
+
+
+def human_friendly_timestamp(datetime: datetime.datetime, /) -> str:
+    day = datetime.day
+    return datetime.strftime(f"%I:%M%p on %A the {ordinal(day)} of %B, %Y")
+
+
+def human_friendly_timedelta(timedelta: datetime.timedelta, /, relative_to: Optional[datetime.datetime]) -> str:
+    return humanize.naturaldelta(timedelta, when=relative_to)

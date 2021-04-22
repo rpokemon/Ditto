@@ -4,6 +4,7 @@ from donphan import create_pool, create_types, create_tables, create_views, Mayb
 
 from ..config import CONFIG
 from .tables import *
+from .scheduler import *
 
 
 async def setup_database() -> asyncpg.pool.Pool:

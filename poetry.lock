@@ -193,7 +193,7 @@ resolved_reference = "275a754abd781b5cc13e548b2389c66058ca8d12"
 
 [[package]]
 name = "donphan"
-version = "3.3.1"
+version = "3.4.1"
 description = "Asyncronous Database ORM for Postgres"
 category = "main"
 optional = false
@@ -312,6 +312,14 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 
 [package.dependencies]
 pyparsing = ">=2.0.2"
+
+[[package]]
+name = "parsedatetime"
+version = "2.6"
+description = "Parse human-readable date/time text."
+category = "main"
+optional = false
+python-versions = "*"
 
 [[package]]
 name = "pathspec"
@@ -448,7 +456,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "f171210fbb4b332a37256e6f6f412c496331258deb10c8fcfbf9286a90d113fe"
+content-hash = "db647a607f1e6e6f2648820f21cdddf787376fbd37067038225fbbbe3cc80081"
 
 [metadata.files]
 aiohttp = [
@@ -550,8 +558,8 @@ discord-ext-alternatives = []
 discord-ext-menus = []
 "discord.py" = []
 donphan = [
-    {file = "Donphan-3.3.1-py3-none-any.whl", hash = "sha256:b89ee8dcda37f97ee6f2ed518052c1ae0eefa1c9ebd4534d0b11edd4296bbf42"},
-    {file = "Donphan-3.3.1.tar.gz", hash = "sha256:62387882ca8e8f425d698dc984ef60ba2585fb4e46a77fe9beded5a48090b8b6"},
+    {file = "Donphan-3.4.1-py3-none-any.whl", hash = "sha256:bce280aa6f2f9aa78aa7453e6fd5ad522a80492cd530c2c5b8db8a8bfa15246d"},
+    {file = "Donphan-3.4.1.tar.gz", hash = "sha256:555291fdd2615b27b173ace190a3ccfa38a729ee1e7371be73d834bd9782eebd"},
 ]
 humanize = [
     {file = "humanize-3.4.1-py3-none-any.whl", hash = "sha256:c2ccaea7f8cbcd883ec420279d6e71ad20371bb36dbf5100b178d9756563289e"},
@@ -640,6 +648,10 @@ mypy-extensions = [
 packaging = [
     {file = "packaging-20.9-py2.py3-none-any.whl", hash = "sha256:67714da7f7bc052e064859c05c595155bd1ee9f69f76557e21f051443c20947a"},
     {file = "packaging-20.9.tar.gz", hash = "sha256:5b327ac1320dc863dca72f4514ecc086f31186744b84a230374cc1fd776feae5"},
+]
+parsedatetime = [
+    {file = "parsedatetime-2.6-py3-none-any.whl", hash = "sha256:cb96edd7016872f58479e35879294258c71437195760746faffedb692aef000b"},
+    {file = "parsedatetime-2.6.tar.gz", hash = "sha256:4cb368fbb18a0b7231f4d76119165451c8d2e35951455dfee97c62a87b04d455"},
 ]
 pathspec = [
     {file = "pathspec-0.8.1-py2.py3-none-any.whl", hash = "sha256:aa0cb481c4041bf52ffa7b0d8fa6cd3e88a2ca4879c533c9153882ee2556790d"},

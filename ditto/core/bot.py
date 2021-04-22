@@ -12,7 +12,7 @@ from discord.ext import commands
 from discord.ext.alternatives import converter_dict
 
 from ..config import CONFIG, load_global_config
-from ..db import setup_database
+from ..db import setup_database, EventSchedulerMixin
 from ..utils.logging import WebhookHandler
 from ..types import CONVERTERS
 from .context import Context
@@ -26,7 +26,7 @@ __all__ = (
 )
 
 
-class BotBase(commands.bot.BotBase, discord.Client):
+class BotBase(commands.bot.BotBase, EventSchedulerMixin, discord.Client):
     converters: Dict[Type, Callable[..., Any]]
     pool: asyncpg.pool.Pool
 

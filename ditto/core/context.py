@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import zoneinfo
 
-from typing import Any, Awaitable, Optional, TYPE_CHECKING
+from typing import Awaitable, Optional, TYPE_CHECKING
 
 import donphan
 

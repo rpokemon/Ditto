@@ -2,7 +2,7 @@ import datetime
 from ditto.utils.paginator import EmbedPaginator
 import zoneinfo
 
-from typing import Any, Tuple, cast, Optional, Union, get_args
+from typing import Any, cast, Optional, Union, get_args
 
 import discord
 from discord.ext import commands, menus
@@ -11,8 +11,8 @@ from ditto import BotBase, Context, Cog
 from ditto.types import User
 from ditto.db import Time_Zones
 
-from ditto.utils.strings import utc_offset, human_friendly_timestamp
-from ditto.utils.timezones import MAIN_TIMEZONES
+from ditto.utils.strings import utc_offset
+from ditto.utils.time import MAIN_TIMEZONES, human_friendly_timestamp
 
 
 class Timezone(Cog):
@@ -65,9 +65,9 @@ class Timezone(Cog):
     @timezone.command(name="list")
     async def timezone_list(self, ctx: Context) -> None:
         """List all avilable time zones."""
-        embed: EmbedPaginator = EmbedPaginator(max_description=512)
+        embed = EmbedPaginator[discord.Embed](max_description=512)
 
-        def get_offset(t: Tuple[Any, zoneinfo.ZoneInfo]) -> float:
+        def get_offset(t: tuple[Any, zoneinfo.ZoneInfo]) -> float:
             _, tzinfo = t
 
             now = datetime.datetime.now(datetime.timezone.utc)

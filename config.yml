@@ -30,6 +30,7 @@
     # Core Extensions
     'cogs.core.admin': ~
     'cogs.core.info': ~
+    'cogs.core.reminder': ~
 
     # Logging Extensions
     'cogs.logging.stats': ~

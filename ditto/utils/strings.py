@@ -12,7 +12,6 @@ __all__ = (
     "as_columns",
     "utc_offset",
     "ordinal",
-    "human_friendly_timestamp",
 )
 
 
@@ -88,8 +87,3 @@ def utc_offset(offset: Union[float, datetime.timedelta, datetime.tzinfo], /) -> 
 
 def ordinal(number: int, /) -> str:
     return f'{number}{"tsnrhtdd"[(number // 10 % 10 != 1) * (number % 10 < 4) * number % 10 :: 4]}'
-
-
-def human_friendly_timestamp(datetime: datetime.datetime, /) -> str:
-    day = datetime.day
-    return datetime.strftime(f"%I:%M%p on %A the {ordinal(day)} of %B, %Y")

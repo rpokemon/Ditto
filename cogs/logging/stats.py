@@ -4,6 +4,7 @@ import datetime
 from typing import NamedTuple
 
 import asyncpg
+import discord
 from discord.ext import commands, menus, tasks
 from donphan import Column, Table, SQLType
 
@@ -47,9 +48,8 @@ class Stats(Cog):
 
     @commands.command()
     async def command_history(self, ctx: Context) -> None:
-        embed = EmbedPaginator(colour=ctx.me.colour, max_fields=10).set_author(
-            name="Command History:", icon_url=self.bot.user.avatar.url
-        )
+        embed = EmbedPaginator[discord.Embed](colour=ctx.me.colour, max_fields=10)
+        embed.set_author(name="Command History:", icon_url=self.bot.user.avatar.url)
 
         commands = await Commands.fetch(order_by="invoked_at DESC", limit=100)
         if commands:

@@ -8,13 +8,14 @@ from ..utils.paginator import *
 __all__ = ("EmbedHelpCommand",)
 
 
-T = TypeVar("T", bound=EmbedPaginator)
+PagT = TypeVar("PagT", bound=EmbedPaginator)
+EmbT = TypeVar("EmbT", bound=discord.Embed)
 
 
-class EmbedHelpCommand(commands.DefaultHelpCommand, Generic[T]):
-    paginator: T
+class EmbedHelpCommand(commands.DefaultHelpCommand, Generic[PagT]):
+    paginator: PagT
 
-    def __init__(self, paginator: T = EmbedPaginator(max_fields=8), **options: Any) -> None:
+    def __init__(self, paginator: PagT = EmbedPaginator[EmbT](max_fields=8), **options: Any) -> None:
         options.update({"paginator": paginator})
 
         super().__init__(**options)

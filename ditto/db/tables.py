@@ -12,9 +12,9 @@ from ..types import User
 __all__ = ("Time_Zones",)
 
 
-class Time_Zones(Table):
+class Time_Zones(Table, schema="core"):  # type: ignore[call-arg]
     user_id: SQLType.BigInt = Column(primary_key=True)
-    time_zone: str = Column(nullable=False)
+    time_zone: SQLType.Text = Column(nullable=False)
 
     @classmethod
     async def get_timezone(

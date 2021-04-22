@@ -11,7 +11,8 @@ from ditto import BotBase, Cog, Context
 from ditto.types import DiscordObject, VocalGuildChannel, GuildChannel, User, Emoji, Message
 from ditto.utils.collections import summarise_list
 from ditto.utils.images import to_bytes
-from ditto.utils.strings import codeblock, yes_no, as_columns, human_friendly_timestamp
+from ditto.utils.strings import codeblock, yes_no, as_columns
+from ditto.utils.time import human_friendly_timestamp
 
 
 COLOUR_INFO_IMAGE_SIZE = 128

@@ -9,19 +9,21 @@ include = ["ditto/res/*"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
-donphan = "^3.2"
+donphan = ">=3.4"
 "discord.py" = {git = "https://github.com/rapptz/discord.py"}
-PyYAML = "^5.4.1"
+PyYAML = ">=5.4.1"
 discord-ext-menus = {git = "https://github.com/rapptz/discord-ext-menus"}
 discord-ext-alternatives = {git = "https://github.com/ext-creators/discord-ext-alternatives", branch = "discord.py@v2"}
 jishaku = {git = "https://github.com/Gorialis/jishaku"}
-tzdata = { version = "^2021.1", markers = "sys_platform == 'win32'" }
-Pillow = "^8.2.0"
+tzdata = { version = ">=2021.1", markers = "sys_platform == 'win32'" }
+Pillow = ">=8.2.0"
+parsedatetime = ">=2.6"
+humanize = ">=3.4.1"
 
 [tool.poetry.dev-dependencies]
-black = "^20.8b1"
+black = ">=20.8b1"
 mypy = ">=0.800"
-pytest = "^6.2.3"
+pytest = ">=6.2.3"
 
 [tool.poetry.scripts]
 start = "start:main"
