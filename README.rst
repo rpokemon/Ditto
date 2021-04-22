@@ -8,7 +8,7 @@ Ditto
    :target: actions/workflows/run.yml
    :alt: Repository test runner status
 
-A Discord bot template for Discord.py version 1.7+
+A Discord bot template for Discord.py version 2.0+
 
 Features
 --------
