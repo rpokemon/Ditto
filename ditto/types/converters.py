@@ -3,7 +3,7 @@ from __future__ import annotations
 import datetime
 import zoneinfo
 
-from typing import TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
 
 import aiohttp
 import parsedatetime
@@ -51,9 +51,12 @@ class DatetimeConverter(commands.Converter):
     def parse_local(
         cls,
         argument: str,
-        timezone: datetime.tzinfo,
-        now: datetime.datetime,
+        /,
+        *,
+        timezone: datetime.tzinfo = datetime.timezone.utc,
+        now: Optional[datetime.datetime] = None,
     ) -> list[tuple[datetime.datetime, int, int]]:
+        now = now or datetime.datetime.now(datetime.timezone.utc)
 
         times = []
 
@@ -79,13 +82,16 @@ class DatetimeConverter(commands.Converter):
     async def parse(
         cls,
         argument: str,
-        timezone: datetime.tzinfo,
-        now: datetime.datetime,
+        /,
+        *,
+        timezone: datetime.tzinfo = datetime.timezone.utc,
+        now: Optional[datetime.datetime] = None,
     ) -> list[tuple[datetime.datetime, int, int]]:
+        now = now or datetime.datetime.now(datetime.timezone.utc)
 
         # If no duckling server default to parsedatetime
         if CONFIG.MISC.DUCKLING_SERVER is None:
-            return cls.parse_local(argument, timezone, now)
+            return cls.parse_local(argument, timezone=timezone, now=now)
 
         times = []
 
@@ -93,7 +99,7 @@ class DatetimeConverter(commands.Converter):
             async with session.post(
                 CONFIG.MISC.DUCKLING_SERVER,
                 data={
-                    "locale": "en_US",
+                    "locale": "en_US",  # Todo: locale based on tz?
                     "text": argument,
                     "dims": str(["time"]),
                     "tz": str(timezone),
@@ -103,13 +109,14 @@ class DatetimeConverter(commands.Converter):
                 data = await response.json()
 
                 for time in data:
-                    times.append(
-                        (
-                            datetime.datetime.fromisoformat(time["value"]["value"]),
-                            time["start"],
-                            time["end"],
+                    if "value" in time["value"]:
+                        times.append(
+                            (
+                                datetime.datetime.fromisoformat(time["value"]["value"]),
+                                time["start"],
+                                time["end"],
+                            )
                         )
-                    )
 
         return times
 
@@ -119,7 +126,7 @@ class DatetimeConverter(commands.Converter):
         timezone = await cls.get_timezone(ctx)
         now = ctx.message.created_at.astimezone(tz=timezone)
 
-        parsed_times = await cls.parse(argument, timezone, now)
+        parsed_times = await cls.parse(argument, timezone=timezone, now=now)
 
         if len(parsed_times) == 0:
             raise commands.BadArgument("Could not parse time.")
@@ -149,7 +156,7 @@ class WhenAndWhatConverter(DatetimeConverter):
         argument = argument.strip()
 
         # Determine the date argument
-        parsed_times = await cls.parse(argument, timezone, now)
+        parsed_times = await cls.parse(argument, timezone=timezone, now=now)
 
         if len(parsed_times) == 0:
             raise commands.BadArgument("Could not parse time.")
