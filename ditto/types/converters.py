@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING
 
 import aiohttp
 import parsedatetime
-import yarl
 
 from discord.ext import commands
 
@@ -83,27 +82,34 @@ class DatetimeConverter(commands.Converter):
         timezone: datetime.tzinfo,
         now: datetime.datetime,
     ) -> list[tuple[datetime.datetime, int, int]]:
-        data = {
-            "locale": "en_US",
-            "text": argument,
-            "dims": str(["time"]),
-            "tz": str(timezone),
-            # 'reftime': now.isoformat(),
-        }
-        query = yarl.URL.build(query=data).query_string
-
-        times = []
 
         # If no duckling server default to parsedatetime
         if CONFIG.MISC.DUCKLING_SERVER is None:
             return cls.parse_local(argument, timezone, now)
 
+        times = []
+
         async with aiohttp.ClientSession() as session:
-            async with session.post(CONFIG.MISC.DUCKLING_SERVER, data=query) as response:
+            async with session.post(
+                CONFIG.MISC.DUCKLING_SERVER,
+                data={
+                    "locale": "en_US",
+                    "text": argument,
+                    "dims": str(["time"]),
+                    "tz": str(timezone),
+                    # 'reftime': now.isoformat(),
+                },
+            ) as response:
                 data = await response.json()
 
                 for time in data:
-                    times.append((datetime.datetime.fromisoformat(time["value"]), time["start"], time["end"]))
+                    times.append(
+                        (
+                            datetime.datetime.fromisoformat(time["value"]),
+                            time["start"],
+                            time["end"],
+                        )
+                    )
 
         return times
 
