@@ -65,7 +65,11 @@ class Config(yaml.YAMLObject):
 
     def update(self, other: Config) -> None:
         for key in other.__dict__:
-            if isinstance(other.__dict__[key], Config) and isinstance(self.__dict__.get(key), Config):
+            if (
+                key == "EXTENSIONS"
+                and isinstance(other.__dict__[key], dict)
+                and isinstance(self.__dict__.get(key), dict)
+            ) or (isinstance(other.__dict__[key], Config) and isinstance(self.__dict__.get(key), Config)):
                 other.__dict__[key] = self.__dict__[key] | other.__dict__[key]
 
         self.__dict__ |= other.__dict__

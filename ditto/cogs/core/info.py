@@ -131,8 +131,6 @@ class Info(Cog):
         else:
             embed.add_field(name="Nitro Boosters:", value=str(server.premium_subscription_count))
 
-        print(as_columns([feature.replace("_", " ").title() for feature in server.features], transpose=True))
-
         embed.add_field(
             name="Features:",
             value=codeblock(
