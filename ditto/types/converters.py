@@ -109,7 +109,7 @@ class DatetimeConverter(commands.Converter):
                 data = await response.json()
 
                 for time in data:
-                    if "value" in time["value"]:
+                    if time["dim"] == "time" and "value" in time["value"]:
                         times.append(
                             (
                                 datetime.datetime.fromisoformat(time["value"]["value"]),
