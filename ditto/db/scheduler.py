@@ -81,9 +81,16 @@ class EventSchedulerMixin(discord.Client):
 
         # Check if the new event is scheduled for before the current one
         if self.__event_scheduler__current is not None and time < self.__event_scheduler__current.scheduled_for:
-            self._dispatch_task.restart()
+            self.restart_scheduler()
 
         return event
+
+    def restart_scheduler(self):
+        self._dispatch_task.restart()
+
+    @property
+    def next_scheduled_event(self) -> Optional[ScheduledEvent]:
+        return self.__event_scheduler__current
 
     async def _wait_for_event(self) -> ScheduledEvent:
         record = await Events.fetchrow(order_by="scheduled_for ASC")
