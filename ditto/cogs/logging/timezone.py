@@ -28,7 +28,7 @@ class Timezone(Cog):
         argument = cast(zoneinfo.ZoneInfo, argument)
 
         embed = discord.Embed(title=human_friendly_timestamp(datetime.datetime.now(tz=argument)))
-        embed.set_author(name=f"Time in {argument}:")
+        embed.set_author(name=f"Time in {argument}")
 
         await ctx.reply(embed=embed)
 
@@ -44,7 +44,7 @@ class Timezone(Cog):
             raise commands.BadArgument(f"{user.mention} does not have a time zone set.")
 
         embed = discord.Embed(title=human_friendly_timestamp(datetime.datetime.now(tz=timezone)))
-        embed.set_author(name=f"Time for {user.display_name}:", icon_url=str(user.avatar.url))
+        embed.set_author(name=f"Time for {user.display_name}", icon_url=str(user.avatar.url))
         embed.set_footer(text=f"{timezone} ({utc_offset(timezone)})")
 
         await ctx.reply(embed=embed)
