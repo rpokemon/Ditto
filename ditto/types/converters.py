@@ -58,7 +58,7 @@ class DatetimeConverter(commands.Converter):
     ) -> list[tuple[datetime.datetime, int, int]]:
         now = now or datetime.datetime.now(datetime.timezone.utc)
 
-        times = []
+        times: list[tuple[datetime.datetime, int, int]] = []
 
         dates = DatetimeConverter.calendar.nlp(argument, sourceTime=now)
 
@@ -138,7 +138,7 @@ class DatetimeConverter(commands.Converter):
 
 class WhenAndWhatConverter(DatetimeConverter):
     @classmethod
-    async def convert(cls, ctx: Context, argument: str) -> tuple[datetime.datetime, str]:
+    async def convert(cls, ctx: Context, argument: str) -> tuple[datetime.datetime, str]:  # type: ignore[override]
 
         timezone = await cls.get_timezone(ctx)
         now = ctx.message.created_at.astimezone(tz=timezone)
