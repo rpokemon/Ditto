@@ -34,7 +34,7 @@ class BotBase(commands.bot.BotBase, EventSchedulerMixin, discord.Client):
     owner: Optional[discord.User]
     owners: Optional[list[discord.User]]
 
-    def __init__(self) -> None:
+    def __init__(self, *args, **kwargs) -> None:
         CONFIG = load_global_config(self)
 
         self.start_time = datetime.datetime.now(datetime.timezone.utc)
@@ -70,7 +70,12 @@ class BotBase(commands.bot.BotBase, EventSchedulerMixin, discord.Client):
             prefix = commands.when_mentioned_or(self.prefix) if allow_mentions_as_prefix else self.prefix
 
         super().__init__(
-            command_prefix=prefix, help_command=EmbedHelpCommand(), allowed_mentions=allowed_mentions, intents=intents
+            *args,
+            command_prefix=prefix,
+            help_command=EmbedHelpCommand(),
+            allowed_mentions=allowed_mentions,
+            intents=intents,
+            **kwargs,
         )
 
         # Add extra converters
@@ -146,8 +151,11 @@ class BotBase(commands.bot.BotBase, EventSchedulerMixin, discord.Client):
         ctx = await self.get_context(message, cls=Context)
         await self.invoke(ctx)
 
-    async def connect(self, *args, **kwargs):
+    async def setup_database(self):
         self.pool = await setup_database()
+
+    async def connect(self, *args, **kwargs):
+        await self.setup_database()
         return await super().connect(*args, **kwargs)
 
     def run(self):
