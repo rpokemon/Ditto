@@ -1,12 +1,10 @@
 import asyncio
-from asyncio.locks import Event
 import datetime
 from dataclasses import dataclass
 
 from typing import (
     Any,
     Optional,
-    Protocol,
     Type,
     TypeVar,
 )

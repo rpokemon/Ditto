@@ -28,10 +28,9 @@
     'jishaku': ~
 
     # Core Extensions
-    'cogs.core.admin': ~
-    'cogs.core.info': ~
-    'cogs.core.reminder': ~
+    'ditto.cogs.core.admin': ~
+    'ditto.cogs.core.info': ~
 
     # Logging Extensions
-    'cogs.logging.stats': ~
-    'cogs.logging.timezone': ~
+    'ditto.cogs.logging.stats': ~
+    'ditto.cogs.logging.timezone': ~

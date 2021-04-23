@@ -1,9 +1,9 @@
 from discord.ext import commands
 from jishaku.codeblocks import Codeblock
 
-from ditto import BotBase, Cog, Context
-from ditto.config import load_global_config
-from ditto.types import Extension
+from ... import BotBase, Cog, Context
+from ...config import load_global_config
+from ...types import Extension
 
 
 class Admin(Cog):

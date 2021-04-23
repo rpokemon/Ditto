@@ -1,5 +1,3 @@
-from ditto import utils
-
 from unittest import TestCase
 
 

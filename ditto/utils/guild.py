@@ -1,6 +1,6 @@
 import discord
 
-from ditto.types import User
+from ..types import User
 
 
 __all__ = ("user_in_guild",)

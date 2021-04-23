@@ -4,8 +4,8 @@ import discord
 from discord.ext import commands
 import humanize
 
-from ditto import BotBase, Context, Cog
-from ditto.utils.strings import ZWSP
+from ... import BotBase, Context, Cog
+from ...utils.strings import ZWSP
 
 
 class Reminders(Cog):
@@ -13,7 +13,7 @@ class Reminders(Cog):
     async def reminder(self, ctx: Context, *, argument: tuple[datetime.datetime, str]) -> None:
         """Set a reminder."""
         when, what = argument
-        what = what or '...'
+        what = what or "..."
 
         if when <= ctx.message.created_at:
             raise commands.BadArgument("You can not set a reminder in the past")

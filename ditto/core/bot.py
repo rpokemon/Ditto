@@ -1,5 +1,5 @@
 import datetime
-from ditto.utils.strings import codeblock
+
 import logging
 import traceback
 
@@ -9,14 +9,15 @@ import asyncpg
 import discord
 
 from discord.ext import commands
-from discord.ext.alternatives import converter_dict
+from discord.ext.alternatives import converter_dict as converter_dict
 
-from ..config import CONFIG, load_global_config
-from ..db import setup_database, EventSchedulerMixin
-from ..utils.logging import WebhookHandler
-from ..types import CONVERTERS
 from .context import Context
 from .help import EmbedHelpCommand
+from ..config import CONFIG, load_global_config
+from ..db import setup_database, EventSchedulerMixin
+from ..types import CONVERTERS
+from ..utils.logging import WebhookHandler
+from ..utils.strings import codeblock
 
 
 __all__ = (

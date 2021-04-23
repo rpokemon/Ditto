@@ -8,8 +8,8 @@ import discord
 from discord.ext import commands, menus, tasks
 from donphan import Column, Table, SQLType
 
-from ditto import BotBase, Cog, Context
-from ditto.utils import EmbedPaginator
+from ... import BotBase, Cog, Context
+from ...utils.paginator import EmbedPaginator
 
 
 class Commands(Table, schema="logging"):  # type: ignore[call-arg]

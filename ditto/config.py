@@ -7,6 +7,8 @@ from typing import Any, Callable, Optional, Union
 import discord
 import yaml
 
+from .utils.files import get_base_dir
+
 
 __all__ = (
     "CONFIG",
@@ -15,7 +17,10 @@ __all__ = (
 )
 
 
-_bot: discord.Client = None
+BASE_DIR = get_base_dir()
+
+
+_bot: discord.Client = None  # type: ignore
 
 
 class Object(discord.Object):
@@ -93,7 +98,7 @@ def load_global_config(bot: discord.Client) -> Any:
     global _bot
     _bot = bot
 
-    update_config(CONFIG, "config.yml")
+    update_config(CONFIG, BASE_DIR / "res/config.yml")
 
     for override_file in pathlib.Path().glob("config.*.yml"):
         update_config(CONFIG, override_file)

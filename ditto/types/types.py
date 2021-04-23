@@ -4,13 +4,28 @@ import discord
 
 
 __all__ = (
+    "Emoji",
+    "TextChannel",
     "VocalGuildChannel",
     "GuildChannel",
     "User",
-    "Emoji",
+    "DiscordEmoji",
     "Message",
     "DiscordObject",
 )
+
+Emoji = Union[
+    discord.Emoji,
+    str,
+]
+
+
+TextChannel = Union[
+    discord.TextChannel,
+    discord.DMChannel,
+    discord.abc.Messageable,
+]
+
 
 VocalGuildChannel = Union[
     discord.VoiceChannel,
@@ -25,27 +40,31 @@ GuildChannel = Union[
     discord.StoreChannel,
 ]
 
+
 User = Union[
     discord.Member,
     discord.User,
 ]
 
-Emoji = Union[
+
+DiscordEmoji = Union[
     discord.Emoji,
     discord.PartialEmoji,
 ]
+
 
 Message = Union[
     discord.Message,
     discord.PartialMessage,
 ]
 
+
 DiscordObject = Union[
     discord.Guild,
     discord.Role,
     GuildChannel,
     User,
-    Emoji,
+    DiscordEmoji,
     Message,
     discord.Invite,
 ]

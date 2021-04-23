@@ -1,5 +1,4 @@
 import datetime
-from ditto.utils.paginator import EmbedPaginator
 import zoneinfo
 
 from typing import Any, cast, Optional, Union, get_args
@@ -7,12 +6,13 @@ from typing import Any, cast, Optional, Union, get_args
 import discord
 from discord.ext import commands, menus
 
-from ditto import BotBase, Context, Cog
-from ditto.types import User
-from ditto.db import Time_Zones
+from ... import BotBase, Context, Cog
+from ...types import User
+from ...db import Time_Zones
 
-from ditto.utils.strings import utc_offset
-from ditto.utils.time import MAIN_TIMEZONES, human_friendly_timestamp
+from ...utils.paginator import EmbedPaginator
+from ...utils.strings import utc_offset
+from ...utils.time import MAIN_TIMEZONES, human_friendly_timestamp
 
 
 class Timezone(Cog):

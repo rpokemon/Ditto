@@ -6,13 +6,7 @@ from typing import Any, Literal, TypeVar, Union
 from .collections import chunk
 
 
-__all__ = (
-    "codeblock",
-    "yes_no",
-    "as_columns",
-    "utc_offset",
-    "ordinal",
-)
+__all__ = ("ZWSP", "codeblock", "yes_no", "as_columns", "utc_offset", "ordinal", "regional_indicator", "keycap_digit")
 
 
 T = TypeVar("T")
@@ -87,3 +81,13 @@ def utc_offset(offset: Union[float, datetime.timedelta, datetime.tzinfo], /) -> 
 
 def ordinal(number: int, /) -> str:
     return f'{number}{"tsnrhtdd"[(number // 10 % 10 != 1) * (number % 10 < 4) * number % 10 :: 4]}'
+
+
+def regional_indicator(c: str) -> str:
+    """Returns a regional indicator emoji given a character."""
+    return chr(0x1F1E6 - ord("A") + ord(c.upper()))
+
+
+def keycap_digit(c: Union[int, str]) -> str:
+    """Returns a keycap digit emoji given a character."""
+    return (str(c).encode("utf-8") + b"\xe2\x83\xa3").decode("utf-8")

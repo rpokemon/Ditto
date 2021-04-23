@@ -7,12 +7,12 @@ from discord.channel import CategoryChannel, StageChannel, StoreChannel, TextCha
 from discord.ext import commands
 from PIL import Image
 
-from ditto import BotBase, Cog, Context
-from ditto.types import DiscordObject, VocalGuildChannel, GuildChannel, User, Emoji, Message
-from ditto.utils.collections import summarise_list
-from ditto.utils.images import to_bytes
-from ditto.utils.strings import codeblock, yes_no, as_columns
-from ditto.utils.time import human_friendly_timestamp
+from ... import BotBase, Cog, Context
+from ...types import DiscordObject, VocalGuildChannel, GuildChannel, User, DiscordEmoji, Message
+from ...utils.collections import summarise_list
+from ...utils.images import to_bytes
+from ...utils.strings import codeblock, yes_no, as_columns
+from ...utils.time import human_friendly_timestamp
 
 
 COLOUR_INFO_IMAGE_SIZE = 128
@@ -398,7 +398,7 @@ class Info(Cog):
         await ctx.send(embed=embed)
 
     @commands.command()
-    async def emoji_info(self, ctx: Context, *, emoji: Emoji) -> None:
+    async def emoji_info(self, ctx: Context, *, emoji: DiscordEmoji) -> None:
         """Get information on an emoji.
 
         `emoji`: The emoji to get information on by name, ID or by the emoji itself.
@@ -525,7 +525,7 @@ class Info(Cog):
         elif isinstance(item, get_args(User)):
             return await ctx.invoke(self.user_info, user=item)
 
-        elif isinstance(item, get_args(Emoji)):
+        elif isinstance(item, get_args(DiscordEmoji)):
             return await ctx.invoke(self.emoji_info, emoji=item)
 
         elif isinstance(item, get_args(Message)):
