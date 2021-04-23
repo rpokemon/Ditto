@@ -100,7 +100,7 @@ def load_global_config(bot: discord.Client) -> Any:
 
     update_config(CONFIG, BASE_DIR / "res/config.yml")
 
-    for override_file in pathlib.Path().glob("config.*.yml"):
+    for override_file in pathlib.Path().glob("config*.yml"):
         update_config(CONFIG, override_file)
 
     return CONFIG
