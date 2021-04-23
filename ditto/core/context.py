@@ -77,7 +77,7 @@ class Context(commands.Context):
 
         try:
             payload = await self.bot.wait_for("raw_reaction_add", check=check, timeout=timeout)
-            return str(payload) == THUMBS_UP
+            return str(payload.emoji) == THUMBS_UP
         except asyncio.TimeoutError:
             return None
         finally:
