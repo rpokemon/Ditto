@@ -139,17 +139,17 @@ version = "2021.4.13"
 description = "A discord.py extension with additional and alternative features."
 category = "main"
 optional = false
-python-versions = ">=3.8"
+python-versions = "*"
 develop = false
 
 [package.dependencies]
-"discord.py" = ">=1.6"
+"discord.py" = ">=2.0.0a"
 
 [package.source]
 type = "git"
 url = "https://github.com/ext-creators/discord-ext-alternatives"
 reference = "discord.py@v2"
-resolved_reference = "cc03ce5a70d0356bdfb91b80c7b6f29502db4241"
+resolved_reference = "d906e71f18a5eabd1dab306e1da59c966b506211"
 
 [[package]]
 name = "discord-ext-menus"
@@ -171,7 +171,7 @@ resolved_reference = "309c70222eec33acacb8c21bbb0fbe9bc57de661"
 
 [[package]]
 name = "discord.py"
-version = "2.0.0a3029+g275a754a"
+version = "2.0.0a3033+g91c473db"
 description = "A Python wrapper for the Discord API"
 category = "main"
 optional = false
@@ -189,7 +189,7 @@ voice = ["PyNaCl (>=1.3.0,<1.5)"]
 type = "git"
 url = "https://github.com/rapptz/discord.py"
 reference = "master"
-resolved_reference = "275a754abd781b5cc13e548b2389c66058ca8d12"
+resolved_reference = "91c473db573c30005597e424aee742e4b9050dcb"
 
 [[package]]
 name = "donphan"

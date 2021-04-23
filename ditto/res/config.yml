@@ -24,6 +24,9 @@
     PASSWORD: ~
     DATABASE: ~
 
+  MISC: !Config
+    DUCKLING_SERVER: !ENV DUCKLING_SERVER
+
   EXTENSIONS:
     # 3rd Party Extensions
     'jishaku': ~

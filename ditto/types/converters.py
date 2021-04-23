@@ -5,13 +5,16 @@ import zoneinfo
 
 from typing import TYPE_CHECKING
 
+import aiohttp
 import parsedatetime
+import yarl
 
 from discord.ext import commands
 
 from jishaku.codeblocks import codeblock_converter, Codeblock
 from jishaku.modules import ExtensionConverter
 
+from ..config import CONFIG
 from ..utils.time import TIMEZONE_ALIASES, update_time
 
 if TYPE_CHECKING:
@@ -41,38 +44,90 @@ class CommandConverter(commands.Converter):
 class DatetimeConverter(commands.Converter):
     calendar = parsedatetime.Calendar(version=parsedatetime.VERSION_CONTEXT_STYLE)
 
+    @staticmethod
+    async def get_timezone(ctx: Context) -> datetime.tzinfo:
+        return await ctx.get_timezone() or datetime.timezone.utc
+
+    @classmethod
+    def parse_local(
+        cls,
+        argument: str,
+        timezone: datetime.tzinfo,
+        now: datetime.datetime,
+    ) -> list[tuple[datetime.datetime, int, int]]:
+
+        times = []
+
+        dates = DatetimeConverter.calendar.nlp(argument, sourceTime=now)
+
+        if dates is None:
+            return times
+
+        for _, _, begin, end, dt_string in dates:
+            dt, status = cls.calendar.parseDT(datetimeString=dt_string, sourceTime=now, tzinfo=timezone)
+
+            if not status.hasTime:
+                dt = update_time(dt, now)
+
+            if status.accuracy == parsedatetime.pdtContext.ACU_HALFDAY:
+                dt = dt.replace(day=now.day + 1)
+
+            times.append((dt, begin, end))
+
+        return times
+
+    @classmethod
+    async def parse(
+        cls,
+        argument: str,
+        timezone: datetime.tzinfo,
+        now: datetime.datetime,
+    ) -> list[tuple[datetime.datetime, int, int]]:
+        data = {
+            "locale": "en_US",
+            "text": argument,
+            "dims": str(["time"]),
+            "tz": str(timezone),
+            # 'reftime': now.isoformat(),
+        }
+        query = yarl.URL.build(query=data).query_string
+
+        times = []
+
+        # If no duckling server default to parsedatetime
+        if CONFIG.MISC.DUCKLING_SERVER is None:
+            return cls.parse_local(argument, timezone, now)
+
+        async with aiohttp.ClientSession() as session:
+            async with session.post(CONFIG.MISC.DUCKLING_SERVER, data=query) as response:
+                data = await response.json()
+
+                for time in data:
+                    times.append((datetime.datetime.fromisoformat(time["value"]), time["start"], time["end"]))
+
+        return times
+
     @classmethod
     async def convert(cls, ctx: Context, argument: str) -> datetime.datetime:
 
         timezone = await cls.get_timezone(ctx)
         now = ctx.message.created_at.astimezone(tz=timezone)
 
-        dt, status = cls.calendar.parseDT(datetimeString=argument, sourceTime=now, tzinfo=timezone)
+        parsed_times = await cls.parse(argument, timezone, now)
 
-        if isinstance(status, int):
-            raise Exception("What the fuck?")
+        if len(parsed_times) == 0:
+            raise commands.BadArgument("Could not parse time.")
+        elif len(parsed_times) > 1:
+            ...  # TODO: Raise on too many?
 
-        if not status.hasDateOrTime:
-            raise commands.BadArgument("Could not determine time provided.")
-
-        if not status.hasTime:
-            dt = update_time(dt, now)
-
-        if status.accuracy == parsedatetime.pdtContext.ACU_HALFDAY:
-            dt = dt.replace(day=now.day + 1)
-
-        return dt
-
-    @classmethod
-    async def get_timezone(cls, ctx: Context) -> datetime.tzinfo:
-        return await ctx.get_timezone() or datetime.timezone.utc
+        return parsed_times[0][0]
 
 
-class WhenAndWhatConverter(commands.Converter):
+class WhenAndWhatConverter(DatetimeConverter):
     @classmethod
     async def convert(cls, ctx: Context, argument: str) -> tuple[datetime.datetime, str]:
 
-        timezone = await DatetimeConverter.get_timezone(ctx)
+        timezone = await cls.get_timezone(ctx)
         now = ctx.message.created_at.astimezone(tz=timezone)
 
         # Strip some common stuff
@@ -88,19 +143,17 @@ class WhenAndWhatConverter(commands.Converter):
         argument = argument.strip()
 
         # Determine the date argument
-        dates = DatetimeConverter.calendar.nlp(argument, sourceTime=now)
+        parsed_times = await cls.parse(argument, timezone, now)
 
-        if dates is None or len(dates) == 0:
-            raise commands.BadArgument("Could not determine time provided.")
-        elif len(dates) > 1:
+        if len(parsed_times) == 0:
+            raise commands.BadArgument("Could not parse time.")
+        elif len(parsed_times) > 1:
             ...  # TODO: Raise on too many?
 
-        _, _, begin, end, dt_string = dates[0]
+        when, begin, end = parsed_times[0]
 
         if begin != 0 and end != len(argument):
             raise commands.BadArgument("Could not distinguish time from argument.")
-
-        when = await DatetimeConverter.convert(ctx, dt_string)
 
         if begin == 0:
             what = argument[end + 1 :].lstrip(" ,.!:;")
