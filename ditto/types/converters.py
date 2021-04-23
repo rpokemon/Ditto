@@ -105,7 +105,7 @@ class DatetimeConverter(commands.Converter):
                 for time in data:
                     times.append(
                         (
-                            datetime.datetime.fromisoformat(time["value"]),
+                            datetime.datetime.fromisoformat(time["value"]["value"]),
                             time["start"],
                             time["end"],
                         )
