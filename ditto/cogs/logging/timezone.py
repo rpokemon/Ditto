@@ -1,7 +1,7 @@
 import datetime
 import zoneinfo
 
-from typing import Any, cast, Optional, Union, get_args
+from typing import Any, cast, get_args, Optional, Union
 
 import discord
 from discord.ext import commands, menus
@@ -36,7 +36,7 @@ class Timezone(Cog):
     async def timezone_get(self, ctx: Context, *, user: Optional[User] = None) -> None:
         """Get a user's time zone."""
         if user is None:
-            user = ctx.author
+            user = cast(User, ctx.author)
 
         timezone = await Time_Zones.get_timezone(user)
 
@@ -44,7 +44,7 @@ class Timezone(Cog):
             raise commands.BadArgument(f"{user.mention} does not have a time zone set.")
 
         embed = discord.Embed(title=human_friendly_timestamp(datetime.datetime.now(tz=timezone)))
-        embed.set_author(name=f"Time for {user.display_name}", icon_url=str(user.avatar.url))
+        embed.set_author(name=f"Time for {user.display_name}", icon_url=user.avatar.url)
         embed.set_footer(text=f"{timezone} ({utc_offset(timezone)})")
 
         await ctx.reply(embed=embed)
@@ -83,10 +83,9 @@ class Timezone(Cog):
         await menus.MenuPages(embed).start(ctx)
 
     @commands.command()
+    @discord.utils.copy_doc(timezone_list)
     async def timezones(self, ctx: Context) -> None:
         return await ctx.invoke(self.timezone_list)
-
-    timezones.__doc__ = timezone_list.__doc__
 
 
 def setup(bot: BotBase):

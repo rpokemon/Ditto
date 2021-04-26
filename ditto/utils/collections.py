@@ -1,13 +1,12 @@
 import datetime
 from collections import defaultdict
-from collections.abc import Iterable, Iterator
 
-from typing import Any, Callable, TypeVar
+from collections.abc import Callable
+from typing import Any, TypeVar
 
 
 __all__ = (
     "summarise_list",
-    "chunk",
     "LRUDict",
     "LRUDefaultDict",
     "TimedDict",
@@ -20,10 +19,8 @@ T = TypeVar("T")
 
 
 def summarise_list(
-    list: list[T],
-    /,
+    *list: T,
     func: Callable[[T], str] = str,
-    *,
     max_items: int = 10,
     skip_first: bool = False,
 ) -> str:
@@ -36,12 +33,6 @@ def summarise_list(
     if count > max_items:
         info += f" (+{count - max_items} More)"
     return info
-
-
-def chunk(iterable: Iterable[T], /, size: int) -> Iterator[list[T]]:
-    lst = list(iterable)
-    for i in range(0, len(lst), size):
-        yield lst[i : i + size]
 
 
 class TimedDict(dict):

@@ -3,7 +3,8 @@ import datetime
 import logging
 import traceback
 
-from typing import Any, Callable, Dict, Optional, Type
+from collections.abc import Callable
+from typing import Any, Optional
 
 import asyncpg
 import discord
@@ -28,7 +29,7 @@ __all__ = (
 
 
 class BotBase(commands.bot.BotBase, EventSchedulerMixin, discord.Client):
-    converters: Dict[Type, Callable[..., Any]]
+    converters: dict[type, Callable[..., Any]]
     pool: asyncpg.pool.Pool
 
     owner: Optional[discord.User]

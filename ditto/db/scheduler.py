@@ -2,12 +2,8 @@ import asyncio
 import datetime
 from dataclasses import dataclass
 
-from typing import (
-    Any,
-    Optional,
-    Type,
-    TypeVar,
-)
+from typing import Any, Optional, TypeVar
+
 import asyncpg
 
 import discord
@@ -34,12 +30,12 @@ class ScheduledEvent:
     id: Optional[int]
     created_at: datetime.datetime
     scheduled_for: datetime.datetime
-    type: str
+    event_type: str
     args: list[Any]
     kwargs: dict[str, Any]
 
     @classmethod
-    def from_record(cls: Type[T], record: asyncpg.Record) -> T:
+    def from_record(cls: type[T], record: asyncpg.Record) -> T:
         return cls(
             record["id"],
             record["created_at"],
@@ -50,7 +46,7 @@ class ScheduledEvent:
         )
 
     def dispatch(self, client: discord.Client) -> None:
-        client.dispatch(self.type, *self.args, *self.kwargs)
+        client.dispatch(self.event_type, *self.args, *self.kwargs)
 
 
 class EventSchedulerMixin(discord.Client):

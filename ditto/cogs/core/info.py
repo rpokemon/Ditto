@@ -1,6 +1,6 @@
 import datetime
 
-from typing import Union, cast, get_args, Optional
+from typing import cast, get_args, Optional, Union
 
 import discord
 from discord.channel import CategoryChannel, StageChannel, StoreChannel, TextChannel, VoiceChannel
@@ -34,19 +34,19 @@ class Info(Cog):
             embed=discord.Embed(
                 colour=ctx.me.colour,
                 description=f"I am {self.bot.user}, a bot made by {self.bot.owner}. My prefix is {self.bot.prefix}.",
-            ).set_author(name=f"About {self.bot.user.name}:", icon_url=str(self.bot.user.avatar.url))
+            ).set_author(name=f"About {self.bot.user.name}:", icon_url=self.bot.user.avatar.url)
         )
 
     @classmethod
-    def summarise_roles(cls, roles: list[discord.Role], *, max_items: int = 10, skip_first: bool = True) -> str:
+    def summarise_roles(cls, *roles: discord.Role, max_items: int = 10, skip_first: bool = True) -> str:
         return summarise_list(roles, lambda role: role.mention, max_items=max_items, skip_first=skip_first)
 
     @classmethod
-    def summarise_members(cls, members: list[discord.Member], *, max_items: int = 10, skip_first: bool = False) -> str:
+    def summarise_members(cls, *members: discord.Member, max_items: int = 10, skip_first: bool = False) -> str:
         return summarise_list(members, lambda member: member.mention, max_items=max_items, skip_first=skip_first)
 
     @classmethod
-    def summarise_channels(cls, channels: ListGuildChannel, *, max_items: int = 3, skip_first: bool = False) -> str:
+    def summarise_channels(cls, *channels: GuildChannel, max_items: int = 3, skip_first: bool = False) -> str:
         return summarise_list(channels, lambda channel: channel.mention, max_items=max_items, skip_first=skip_first)
 
     @classmethod
@@ -65,7 +65,9 @@ class Info(Cog):
         embed.set_author(name=f"Information on {item}:")
 
         embed.add_field(name="ID:", value=str(item.id))
-        embed.add_field(name="Created At:", value=human_friendly_timestamp(item.created_at))
+        embed.add_field(
+            name="Created At:", value=human_friendly_timestamp(item.created_at) if item.created_at else "Unknown"
+        )
 
         return embed
 
@@ -91,7 +93,7 @@ class Info(Cog):
             raise commands.BadArgument("You cannot retrieve information on a server you are not in.")
 
         embed = self._object_info(server)
-        embed.set_thumbnail(url=str(server.icon.url))
+        embed.set_thumbnail(url=server.icon.url)
 
         embed.add_field(name="Voice Region:", value=str(server.region))
 
@@ -101,22 +103,22 @@ class Info(Cog):
         embed.add_field(name="Owner:", value=owner.mention)
 
         if server.chunked:
-            embed.add_field(name="Members:", value=self.summarise_members(server.members), inline=False)
+            embed.add_field(name="Members:", value=self.summarise_members(*server.members), inline=False)
         else:
             embed.add_field(name="Members:", value=str(server.member_count))
 
         vocal_channels = [channel for channel in server.channels if isinstance(channel, get_args(VocalGuildChannel))]
         store_channels = [channel for channel in server.channels if isinstance(channel, discord.StoreChannel)]
         channels = f"""{len(server.channels)}
-    - Categories: {self.summarise_channels(server.categories)}
-    - Text: {self.summarise_channels(server.text_channels)}
+    - Categories: {self.summarise_channels(*server.categories)}
+    - Text: {self.summarise_channels(*server.text_channels)}
     - Vocal: {len(vocal_channels)}
-    --- Voice: {self.summarise_channels(server.voice_channels)}
-    --- Stage: {self.summarise_channels(server.stage_channels)}
-    - Store: {self.summarise_channels(store_channels)}"""
+    --- Voice: {self.summarise_channels(*server.voice_channels)}
+    --- Stage: {self.summarise_channels(*server.stage_channels)}
+    - Store: {self.summarise_channels(*store_channels)}"""
         embed.add_field(name="Channels:", value=channels, inline=False)
 
-        embed.add_field(name="Roles:", value=self.summarise_roles(server.roles))
+        embed.add_field(name="Roles:", value=self.summarise_roles(*server.roles))
 
         static_emoji = [emoji for emoji in server.emojis if not emoji.animated]
         animated_emoji = [emoji for emoji in server.emojis if emoji.animated]
@@ -127,7 +129,7 @@ class Info(Cog):
 
         if server.chunked:
             nitro_boosters = [member for member in server.members if member.premium_since is not None]
-            embed.add_field(name="Nitro Boosters:", value=self.summarise_members(nitro_boosters), inline=False)
+            embed.add_field(name="Nitro Boosters:", value=self.summarise_members(*nitro_boosters), inline=False)
         else:
             embed.add_field(name="Nitro Boosters:", value=str(server.premium_subscription_count))
 
@@ -161,7 +163,7 @@ class Info(Cog):
         embed.add_field(name="Colour:", value=str(role.colour) if role.colour.value else "None")
 
         if role.guild.chunked:
-            embed.add_field(name="Members:", value=self.summarise_members(role.members), inline=False)
+            embed.add_field(name="Members:", value=self.summarise_members(*role.members), inline=False)
 
         await ctx.send(embed=embed)
 
@@ -179,7 +181,7 @@ class Info(Cog):
 
         return embed
 
-    @commands.command()
+    @commands.command(hidden=True)
     async def text_channel_info(self, ctx: Context, *, channel: Optional[discord.TextChannel] = None) -> None:
         """Get information on a text channel.
 
@@ -208,13 +210,13 @@ class Info(Cog):
         embed.add_field(name="User Limit", value=str(channel.user_limit))
 
         if channel.guild.chunked:
-            embed.add_field(name="Members:", value=cls.summarise_members(channel.members), inline=False)
+            embed.add_field(name="Members:", value=cls.summarise_members(*channel.members), inline=False)
         else:
             embed.add_field(name="Members:", value=str(len(channel.voice_states)))
 
         return embed
 
-    @commands.command()
+    @commands.command(hidden=True)
     async def voice_channel_info(self, ctx: Context, *, channel: Optional[discord.VoiceChannel]) -> None:
         """Get information on a voice channel.
 
@@ -235,7 +237,7 @@ class Info(Cog):
 
         await ctx.send(embed=embed)
 
-    @commands.command()
+    @commands.command(hidden=True)
     async def stage_channel_info(self, ctx: Context, *, channel: Optional[discord.StageChannel]) -> None:
         """Get information on a stage channel.
 
@@ -256,7 +258,7 @@ class Info(Cog):
 
         await ctx.send(embed=embed)
 
-    @commands.command()
+    @commands.command(hidden=True)
     async def vocal_channel_info(self, ctx: Context, *, channel: Optional[VocalGuildChannel]) -> None:
         """Get information on a vocal channel.
 
@@ -278,7 +280,7 @@ class Info(Cog):
 
         raise commands.BadArgument(f"Could not find information on: {channel}")
 
-    @commands.command()
+    @commands.command(hidden=True)
     async def category_channel_info(self, ctx: Context, *, channel: Optional[discord.CategoryChannel]) -> None:
         """Get information on a channel category.
 
@@ -299,16 +301,16 @@ class Info(Cog):
         vocal_channels = [channel for channel in channel.channels if isinstance(channel, get_args(VocalGuildChannel))]
         store_channels = [channel for channel in channel.channels if isinstance(channel, discord.StoreChannel)]
         channels = f"""{len(channel.channels)}
-    - Text: {self.summarise_channels(channel.text_channels)}
+    - Text: {self.summarise_channels(*channel.text_channels)}
     - Vocal: {len(vocal_channels)}
-    --- Voice: {self.summarise_channels(channel.voice_channels)}
-    --- Stage: {self.summarise_channels(channel.stage_channels)}
-    - Store: {self.summarise_channels(store_channels)}"""
+    --- Voice: {self.summarise_channels(*channel.voice_channels)}
+    --- Stage: {self.summarise_channels(*channel.stage_channels)}
+    - Store: {self.summarise_channels(*store_channels)}"""
         embed.add_field(name="Channels:", value=channels, inline=False)
 
         await ctx.send(embed=embed)
 
-    @commands.command()
+    @commands.command(hidden=True)
     @commands.guild_only()
     async def store_channel_info(self, ctx: Context, *, channel: discord.StoreChannel) -> None:
         """Get information on a store channel.
@@ -348,13 +350,11 @@ class Info(Cog):
     @classmethod
     def _user_info(cls, user: User) -> discord.Embed:
         embed = cls._object_info(user)
-        embed.set_thumbnail(url=str(user.avatar.url))
-
+        embed.set_thumbnail(url=user.avatar.url)
         embed.add_field(name="Is Bot:", value=yes_no(user.bot))
-
         return embed
 
-    @commands.command()
+    @commands.command(hidden=True)
     @commands.guild_only()
     async def member_info(self, ctx: Context, *, member: Optional[discord.Member] = None) -> None:
         """Get information on a member.
@@ -369,7 +369,9 @@ class Info(Cog):
         embed = self._user_info(member)
         embed.colour = member.colour if bool(member.colour.value) else discord.Embed.Empty
 
-        embed.add_field(name="Joined Server:", value=human_friendly_timestamp(member.joined_at))
+        embed.add_field(
+            name="Joined Server:", value=human_friendly_timestamp(member.joined_at) if member.joined_at else "Unknown"
+        )
 
         if member.nick:
             embed.add_field(name="Nickname:", value=member.nick)
@@ -377,7 +379,7 @@ class Info(Cog):
         if member.premium_since:
             embed.add_field(name="Nitro Boosting Since:", value=str(member.premium_since))
 
-        embed.add_field(name="Roles:", value=self.summarise_roles(member.roles))
+        embed.add_field(name="Roles:", value=self.summarise_roles(*member.roles))
 
         await ctx.send(embed=embed)
 
@@ -387,7 +389,7 @@ class Info(Cog):
 
         `user[Optional]`: The user to get information on by name, ID, or mention. If none specified it defaults to you.
         """
-        user = user or ctx.author
+        user = user or cast(User, ctx.author)
 
         if isinstance(user, discord.Member) and user.guild == ctx.guild:
             return await ctx.invoke(self.member_info, member=user)
@@ -406,7 +408,7 @@ class Info(Cog):
             raise commands.BadArgument("Cannot retrieve information on Unicode emoji.")
 
         embed = self._object_info(emoji)
-        embed.set_thumbnail(url=str(emoji.url))
+        embed.set_thumbnail(url=emoji.url)
 
         if isinstance(emoji, discord.Emoji):
             embed.add_field(name="Server:", value=str(emoji.guild))
@@ -431,6 +433,7 @@ class Info(Cog):
                     raise commands.BadArgument("Could not resolve message reference.")
             else:
                 message = ctx.message
+            message = cast(discord.Message, message)
 
         embed = self._object_info(message)
         embed.set_author(name="Information on message:")
@@ -464,7 +467,7 @@ class Info(Cog):
         embed = self._object_info(invite)
         embed.set_author(name=f"Information on invite to {invite.guild}:")
         embed.set_thumbnail(
-            url=str(invite.guild.icon.url) if isinstance(invite.guild, discord.guild.Guild) else discord.Embed.Empty
+            url=invite.guild.icon.url if isinstance(invite.guild, discord.guild.Guild) else discord.Embed.Empty
         )
 
         embed.add_field(name="Created By:", value=str(invite.inviter))
@@ -491,7 +494,7 @@ class Info(Cog):
         """
         colour = colour or discord.Colour.random()
 
-        size = (COLOUR_INFO_IMAGE_SIZE,) * 2
+        size = (COLOUR_INFO_IMAGE_SIZE, COLOUR_INFO_IMAGE_SIZE)
         image = to_bytes(Image.new("RGB", size, colour.to_rgb()))
         filename = f"{colour.value:0>6x}.png"
 

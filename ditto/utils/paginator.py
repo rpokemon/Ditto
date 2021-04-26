@@ -1,4 +1,4 @@
-from typing import Any, Generic, NamedTuple, Type, TypeVar, TypedDict
+from typing import Any, Generic, NamedTuple, TypeVar, TypedDict
 
 import discord
 from discord.ext import commands, menus
@@ -45,7 +45,7 @@ class EmbedPaginator(discord.Embed, PaginatorSource[EmbT]):
         max_size: int = 5000,
         max_description: int = 2048,
         max_fields: int = 25,
-        cls: Type[EmbT] = discord.Embed,
+        cls: type[EmbT] = discord.Embed,
         **kwargs: Any,
     ) -> None:
         description = kwargs.pop("description", "")  # type: str
@@ -104,7 +104,7 @@ class EmbedPaginator(discord.Embed, PaginatorSource[EmbT]):
             self.close_page()
 
         self._count += name_len + value_len
-        self._current_page.fields.append(Field(name=name, value=value, inline=False))
+        self._current_page.fields.append(Field(name=name, value=value, inline=inline))
 
     def close_page(self) -> None:
         self._pages.append(self._current_page)
@@ -119,7 +119,7 @@ class EmbedPaginator(discord.Embed, PaginatorSource[EmbT]):
         for field in page.fields:
             embed.add_field(**field)
 
-        if self._pages.index(page) >= 1 and embed.author.name:
+        if self._pages.index(page) >= 1 and isinstance(embed.author.name, str):
             embed.author.name += " cont."
 
         return embed

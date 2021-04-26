@@ -3,7 +3,8 @@ from __future__ import annotations
 import asyncio
 import zoneinfo
 
-from typing import Awaitable, Optional, TYPE_CHECKING, Union
+from collections.abc import Awaitable
+from typing import Optional, TYPE_CHECKING
 
 import donphan
 

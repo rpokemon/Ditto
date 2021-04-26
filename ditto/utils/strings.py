@@ -3,7 +3,7 @@ from itertools import cycle
 
 from typing import Any, Literal, TypeVar, Union
 
-from .collections import chunk
+import discord
 
 
 __all__ = ("ZWSP", "codeblock", "yes_no", "as_columns", "utc_offset", "ordinal", "regional_indicator", "keycap_digit")
@@ -52,7 +52,7 @@ def as_columns(items: list[str], /, columns: int = 2, transpose: bool = False, f
 
     max_sizes = [0 for _ in range(columns)]
 
-    chunks = list(chunk(items, columns))
+    chunks = list(discord.utils.as_chunks((i for i in items), columns))
 
     for line in chunks:
         for column, item in enumerate(line):

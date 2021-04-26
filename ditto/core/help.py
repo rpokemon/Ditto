@@ -1,7 +1,10 @@
-from typing import Any, Generic, Optional, Sequence, TypeVar
+from collections.abc import Sequence
+from typing import Any, Generic, Optional, TypeVar
 
 import discord
 from discord.ext import commands, menus
+
+from .context import Context
 
 from ..utils.paginator import *
 
@@ -14,6 +17,7 @@ EmbT = TypeVar("EmbT", bound=discord.Embed)
 
 class EmbedHelpCommand(commands.DefaultHelpCommand, Generic[PagT]):
     paginator: PagT
+    context: Context
 
     def __init__(self, paginator: PagT = EmbedPaginator[EmbT](max_fields=8), **options: Any) -> None:
         options.update({"paginator": paginator})
@@ -26,7 +30,7 @@ class EmbedHelpCommand(commands.DefaultHelpCommand, Generic[PagT]):
         me = self.context.me
 
         self.paginator.colour = me.colour
-        self.paginator.set_author(name=f"{me} Help Manual", icon_url=str(me.avatar.url))
+        self.paginator.set_author(name=f"{me} Help Manual", icon_url=me.avatar.url)
 
         self.paginator.set_footer(text=self.get_ending_note())
 

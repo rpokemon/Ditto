@@ -6,21 +6,11 @@ from typing import NamedTuple
 import asyncpg
 import discord
 from discord.ext import commands, menus, tasks
-from donphan import Column, Table, SQLType
 
 from ... import BotBase, Cog, Context
+from ...db.tables import Commands
+
 from ...utils.paginator import EmbedPaginator
-
-
-class Commands(Table, schema="logging"):  # type: ignore[call-arg]
-    message_id: SQLType.BigInt = Column(primary_key=True)
-    guild_id: SQLType.BigInt = Column(index=True)
-    channel_id: SQLType.BigInt = Column(index=True)
-    user_id: SQLType.BigInt = Column(index=True)
-    invoked_at: SQLType.Timestamp
-    prefix: SQLType.Text
-    command: SQLType.Text
-    failed: SQLType.Boolean
 
 
 class CommandInvoke(NamedTuple):
