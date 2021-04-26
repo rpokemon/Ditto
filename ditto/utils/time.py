@@ -12,6 +12,7 @@ __all__ = (
     "MAIN_TIMEZONES",
     "TIMEZONE_ALIASES",
     "update_time",
+    "readable_timestamp",
     "human_friendly_timestamp",
     "human_friendly_timedelta",
 )
@@ -49,6 +50,10 @@ with open(BASE_DIR / TZ_ALIASES_FILE) as f:
 
 def update_time(a: datetime.datetime, b: datetime.datetime) -> datetime.datetime:
     return a.replace(hour=b.hour, minute=b.minute, second=b.second, microsecond=b.microsecond)
+
+
+def readable_timestamp(datetime: datetime.datetime, /) -> str:
+    return datetime.strftime(f"%a %b %d, %Y @ %H:%M:%S %Z")
 
 
 def human_friendly_timestamp(datetime: datetime.datetime, /) -> str:

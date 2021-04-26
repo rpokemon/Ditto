@@ -54,8 +54,15 @@ def as_columns(items: list[str], /, columns: int = 2, transpose: bool = False, f
 
     chunks = list(discord.utils.as_chunks((i for i in items), columns))
 
+    if not chunks:
+        return ""
+
+    max_columns = len(chunks[0])
+
     for line in chunks:
         for column, item in enumerate(line):
+            if column + 1 < max_columns and column + 1 == len(line):
+                continue
             max_sizes[column] = max(len(item), max_sizes[column])
 
     for line in chunks:

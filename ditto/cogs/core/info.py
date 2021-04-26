@@ -6,13 +6,14 @@ import discord
 from discord.channel import CategoryChannel, StageChannel, StoreChannel, TextChannel, VoiceChannel
 from discord.ext import commands
 from PIL import Image
+from discord.ext.commands.flags import F
 
 from ... import BotBase, Cog, Context
 from ...types import DiscordObject, VocalGuildChannel, GuildChannel, User, DiscordEmoji, Message
 from ...utils.collections import summarise_list
 from ...utils.images import to_bytes
 from ...utils.strings import codeblock, yes_no, as_columns
-from ...utils.time import human_friendly_timestamp
+from ...utils.time import readable_timestamp
 
 
 COLOUR_INFO_IMAGE_SIZE = 128
@@ -38,22 +39,24 @@ class Info(Cog):
         )
 
     @classmethod
-    def summarise_roles(cls, *roles: discord.Role, max_items: int = 10, skip_first: bool = True) -> str:
-        return summarise_list(*roles, lambda role: role.mention, max_items=max_items, skip_first=skip_first)
+    def summarise_roles(cls, *roles: discord.Role, max_items: int = 5, skip_first: bool = True) -> str:
+        return summarise_list(*roles, func=lambda role: role.mention, max_items=max_items, skip_first=skip_first)
 
     @classmethod
     def summarise_members(cls, *members: discord.Member, max_items: int = 10, skip_first: bool = False) -> str:
-        return summarise_list(*members, lambda member: member.mention, max_items=max_items, skip_first=skip_first)
+        return summarise_list(*members, func=lambda member: member.mention, max_items=max_items, skip_first=skip_first)
 
     @classmethod
-    def summarise_channels(cls, *channels: GuildChannel, max_items: int = 3, skip_first: bool = False) -> str:
-        return summarise_list(*channels, lambda channel: channel.mention, max_items=max_items, skip_first=skip_first)
-
-    @classmethod
-    def summarise_emoji(cls, emojis: list[discord.Emoji], *, max_items: int = 5, skip_first: bool = False) -> str:
+    def summarise_channels(cls, *channels: GuildChannel, max_items: int = 4, skip_first: bool = False) -> str:
         return summarise_list(
-            emojis,
-            lambda emoji: f"<{'a' if emoji.animated else ''}:_:{emoji.id}>",
+            *channels, func=lambda channel: channel.mention, max_items=max_items, skip_first=skip_first
+        )
+
+    @classmethod
+    def summarise_emoji(cls, emojis: list[discord.Emoji], *, max_items: int = 4, skip_first: bool = False) -> str:
+        return summarise_list(
+            *emojis,
+            func=lambda emoji: f"<{'a' if emoji.animated else ''}:_:{emoji.id}>",
             max_items=max_items,
             skip_first=skip_first,
         )
@@ -64,9 +67,11 @@ class Info(Cog):
 
         embed.set_author(name=f"Information on {item}:")
 
-        embed.add_field(name="ID:", value=str(item.id))
+        embed.add_field(name="ID:", value=str(item.id), inline=False)
         embed.add_field(
-            name="Created At:", value=human_friendly_timestamp(item.created_at) if item.created_at else "Unknown"
+            name="Created At:",
+            value=readable_timestamp(item.created_at) if item.created_at else "Unknown",
+            inline=False,
         )
 
         return embed
@@ -102,10 +107,7 @@ class Info(Cog):
             owner = await server.fetch_member(server.owner_id)
         embed.add_field(name="Owner:", value=owner.mention)
 
-        if server.chunked:
-            embed.add_field(name="Members:", value=self.summarise_members(*server.members), inline=False)
-        else:
-            embed.add_field(name="Members:", value=str(server.member_count))
+        embed.add_field(name="Members:", value=str(server.member_count))
 
         vocal_channels = [channel for channel in server.channels if isinstance(channel, get_args(VocalGuildChannel))]
         store_channels = [channel for channel in server.channels if isinstance(channel, discord.StoreChannel)]
@@ -118,7 +120,7 @@ class Info(Cog):
     - Store: {self.summarise_channels(*store_channels)}"""
         embed.add_field(name="Channels:", value=channels, inline=False)
 
-        embed.add_field(name="Roles:", value=self.summarise_roles(*server.roles))
+        embed.add_field(name="Roles:", value=self.summarise_roles(*server.roles), inline=False)
 
         static_emoji = [emoji for emoji in server.emojis if not emoji.animated]
         animated_emoji = [emoji for emoji in server.emojis if emoji.animated]
@@ -194,7 +196,7 @@ class Info(Cog):
 
         embed = self._channel_info(channel)
 
-        embed.add_field(name="Topic", value=str(channel.topic) or "None Set")
+        embed.add_field(name="Topic", value=str(channel.topic) or "None Set", inline=False)
 
         slowmode_delay = f"{channel.slowmode_delay} seconds" if channel.slowmode_delay else "Disabled"
         embed.add_field(name="Slowmode Delay", value=slowmode_delay)
@@ -370,16 +372,18 @@ class Info(Cog):
         embed.colour = member.colour if bool(member.colour.value) else discord.Embed.Empty
 
         embed.add_field(
-            name="Joined Server:", value=human_friendly_timestamp(member.joined_at) if member.joined_at else "Unknown"
+            name="Joined Server:",
+            value=readable_timestamp(member.joined_at) if member.joined_at else "Unknown",
+            inline=False,
         )
 
         if member.nick:
             embed.add_field(name="Nickname:", value=member.nick)
 
         if member.premium_since:
-            embed.add_field(name="Nitro Boosting Since:", value=str(member.premium_since))
+            embed.add_field(name="Nitro Boosting Since:", value=readable_timestamp(member.premium_since), inline=False)
 
-        embed.add_field(name="Roles:", value=self.summarise_roles(*member.roles))
+        embed.add_field(name="Roles:", value=self.summarise_roles(*member.roles), inline=False)
 
         await ctx.send(embed=embed)
 
@@ -473,9 +477,10 @@ class Info(Cog):
         embed.add_field(name="Created By:", value=str(invite.inviter))
         embed.add_field(
             name="Expires At:",
-            value=human_friendly_timestamp(invite.created_at + datetime.timedelta(seconds=invite.max_age))
+            value=readable_timestamp(invite.created_at + datetime.timedelta(seconds=invite.max_age))
             if invite.max_age
             else "Never",
+            inline=False,
         )
         embed.add_field(
             name="Channel:",
