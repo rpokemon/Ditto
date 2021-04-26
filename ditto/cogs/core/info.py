@@ -39,15 +39,15 @@ class Info(Cog):
 
     @classmethod
     def summarise_roles(cls, *roles: discord.Role, max_items: int = 10, skip_first: bool = True) -> str:
-        return summarise_list(roles, lambda role: role.mention, max_items=max_items, skip_first=skip_first)
+        return summarise_list(*roles, lambda role: role.mention, max_items=max_items, skip_first=skip_first)
 
     @classmethod
     def summarise_members(cls, *members: discord.Member, max_items: int = 10, skip_first: bool = False) -> str:
-        return summarise_list(members, lambda member: member.mention, max_items=max_items, skip_first=skip_first)
+        return summarise_list(*members, lambda member: member.mention, max_items=max_items, skip_first=skip_first)
 
     @classmethod
     def summarise_channels(cls, *channels: GuildChannel, max_items: int = 3, skip_first: bool = False) -> str:
-        return summarise_list(channels, lambda channel: channel.mention, max_items=max_items, skip_first=skip_first)
+        return summarise_list(*channels, lambda channel: channel.mention, max_items=max_items, skip_first=skip_first)
 
     @classmethod
     def summarise_emoji(cls, emojis: list[discord.Emoji], *, max_items: int = 5, skip_first: bool = False) -> str:
