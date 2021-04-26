@@ -20,7 +20,7 @@ def codeblock(text, *, language: str = "") -> str:
 
 
 def yes_no(obj: Any) -> Literal["Yes", "No"]:
-    return "Yes" if bool(obj) else "No"
+    return "Yes" if obj else "No"
 
 
 def _items_in_col(n_items, cols):
