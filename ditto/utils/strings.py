@@ -31,14 +31,18 @@ def _items_in_col(n_items, cols):
 
 def _transpose(items: list[T], columns: int) -> list[T]:
     result = []
+    num_items = len(items)
 
-    *per_col, _ = _items_in_col(len(items), columns)
-    per_col = (*per_col, per_col[0])
+    per_col = _items_in_col(num_items, columns)
     to_skip = cycle(per_col)
+
     i = 0
-    for (_, ts) in zip(range(len(items)), to_skip):
+    for _ in items:
         result.append(items[i])
-        i = (i + ts) % len(items)
+        i += next(to_skip)
+        if i >= num_items:
+            i += 1
+            i %= num_items
 
     return result
 
@@ -97,4 +101,9 @@ def regional_indicator(c: str) -> str:
 
 def keycap_digit(c: Union[int, str]) -> str:
     """Returns a keycap digit emoji given a character."""
-    return (str(c).encode("utf-8") + b"\xe2\x83\xa3").decode("utf-8")
+    c = int(c)
+    if 0 < c < 10:
+        return str(c) + "\U0000FE0F\U000020E3"
+    elif c == 10:
+        return "\U000FE83B"
+    raise ValueError("Invalid keycap digit")

@@ -3,7 +3,7 @@ from __future__ import annotations
 import datetime
 import zoneinfo
 
-from typing import Optional, TYPE_CHECKING
+from typing import Any, Optional, TYPE_CHECKING
 
 import aiohttp
 import parsedatetime
@@ -198,7 +198,7 @@ class PosixFlags(commands.FlagConverter, prefix="--", delimiter=" "):  # type: i
     ...
 
 
-CONVERTERS = {
+CONVERTERS: dict[type[Any], Any] = {
     Codeblock: codeblock_converter,
     datetime.datetime: DatetimeConverter,
     Extension: ExtensionConverter,
