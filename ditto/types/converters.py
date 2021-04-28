@@ -223,11 +223,11 @@ class EmbedConverter(commands.Converter[discord.Embed]):
 class EnumConverter(commands.Converter[discord.Enum], Generic[ET]):
     _type: type[ET] = MISSING  # type: ignore
 
-    def __init_subclass__(cls, *, enum=type) -> None:
-        cls._type = enum
+    def __init_subclass__(cls, *, enum: type[ET] = MISSING) -> None:
         super().__init_subclass__()
+        cls._type = enum
 
-    def convert(self, ctx: Context, argument: str) -> ET:
+    async def convert(self, ctx: Context, argument: str) -> ET:
         if self._type is MISSING:
             try:
                 self._type = self.__orig_class__.__args__[0]  # type: ignore
