@@ -10,9 +10,6 @@ import discord
 from discord.ext import tasks
 from donphan import Table, SQLType, Column
 
-from .. import CONFIG
-
-
 __all__ = ("ScheduledEvent", "EventSchedulerMixin")
 
 
@@ -53,6 +50,9 @@ class ScheduledEvent:
 
 class EventSchedulerMixin(discord.Client):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
+        # this is a hack because >circular imports<
+        from ..config import CONFIG
+
         super().__init__(*args, **kwargs)
 
         if CONFIG.DB.DISABLED:

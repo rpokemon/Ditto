@@ -2,9 +2,16 @@ import asyncpg
 
 from typing import Optional, NoReturn
 
-from donphan import create_pool, create_types, create_tables, create_views, MaybeAcquire, TYPE_CODECS, OPTIONAL_CODECS
+from donphan import (
+    create_pool,
+    create_types,
+    create_tables,
+    create_views,
+    MaybeAcquire,
+    TYPE_CODECS,
+    OPTIONAL_CODECS,
+)
 
-from ..config import CONFIG
 from .tables import *
 from .scheduler import *
 
@@ -15,6 +22,8 @@ class NoDatabase:
 
 
 async def setup_database() -> Optional[asyncpg.pool.Pool]:
+    # this is a hack because >circular imports<
+    from ..config import CONFIG
 
     if CONFIG.DATABASE.DISABLED:
         return None
