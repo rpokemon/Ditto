@@ -55,7 +55,7 @@ class EventSchedulerMixin(discord.Client):
 
         super().__init__(*args, **kwargs)
 
-        if CONFIG.DB.DISABLED:
+        if CONFIG.DATABASE.DISABLED:
             return
 
         self.__event_scheduler__active = asyncio.Event()
