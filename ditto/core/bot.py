@@ -68,7 +68,7 @@ class BotBase(commands.bot.BotBase, EventSchedulerMixin, discord.Client):
 
         # Setup bot instance.
         allow_mentions_as_prefix = getattr(CONFIG.BOT, "ALLOW_MENTIONS_AS_PREFIX", False)
-        self.prefix = CONFIG.BOT.PREFIX
+        self.prefix = getattr(CONFIG.BOT, 'PREFIX', None)
         if self.prefix is None:
             if not allow_mentions_as_prefix:
                 raise RuntimeError("No prefix has been set, set one with a config override.")
