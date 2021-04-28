@@ -227,17 +227,18 @@ class EnumConverter(commands.Converter[discord.Enum], Generic[ET]):
         super().__init_subclass__()
         cls._type = enum
 
-    async def convert(self, ctx: Context, argument: str) -> ET:
-        if self._type is MISSING:
+    @classmethod
+    async def convert(cls, ctx: Context, argument: str) -> ET:
+        if cls._type is MISSING:
             try:
-                self._type = self.__orig_class__.__args__[0]  # type: ignore
+                cls._type = cls.__args__[0]  # type: ignore
             except (AttributeError, IndexError):
                 raise RuntimeError("No enum type found.")
 
         value = int(argument) if argument.isdigit() else argument
-        value = self._type.try_value(value)  # type: ignore
+        value = cls._type.try_value(value)  # type: ignore
         if value == argument:
-            raise commands.BadArgument(f"Could not convert to Enum: {self._type.__name__}")
+            raise commands.BadArgument(f"Could not convert to Enum: {cls._type.__name__}")
         return value  # type: ignore
 
 
