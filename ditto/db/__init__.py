@@ -20,6 +20,9 @@ class NoDatabase:
     def __aenter__(self) -> NoReturn:
         raise RuntimeError("No database connection was setup.")
 
+    def __aexit__(self, *exc) -> NoReturn:
+        raise RuntimeError("No database connection was setup.")
+
 
 async def setup_database() -> Optional[asyncpg.pool.Pool]:
     # this is a hack because >circular imports<

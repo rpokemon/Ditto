@@ -108,9 +108,9 @@ class BotBase(commands.bot.BotBase, EventSchedulerMixin, discord.Client):
         if self.owner_ids:
             self.owners = [await self.fetch_user(id) for id in self.owner_ids]
 
-    async def on_command_error(self, ctx: Context, error: BaseException) -> None:
+    async def on_command_error(self, ctx: Context, error: BaseException) -> Optional[discord.Message]:
         if isinstance(error, commands.CommandNotFound):
-            return
+            return None
 
         if isinstance(
             error,
@@ -122,17 +122,16 @@ class BotBase(commands.bot.BotBase, EventSchedulerMixin, discord.Client):
                 commands.DisabledCommand,
             ),
         ):
-            await ctx.send(
+            return await ctx.send(
                 embed=discord.Embed(
                     color=discord.Colour.red(),
                     title=f"Error with command {ctx.command.qualified_name}",
                     description=str(error),
                 )
             )
-            return
 
         if error.__cause__ is None:
-            return
+            return None
 
         error = error.__cause__
 
@@ -148,6 +147,7 @@ class BotBase(commands.bot.BotBase, EventSchedulerMixin, discord.Client):
         self.log.error(
             f"Unhandled exception in command: {ctx.command.qualified_name}\n\n{type(error).__name__}: {error}\n\n{tb}"
         )
+        return None
 
     async def process_commands(self, message: discord.Message) -> None:
         if CONFIG.BOT.IGNORE_BOTS and message.author.bot:

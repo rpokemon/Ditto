@@ -1,7 +1,7 @@
 import datetime
 import zoneinfo
 
-from typing import Optional
+from typing import Optional, Union
 
 import humanize
 
@@ -15,6 +15,7 @@ __all__ = (
     "readable_timestamp",
     "human_friendly_timestamp",
     "human_friendly_timedelta",
+    "normalise_timedelta",
 )
 
 
@@ -63,3 +64,9 @@ def human_friendly_timestamp(datetime: datetime.datetime, /) -> str:
 
 def human_friendly_timedelta(timedelta: datetime.timedelta, /, relative_to: Optional[datetime.datetime]) -> str:
     return humanize.naturaldelta(timedelta, when=relative_to)
+
+
+def normalise_timedelta(delta: Union[float, datetime.timedelta]) -> datetime.timedelta:
+    if isinstance(delta, (int, float)):
+        return datetime.timedelta(seconds=delta)
+    return delta

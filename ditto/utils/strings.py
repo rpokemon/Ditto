@@ -6,7 +6,19 @@ from typing import Any, Literal, TypeVar, Union
 import discord
 
 
-__all__ = ("ZWSP", "codeblock", "yes_no", "as_columns", "utc_offset", "ordinal", "regional_indicator", "keycap_digit")
+__all__ = (
+    "ZWSP",
+    "codeblock",
+    "yes_no",
+    "as_columns",
+    "utc_offset",
+    "ordinal",
+    "regional_indicator",
+    "keycap_digit",
+    "plural",
+    "truncate",
+    "rank_medal",
+)
 
 
 T = TypeVar("T")
@@ -107,3 +119,33 @@ def keycap_digit(c: Union[int, str]) -> str:
     elif c == 10:
         return "\U000FE83B"
     raise ValueError("Invalid keycap digit")
+
+
+class plural:
+    def __init__(self, value: int) -> None:
+        self.value = value
+
+    def __format__(self, format_spec: str) -> str:
+        singular, _, plural = format_spec.partition("|")
+        plural = plural or f"{singular}s"
+        return f"{self.value} {plural if abs(self.value) != 1 else singular}"
+
+
+class truncate:
+    def __init__(self, value: str) -> None:
+        self.value = value
+
+    def __format__(self, format_spec: str) -> str:
+        max_len = int(format_spec)
+
+        if len(self.value) <= max_len:
+            return self.value
+        return f"{self.value[:max_len - 3]}..."
+
+
+def rank_medal(rank: int, *, one_indexed: bool = False) -> str:
+    return {
+        0: "\N{FIRST PLACE MEDAL}",
+        1: "\N{SECOND PLACE MEDAL}",
+        2: "\N{THIRD PLACE MEDAL}",
+    }.get(rank - one_indexed, "\N{SPORTS MEDAL}")
