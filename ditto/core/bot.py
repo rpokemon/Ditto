@@ -20,6 +20,12 @@ from ..types import CONVERTERS
 from ..utils.logging import WebhookHandler
 from ..utils.strings import codeblock
 
+try:
+    import uvloop
+    uvloop.install()
+except ImportError:
+    pass
+
 
 __all__ = (
     "BotBase",
