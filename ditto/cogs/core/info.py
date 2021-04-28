@@ -3,10 +3,8 @@ import datetime
 from typing import cast, get_args, Optional, Union
 
 import discord
-from discord.channel import CategoryChannel, StageChannel, StoreChannel, TextChannel, VoiceChannel
 from discord.ext import commands
 from PIL import Image
-from discord.ext.commands.flags import F
 
 from ... import BotBase, Cog, Context
 from ...types import DiscordObject, VocalGuildChannel, GuildChannel, User, DiscordEmoji, Message
@@ -19,11 +17,11 @@ from ...utils.time import readable_timestamp
 COLOUR_INFO_IMAGE_SIZE = 128
 
 ListGuildChannel = Union[
-    list[TextChannel],
-    list[CategoryChannel],
-    list[VoiceChannel],
-    list[StageChannel],
-    list[StoreChannel],
+    list[discord.TextChannel],
+    list[discord.CategoryChannel],
+    list[discord.VoiceChannel],
+    list[discord.StageChannel],
+    list[discord.StoreChannel],
 ]
 
 

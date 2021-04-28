@@ -17,6 +17,7 @@
   
   DATABASE: !Config
     # Database Settings: Set either a DSN or Hostname, Username, Password and Database
+    DISABLED: no
     APPLICATION_NAME: 'Ditto'
     DSN: !ENV POSTGRES_DSN
     HOSTNAME: ~

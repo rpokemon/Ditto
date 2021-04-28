@@ -7,7 +7,7 @@ import asyncpg
 import discord
 from discord.ext import commands, menus, tasks
 
-from ... import BotBase, Cog, Context
+from ... import BotBase, Cog, Context, CONFIG
 from ...db.tables import Commands
 
 from ...utils.paginator import EmbedPaginator
@@ -88,4 +88,6 @@ class Stats(Cog):
 
 
 def setup(bot: BotBase):
+    if CONFIG.DATABASE.DISABLED:
+        return
     bot.add_cog(Stats(bot))

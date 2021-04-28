@@ -22,6 +22,7 @@ from ..utils.strings import codeblock
 
 try:
     import uvloop
+
     uvloop.install()
 except ImportError:
     pass
@@ -36,7 +37,7 @@ __all__ = (
 
 class BotBase(commands.bot.BotBase, EventSchedulerMixin, discord.Client):
     converters: dict[type, Callable[..., Any]]
-    pool: asyncpg.pool.Pool
+    pool: Optional[asyncpg.pool.Pool]
 
     owner: Optional[discord.User]
     owners: Optional[list[discord.User]]
@@ -68,7 +69,7 @@ class BotBase(commands.bot.BotBase, EventSchedulerMixin, discord.Client):
 
         # Setup bot instance.
         allow_mentions_as_prefix = getattr(CONFIG.BOT, "ALLOW_MENTIONS_AS_PREFIX", False)
-        self.prefix = getattr(CONFIG.BOT, 'PREFIX', None)
+        self.prefix = getattr(CONFIG.BOT, "PREFIX", None)
         if self.prefix is None:
             if not allow_mentions_as_prefix:
                 raise RuntimeError("No prefix has been set, set one with a config override.")

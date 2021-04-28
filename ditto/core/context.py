@@ -4,14 +4,14 @@ import asyncio
 import zoneinfo
 
 from collections.abc import Awaitable
-from typing import Optional, TYPE_CHECKING
+from typing import NoReturn, Optional, TYPE_CHECKING
 
 import donphan
 
 import discord
 from discord.ext import commands
 
-from ..db import Time_Zones
+from ..db import Time_Zones, NoDatabase
 from ..utils.guild import user_in_guild
 from ..types import Emoji, TextChannel
 
@@ -35,7 +35,10 @@ class Context(commands.Context):
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
-        self.db = donphan.MaybeAcquire(pool=self.bot.pool)
+        if self.bot.pool:
+            self.db = donphan.MaybeAcquire(pool=self.bot.pool)
+        else:
+            self.db = NoDatabase()
 
     def reply(self, *args, **kwargs):
         mention_author = kwargs.pop("mention_author", True)

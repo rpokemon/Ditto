@@ -6,7 +6,7 @@ from typing import Any, cast, get_args, Optional, Union
 import discord
 from discord.ext import commands, menus
 
-from ... import BotBase, Context, Cog
+from ... import BotBase, Cog, Context, CONFIG
 from ...types import User
 from ...db import Time_Zones
 
@@ -89,4 +89,6 @@ class Timezone(Cog):
 
 
 def setup(bot: BotBase):
+    if CONFIG.DATABASE.DISABLED:
+        return
     bot.add_cog(Timezone(bot))

@@ -10,6 +10,8 @@ import discord
 from discord.ext import tasks
 from donphan import Table, SQLType, Column
 
+from .. import CONFIG
+
 
 __all__ = ("ScheduledEvent", "EventSchedulerMixin")
 
@@ -52,6 +54,10 @@ class ScheduledEvent:
 class EventSchedulerMixin(discord.Client):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
+
+        if CONFIG.DB.DISABLED:
+            return
+
         self.__event_scheduler__active = asyncio.Event()
         self.__event_scheduler__current = None
         self._dispatch_task.add_exception_type(asyncpg.exceptions.PostgresConnectionError)
