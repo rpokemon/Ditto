@@ -34,12 +34,7 @@ class Extension(str):
     ...
 
 
-class _MissingSentinel:
-    def __repr__(self) -> str:
-        return "MISSING"
-
-
-MISSING: Any = _MissingSentinel()
+MISSING = discord.utils.MISSING
 
 
 class CommandConverter(commands.Converter[commands.Command]):
@@ -221,20 +216,14 @@ class EmbedConverter(commands.Converter[discord.Embed]):
 
 
 class EnumConverter(commands.Converter[discord.Enum], Generic[ET]):
-    _type: type[ET] = MISSING  # type: ignore
+    _type: type[ET]
 
-    def __init_subclass__(cls, *, enum: type[ET] = MISSING) -> None:
+    def __init_subclass__(cls, *, enum: type[ET]) -> None:
         super().__init_subclass__()
         cls._type = enum
 
     @classmethod
     async def convert(cls, ctx: Context, argument: str) -> ET:
-        if cls._type is MISSING:
-            try:
-                cls._type = cls.__args__[0]  # type: ignore
-            except (AttributeError, IndexError):
-                raise RuntimeError("No enum type found.")
-
         value = int(argument) if argument.isdigit() else argument
         value = cls._type.try_value(value)  # type: ignore
         if value == argument:

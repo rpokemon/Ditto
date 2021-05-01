@@ -38,7 +38,8 @@ class Timezone(Cog):
         if user is None:
             user = cast(User, ctx.author)
 
-        timezone = await Time_Zones.get_timezone(user)
+        async with ctx.db as connection:
+            timezone = await Time_Zones.get_timezone(connection, user)
 
         if timezone is None:
             raise commands.BadArgument(f"{user.mention} does not have a time zone set.")
@@ -52,9 +53,14 @@ class Timezone(Cog):
     @timezone.command(name="set")
     async def timezone_set(self, ctx: Context, *, timezone: zoneinfo.ZoneInfo) -> None:
         """Set your time zone."""
-        await Time_Zones.insert(
-            user_id=ctx.author.id, time_zone=str(timezone), update_on_conflict=Time_Zones.time_zone
-        )
+        async with ctx.db as connection:
+            await Time_Zones.insert(
+                connection,
+                update_on_conflict=(Time_Zones.time_zone,),
+                returning=None,
+                user_id=ctx.author.id,
+                time_zone=str(timezone),
+            )
 
         local_time = human_friendly_timestamp(datetime.datetime.now(tz=timezone))
         embed = discord.Embed(title=f"Local Time: {local_time}")

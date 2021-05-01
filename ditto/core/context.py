@@ -9,10 +9,10 @@ import zoneinfo
 from collections.abc import Awaitable
 from typing import Optional, TYPE_CHECKING, Union, TypeVar
 
-import donphan
-
 import discord
 from discord.ext import commands
+
+from donphan import MaybeAcquire
 
 from ..db import Time_Zones, NoDatabase
 from ..types import Emoji, TextChannel, User
@@ -42,11 +42,12 @@ SLEEP_FOR = 3
 
 class Context(commands.Context):
     bot: BotBase
+    db: MaybeAcquire
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         if self.bot.pool:
-            self.db = donphan.MaybeAcquire(pool=self.bot.pool)
+            self.db = MaybeAcquire(pool=self.bot.pool)
         else:
             self.db = NoDatabase()
 
@@ -114,8 +115,9 @@ class Context(commands.Context):
     def user_in_guild(self, guild: discord.Guild) -> Awaitable[bool]:
         return user_in_guild(guild, self.author)
 
-    def get_timezone(self) -> Awaitable[Optional[zoneinfo.ZoneInfo]]:
-        return Time_Zones.get_timezone(self.author)
+    async def get_timezone(self) -> Optional[zoneinfo.ZoneInfo]:
+        async with self.db as connection:
+            return await Time_Zones.get_timezone(connection, self.author)
 
     async def fetch_previous_message(
         self, message: Optional[Union[discord.Message, discord.PartialMessage]]

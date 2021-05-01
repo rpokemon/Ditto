@@ -1,22 +1,18 @@
 import asyncpg
 
-from typing import Optional, NoReturn
+from typing import Any, NoReturn
 
-from donphan import (
-    create_pool,
-    create_types,
-    create_tables,
-    create_views,
-    MaybeAcquire,
-    TYPE_CODECS,
-    OPTIONAL_CODECS,
-)
+from discord.utils import MISSING
+from donphan import create_pool, CustomType, MaybeAcquire, Table, OPTIONAL_CODECS
 
 from .tables import *
 from .scheduler import *
 
 
-class NoDatabase:
+class NoDatabase(MaybeAcquire):
+    def __init__(self, *args: Any, **kwargs: Any):
+        pass
+
     def __aenter__(self) -> NoReturn:
         raise RuntimeError("No database connection was setup.")
 
@@ -24,12 +20,12 @@ class NoDatabase:
         raise RuntimeError("No database connection was setup.")
 
 
-async def setup_database() -> Optional[asyncpg.pool.Pool]:
+async def setup_database() -> asyncpg.pool.Pool:
     # this is a hack because >circular imports<
     from ..config import CONFIG
 
     if CONFIG.DATABASE.DISABLED:
-        return None
+        return MISSING
 
     if hasattr(CONFIG.DATABASE, "DSN"):
         dsn = CONFIG.DATABASE.DSN
@@ -41,11 +37,9 @@ async def setup_database() -> Optional[asyncpg.pool.Pool]:
 
     # Connect to the DB
     pool = await create_pool(
-        dsn, TYPE_CODECS | OPTIONAL_CODECS, server_settings={"application_name": CONFIG.DATABASE.APPLICATION_NAME}
+        dsn, OPTIONAL_CODECS, server_settings={"application_name": CONFIG.DATABASE.APPLICATION_NAME}
     )
-    async with MaybeAcquire(pool=pool) as conn:
-        await create_types(conn)
-        await create_tables(conn)
-        await create_views(conn)
-
+    async with MaybeAcquire(pool=pool) as connection:
+        await CustomType.create_all(connection, if_not_exists=True)
+        await Table.create_all(connection, if_not_exists=True)
     return pool

@@ -2,13 +2,13 @@ import asyncio
 import datetime
 from dataclasses import dataclass
 
-from typing import Any, Optional, TypeVar
+from typing import Any, Optional, TYPE_CHECKING, TypeVar
 
 import asyncpg
 
 import discord
 from discord.ext import tasks
-from donphan import Table, SQLType, Column
+from donphan import MaybeAcquire, Table, SQLType, Column
 
 __all__ = ("ScheduledEvent", "EventSchedulerMixin")
 
@@ -17,11 +17,11 @@ T = TypeVar("T", bound="ScheduledEvent")
 
 
 class Events(Table, schema="core"):  # type: ignore[call-arg]
-    id: SQLType.Serial = Column(primary_key=True)
-    created_at: datetime.datetime = Column(default="NOW()")
-    scheduled_for: datetime.datetime = Column(index=True)
-    event_type: str = Column(nullable=False, index=True)
-    data: dict = Column(default="'{}'::jsonb")
+    id: Column[SQLType.Serial] = Column(primary_key=True)
+    created_at: Column[datetime.datetime] = Column(default="NOW()")
+    scheduled_for: Column[datetime.datetime] = Column(index=True)
+    event_type: Column[str] = Column(nullable=False, index=True)
+    data: Column[dict] = Column(default="'{}'::jsonb")
 
 
 @dataclass
@@ -49,6 +49,9 @@ class ScheduledEvent:
 
 
 class EventSchedulerMixin(discord.Client):
+    if TYPE_CHECKING:
+        pool: asyncpg.pool.Pool
+
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         # this is a hack because >circular imports<
         from ..config import CONFIG
@@ -72,12 +75,15 @@ class EventSchedulerMixin(discord.Client):
 
         event = ScheduledEvent(None, now, time, type, list(args), dict(kwargs))
 
-        (event.id,) = await Events.insert(
-            returning=Events.id,
-            scheduled_for=time,
-            event_type=type,
-            data={"args": list(args), "kwargs": dict(kwargs)},
-        )
+        async with MaybeAcquire(pool=self.pool) as connection:
+
+            (event.id,) = await Events.insert(
+                connection,
+                returning=(Events.id,),
+                scheduled_for=time,
+                event_type=type,
+                data={"args": list(args), "kwargs": dict(kwargs)},
+            )
 
         self.__event_scheduler__active.set()
 
@@ -95,7 +101,8 @@ class EventSchedulerMixin(discord.Client):
         return self.__event_scheduler__current
 
     async def _wait_for_event(self) -> ScheduledEvent:
-        record = await Events.fetchrow(order_by="scheduled_for ASC")
+        async with MaybeAcquire(pool=self.pool) as connection:
+            record = await Events.fetch_row(connection, order_by=(Events.scheduled_for, "ASC"))
 
         if record is not None:
             self.__event_scheduler__active.set()
@@ -118,7 +125,8 @@ class EventSchedulerMixin(discord.Client):
                 await discord.utils.sleep_until(event.scheduled_for)
 
             if event.id is not None:
-                await Events.delete_where("id = $1", event.id)
+                async with MaybeAcquire(pool=self.pool) as connection:
+                    await Events.delete(connection, id=event.id)
 
             event.dispatch(self)
 
