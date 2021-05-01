@@ -11,7 +11,7 @@ from ..types import User
 
 __all__ = (
     "Commands",
-    "Time_Zones",
+    "TimeZones",
 )
 
 
@@ -26,7 +26,7 @@ class Commands(Table, schema="logging"):  # type: ignore[call-arg]
     failed: Column[SQLType.Boolean]
 
 
-class Time_Zones(Table, schema="core"):  # type: ignore[call-arg]
+class TimeZones(Table, schema="core"):  # type: ignore[call-arg]
     user_id: Column[SQLType.BigInt] = Column(primary_key=True)
     time_zone: Column[SQLType.Text] = Column(nullable=False)
 

@@ -14,7 +14,7 @@ from discord.ext import commands
 
 from donphan import MaybeAcquire
 
-from ..db import Time_Zones, NoDatabase
+from ..db import TimeZones, NoDatabase
 from ..types import Emoji, TextChannel, User
 from ..utils.guild import user_in_guild
 from ..utils.time import normalise_timedelta
@@ -117,7 +117,7 @@ class Context(commands.Context):
 
     async def get_timezone(self) -> Optional[zoneinfo.ZoneInfo]:
         async with self.db as connection:
-            return await Time_Zones.get_timezone(connection, self.author)
+            return await TimeZones.get_timezone(connection, self.author)
 
     async def fetch_previous_message(
         self, message: Optional[Union[discord.Message, discord.PartialMessage]]

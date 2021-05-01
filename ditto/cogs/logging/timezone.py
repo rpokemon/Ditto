@@ -8,7 +8,7 @@ from discord.ext import commands, menus
 
 from ... import BotBase, Cog, Context, CONFIG
 from ...types import User
-from ...db import Time_Zones
+from ...db import TimeZones
 
 from ...utils.paginator import EmbedPaginator
 from ...utils.strings import utc_offset
@@ -39,7 +39,7 @@ class Timezone(Cog):
             user = cast(User, ctx.author)
 
         async with ctx.db as connection:
-            timezone = await Time_Zones.get_timezone(connection, user)
+            timezone = await TimeZones.get_timezone(connection, user)
 
         if timezone is None:
             raise commands.BadArgument(f"{user.mention} does not have a time zone set.")
@@ -54,9 +54,9 @@ class Timezone(Cog):
     async def timezone_set(self, ctx: Context, *, timezone: zoneinfo.ZoneInfo) -> None:
         """Set your time zone."""
         async with ctx.db as connection:
-            await Time_Zones.insert(
+            await TimeZones.insert(
                 connection,
-                update_on_conflict=(Time_Zones.time_zone,),
+                update_on_conflict=(TimeZones.time_zone,),
                 returning=None,
                 user_id=ctx.author.id,
                 time_zone=str(timezone),
