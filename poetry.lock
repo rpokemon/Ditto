@@ -192,7 +192,7 @@ resolved_reference = "b0ec22065e59d7fcce190333d2fa5b3de88b0e8b"
 
 [[package]]
 name = "donphan"
-version = "4.0.0rc8"
+version = "4.0.0"
 description = "Asynchronous Database ORM for Postgres"
 category = "main"
 optional = false
@@ -469,7 +469,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "e26313a010a0418eab9dd6d8df66df45cb7855f842ee1f3768bb5d87228137cb"
+content-hash = "17f6bc02d69ed345d381a79203eaf185a1d13dc0ca2e4fe5ca1c44e8142e846f"
 
 [metadata.files]
 aiohttp = [
@@ -572,8 +572,8 @@ discord-ext-alternatives = []
 discord-ext-menus = []
 "discord.py" = []
 donphan = [
-    {file = "Donphan-4.0.0rc8-py3-none-any.whl", hash = "sha256:7f6da0a4aa0929a9b213c1f3b6e799b2295425cedde4270f8c87b28b88fc238c"},
-    {file = "Donphan-4.0.0rc8.tar.gz", hash = "sha256:19b9980e5f877cfaeaedb762acbb42a0ec07235d6f2412f47e6a12c4f2a0fb64"},
+    {file = "Donphan-4.0.0-py3-none-any.whl", hash = "sha256:8bd4e943be6e9c7745338ec6df35a609c16d4675e6f1e0a16e0dac815dff0424"},
+    {file = "Donphan-4.0.0.tar.gz", hash = "sha256:e1c7af859923f0a3cc49f7af01a0f18c354d63d4ecfe69fd7440cce9e92324b8"},
 ]
 humanize = [
     {file = "humanize-3.5.0-py3-none-any.whl", hash = "sha256:f584919f691ecfb67036a8639f2ac3d578f5f9073fb4cfd370a4cdf9f66aed78"},
