@@ -29,10 +29,15 @@ class Info(Cog):
     @commands.command()
     async def about(self, ctx: Context):
         """Display some basic information about the bot."""
+        if self.bot.owner is not None:
+            owner = str(self.bot.owner)
+        else:
+            owner = ", ".join(str(owner) for owner in self.bot.owners)
+
         await ctx.send(
             embed=discord.Embed(
                 colour=ctx.me.colour,
-                description=f"I am {self.bot.user}, a bot made by {self.bot.owner}. My prefix is {self.bot.prefix}.",
+                description=f"I am {self.bot.user}, a bot made by {owner}. My prefix is {self.bot.prefix}.",
             ).set_author(name=f"About {self.bot.user.name}:", icon_url=self.bot.user.avatar.url)
         )
 

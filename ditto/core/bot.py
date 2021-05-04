@@ -99,7 +99,9 @@ class BotBase(commands.bot.BotBase, EventSchedulerMixin, discord.Client):
         await self.is_owner(self.user)  # fetch owner id
         if self.owner_id:
             self.owner = await self.fetch_user(self.owner_id)
+            self.owners = []
         if self.owner_ids:
+            self.owner = None
             self.owners = [await self.fetch_user(id) for id in self.owner_ids]
 
     async def on_command_error(self, ctx: Context, error: BaseException) -> Optional[discord.Message]:
