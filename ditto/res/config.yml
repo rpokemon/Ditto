@@ -3,6 +3,8 @@
 
 !Config
 
+  APP_NAME: 'Ditto'
+
   BOT: !Config
     ALLOW_MENTIONS_AS_PREFIX: yes
     PREFIX: !ENV BOT_PREFIX
@@ -12,6 +14,7 @@
 
   LOGGING: !Config
     LOG_LEVEL: !ENV LOG_LEVEL
+    DISCORD_LOG_LEVEL: !ENV LOG_LEVEL
     WEBHOOK_URI: !ENV LOG_WEBHOOK_URI
     LOG_TO_FILE: no
   

@@ -1,6 +1,7 @@
 import datetime
 
 import logging
+import logging.handlers
 import traceback
 
 from collections.abc import Callable
@@ -11,6 +12,7 @@ import discord
 
 from discord.ext import commands
 from discord.ext.alternatives import converter_dict as converter_dict
+from discord.ext.commands.errors import NoEntryPointError
 
 from .context import Context
 from .help import EmbedHelpCommand
@@ -28,6 +30,10 @@ __all__ = (
 )
 
 
+ONE_KILOBYTE = 1024
+ONE_MEGABYTE = ONE_KILOBYTE * 1024
+
+
 class BotBase(commands.bot.BotBase, EventSchedulerMixin, discord.Client):
     converters: dict[type, Callable[..., Any]]
     pool: asyncpg.pool.Pool
@@ -41,16 +47,23 @@ class BotBase(commands.bot.BotBase, EventSchedulerMixin, discord.Client):
         self.start_time = datetime.datetime.now(datetime.timezone.utc)
 
         # Setup logging
-        self.log = logging.getLogger()
+        self.log = logging.getLogger(__name__)
         if CONFIG.LOGGING.LOG_LEVEL is not None:
             self.log.setLevel(CONFIG.LOGGING.LOG_LEVEL)
 
-        webhook_uri = CONFIG.LOGGING.WEBHOOK_URI
-        if webhook_uri is not None:
-            handler = WebhookHandler(webhook_uri)
-            self.log.addHandler(handler)
+        global_log = logging.getLogger()
+        if CONFIG.LOGGING.GLOBAL_LOG_LEVEL is not None:
+            global_log.setLevel(CONFIG.LOGGING.GLOBAL_LOG_LEVEL)
 
-        self.log.addHandler(logging.StreamHandler())
+        if CONFIG.LOGGING.LOG_TO_FILE:
+            handler = logging.handlers.RotatingFileHandler(f"{CONFIG.APP_NAME}.log", maxBytes=ONE_MEGABYTE, encoding="utf-8")
+            global_log.addHandler(handler)
+
+        if CONFIG.LOGGING.WEBHOOK_URI is not None:
+            handler = WebhookHandler(CONFIG.LOGGING.WEBHOOK_URI)
+            global_log.addHandler(handler)
+
+        global_log.addHandler(logging.StreamHandler())
 
         allowed_mentions = discord.AllowedMentions.none()  # <3 Moogy
 
@@ -86,7 +99,7 @@ class BotBase(commands.bot.BotBase, EventSchedulerMixin, discord.Client):
         for extension in CONFIG.EXTENSIONS.keys():
             try:
                 self.load_extension(extension)
-            except commands.ExtensionFailed:
+            except (commands.ExtensionError, ImportError):
                 self.log.exception(f"Failed to load extension {extension}")
 
     @property
