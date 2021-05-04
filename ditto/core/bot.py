@@ -169,7 +169,8 @@ class BotBase(commands.bot.BotBase, EventSchedulerMixin, discord.Client):
         super().run(CONFIG.BOT.TOKEN)
 
     async def close(self):
-        await self.pool.close()
+        if not CONFIG.DATABASE.DISABLED:
+            await self.pool.close()
         await super().close()
 
 
