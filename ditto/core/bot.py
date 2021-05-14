@@ -55,6 +55,8 @@ class BotBase(commands.bot.BotBase, EventSchedulerMixin, discord.Client):
         if CONFIG.LOGGING.GLOBAL_LOG_LEVEL is not None:
             global_log.setLevel(CONFIG.LOGGING.GLOBAL_LOG_LEVEL)
 
+        handler: logging.Handler
+
         if CONFIG.LOGGING.LOG_TO_FILE:
             handler = logging.handlers.RotatingFileHandler(f"{CONFIG.APP_NAME}.log", maxBytes=ONE_MEGABYTE, encoding="utf-8")
             global_log.addHandler(handler)
