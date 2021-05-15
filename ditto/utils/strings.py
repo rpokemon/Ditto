@@ -35,7 +35,7 @@ def yes_no(obj: Any) -> Literal["Yes", "No"]:
     return "Yes" if obj else "No"
 
 
-def _items_in_col(n_items, cols):
+def _items_in_col(n_items: int, cols: int) -> tuple[int, ...]:
     at_least_per_col = n_items // cols
     num_filled_in_last = n_items % cols
     return (at_least_per_col + 1,) * num_filled_in_last + (at_least_per_col,) * (cols - num_filled_in_last)

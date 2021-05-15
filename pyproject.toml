@@ -1,10 +1,14 @@
 [tool.poetry]
 name = "Ditto"
-version = "0.0.1a"
-description = "A Discord bot template for Discord.py version 1.7+"
+version = "0.1.0a"
+description = "A Discord bot template for Discord.py version 2+"
 authors = ["bijij <josh@josh-is.gay>"]
 license = "MIT"
 readme = "README.rst"
+packages = [
+  { include = "ditto" },
+  { include = "ditto/py.typed" }
+]
 include = ["ditto/res/*"]
 
 [tool.poetry.dependencies]

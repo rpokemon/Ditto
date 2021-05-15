@@ -139,7 +139,7 @@ class EmbedPaginator(discord.Embed, PaginatorSource[EmbT]):
         fields = []
         for page in self._pages:
             for field in page.fields:
-                fields.append(discord.embeds.EmbedProxy(field))
+                fields.append(discord.embeds.EmbedProxy(field))  # type: ignore
         return fields
 
     def __repr__(self) -> str:
