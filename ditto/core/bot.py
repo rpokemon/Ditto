@@ -112,7 +112,6 @@ class BotBase(commands.bot.BotBase, EventSchedulerMixin, discord.Client):
         return datetime.datetime.now(datetime.timezone.utc) - self.start_time
 
     async def on_ready(self) -> None:
-        print(self.user)
         self.log.info(f"Succesfully logged in as {self.user} ({self.user.id})")
         await self.is_owner(self.user)  # fetch owner id
         if self.owner_id:
