@@ -36,9 +36,7 @@ async def setup_database() -> asyncpg.pool.Pool:
         dsn = f"postgres://{CONFIG.DATABASE.USERNAME}:{CONFIG.DATABASE.PASSWORD}@{CONFIG.DATABASE.HOSTNAME}/{CONFIG.DATABASE.DATABASE}"
 
     # Connect to the DB
-    pool = await create_pool(
-        dsn, OPTIONAL_CODECS, server_settings={"application_name": CONFIG.APP_NAME}
-    )
+    pool = await create_pool(dsn, OPTIONAL_CODECS, server_settings={"application_name": CONFIG.APP_NAME})
     async with MaybeAcquire(pool=pool) as connection:
         await CustomType.create_all(connection, if_not_exists=True)
         await Table.create_all(connection, if_not_exists=True)

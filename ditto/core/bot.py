@@ -58,7 +58,10 @@ class BotBase(commands.bot.BotBase, EventSchedulerMixin, discord.Client):
         handler: logging.Handler
 
         if CONFIG.LOGGING.LOG_TO_FILE:
-            handler = logging.handlers.RotatingFileHandler(f"{CONFIG.APP_NAME}.log", maxBytes=ONE_MEGABYTE, encoding="utf-8")
+            handler = logging.handlers.RotatingFileHandler(
+                f"{CONFIG.APP_NAME}.log", maxBytes=ONE_MEGABYTE, encoding="utf-8"
+            )
+            handler.setFormatter(logging.Formatter("{asctime} - {module}:{levelname} - {message}", style="{"))
             global_log.addHandler(handler)
 
         if CONFIG.LOGGING.WEBHOOK_URI is not None:
