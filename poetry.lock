@@ -173,7 +173,7 @@ resolved_reference = "309c70222eec33acacb8c21bbb0fbe9bc57de661"
 
 [[package]]
 name = "discord.py"
-version = "2.0.0a3109+g5ad88dec"
+version = "2.0.0a3111+g81b259ab"
 description = "A Python wrapper for the Discord API"
 category = "main"
 optional = false
@@ -191,7 +191,7 @@ voice = ["PyNaCl (>=1.3.0,<1.5)"]
 type = "git"
 url = "https://github.com/rapptz/discord.py"
 reference = "master"
-resolved_reference = "5ad88dec72b5bef063bc9a01646082b95ca53cf1"
+resolved_reference = "81b259ab3668d0083e4bac4290d5ea88a7a69424"
 
 [[package]]
 name = "donphan"
