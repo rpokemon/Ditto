@@ -4,6 +4,10 @@
 !Config
 
   APP_NAME: 'Ditto'
+  
+  SOURCE: !Config
+    DITTO: 'bijij/ditto'
+    CUSTOM: 'bijij/ditto'
 
   BOT: !Config
     ALLOW_MENTIONS_AS_PREFIX: yes

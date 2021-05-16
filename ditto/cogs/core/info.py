@@ -1,4 +1,6 @@
 import datetime
+import inspect
+import pathlib
 
 from typing import cast, get_args, Optional, Union
 
@@ -6,15 +8,18 @@ import discord
 from discord.ext import commands
 from PIL import Image
 
-from ... import BotBase, Cog, Context
+from ... import BotBase, Cog, Context, CONFIG as BOT_CONFIG
 from ...types import DiscordObject, VocalGuildChannel, GuildChannel, User, DiscordEmoji, Message
 from ...utils.collections import summarise_list
+from ...utils.files import get_base_dir
 from ...utils.images import to_bytes
 from ...utils.strings import codeblock, yes_no, as_columns
 from ...utils.time import readable_timestamp
 
 
 COLOUR_INFO_IMAGE_SIZE = 128
+
+GITHUB_URL = "https://github.com/"
 
 ListGuildChannel = Union[
     list[discord.TextChannel],
@@ -40,6 +45,8 @@ class Info(Cog):
                 description=f"I am {self.bot.user}, a bot made by {owner}. My prefix is {self.bot.prefix}.",
             ).set_author(name=f"About {self.bot.user.name}:", icon_url=self.bot.user.avatar.url)
         )
+
+    # region: Object Info
 
     @classmethod
     def summarise_roles(cls, *roles: discord.Role, max_items: int = 5, skip_first: bool = True) -> str:
@@ -547,6 +554,40 @@ class Info(Cog):
             return await ctx.invoke(self.colour_info, colour=item)
 
         raise commands.BadArgument(f"Could not find information on: {item}")
+
+    # endregion: Object info
+
+    @commands.command()
+    async def source(self, ctx: Context, *, command: commands.Command = None):
+        if command is None:
+            return await ctx.send(GITHUB_URL + BOT_CONFIG.SOURCE.CUSTOM)
+
+        if command.name == "help":
+            code = type(self.bot.help_command)
+        else:
+            code = command.callback.__code__
+
+        filename = inspect.getsourcefile(code)
+
+        if filename is None:
+            raise commands.BadArgument(f'Could not find source for command: "{command.qualified_name}"')
+
+        file = pathlib.Path(filename).relative_to(pathlib.Path.cwd())
+        base_dir = get_base_dir()
+
+        lines, first_line = inspect.getsourcelines(code)
+        last_line = first_line + len(lines) - 1
+
+        if str(file).startswith(str(base_dir)):
+            repository = BOT_CONFIG.SOURCE.DITTO
+            commit_hash = "master"  # todo: Add commit to version.
+            filename = str(file.relative_to(base_dir.parent)).replace('\\', '/')
+        else:
+            repository = BOT_CONFIG.SOURCE.CUSTOM
+            commit_hash = "master"  # todo: Add commit to version.
+            filename = str(file).replace('\\', '/')
+
+        await ctx.send(f"{GITHUB_URL}{repository}/blob/{commit_hash}/{filename}#L{first_line}-#L{last_line}")
 
 
 def setup(bot: BotBase):
