@@ -6,7 +6,7 @@ from typing import Optional
 
 def get_base_dir(module: Optional[types.ModuleType] = None) -> pathlib.Path:
     if module is None:
-        file = __file__
+        file = pathlib.Path(__file__).parent
     else:
         file = module.__file__
-    return pathlib.Path(file).parent.parent.relative_to(pathlib.Path.cwd())
+    return pathlib.Path(file).parent.relative_to(pathlib.Path.cwd())
