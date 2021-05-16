@@ -32,7 +32,7 @@ class TestDittoFileUtils(TestCase):
     def test_get_base_dir(self) -> None:
         base_dir = files.get_base_dir()
         self.assertIsInstance(base_dir, pathlib.Path)
-        self.assertEqual(base_dir, pathlib.Path(__file__).parent.parent / "ditto")
+        self.assertEqual(base_dir, (pathlib.Path(__file__).parent.parent / "ditto").relative_to(pathlib.Path.cwd()))
 
 
 class TestDittoStringUtils(TestCase):

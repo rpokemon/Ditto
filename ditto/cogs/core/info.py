@@ -5,6 +5,8 @@ import pathlib
 from typing import cast, get_args, Optional, Union
 
 import discord
+import ditto
+import jishaku
 from discord.ext import commands
 from PIL import Image
 
@@ -573,19 +575,23 @@ class Info(Cog):
             raise commands.BadArgument(f'Could not find source for command: "{command.qualified_name}"')
 
         file = pathlib.Path(filename).relative_to(pathlib.Path.cwd())
-        base_dir = get_base_dir()
+
+        module_dirs = ((get_base_dir(ditto), BOT_CONFIG.SOURCE.DITTO), (get_base_dir(jishaku), "gorialis/jishaku"))
 
         lines, first_line = inspect.getsourcelines(code)
         last_line = first_line + len(lines) - 1
 
-        if str(file).startswith(str(base_dir)):
-            repository = BOT_CONFIG.SOURCE.DITTO
-            commit_hash = "master"  # todo: Add commit to version.
-            filename = str(file.relative_to(base_dir.parent)).replace('\\', '/')
-        else:
+        repository = None
+        commit_hash = "master"  # todo: Add commit to version.
+        for dir, repo in module_dirs:
+            if str(file).startswith(str(dir)):
+                repository = repo
+                filename = str(file.relative_to(dir.parent)).replace("\\", "/")
+                break
+
+        if repository is None:
             repository = BOT_CONFIG.SOURCE.CUSTOM
-            commit_hash = "master"  # todo: Add commit to version.
-            filename = str(file).replace('\\', '/')
+            filename = str(file).replace("\\", "/")
 
         await ctx.send(f"<{GITHUB_URL}{repository}/blob/{commit_hash}/{filename}#L{first_line}-#L{last_line}>")
 
