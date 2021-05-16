@@ -560,7 +560,7 @@ class Info(Cog):
     @commands.command()
     async def source(self, ctx: Context, *, command: commands.Command = None):
         if command is None:
-            return await ctx.send(GITHUB_URL + BOT_CONFIG.SOURCE.CUSTOM)
+            return await ctx.send(f"<{GITHUB_URL}{BOT_CONFIG.SOURCE.CUSTOM}>")
 
         if command.name == "help":
             code = type(self.bot.help_command)
@@ -587,7 +587,7 @@ class Info(Cog):
             commit_hash = "master"  # todo: Add commit to version.
             filename = str(file).replace('\\', '/')
 
-        await ctx.send(f"{GITHUB_URL}{repository}/blob/{commit_hash}/{filename}#L{first_line}-#L{last_line}")
+        await ctx.send(f"<{GITHUB_URL}{repository}/blob/{commit_hash}/{filename}#L{first_line}-#L{last_line}>")
 
 
 def setup(bot: BotBase):
