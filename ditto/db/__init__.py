@@ -6,6 +6,7 @@ from discord.utils import MISSING
 from donphan import create_pool, CustomType, MaybeAcquire, Table, OPTIONAL_CODECS
 
 from .tables import *
+from .emoji import *
 from .scheduler import *
 
 

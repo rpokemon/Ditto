@@ -12,12 +12,11 @@ import discord
 
 from discord.ext import commands
 from discord.ext.alternatives import converter_dict as converter_dict
-from discord.ext.commands.errors import NoEntryPointError
 
 from .context import Context
 from .help import EmbedHelpCommand
 from ..config import CONFIG, load_global_config
-from ..db import setup_database, EventSchedulerMixin
+from ..db import setup_database, EmojiCacheMixin, EventSchedulerMixin
 from ..types import CONVERTERS
 from ..utils.logging import WebhookHandler
 from ..utils.strings import codeblock
@@ -34,7 +33,7 @@ ONE_KILOBYTE = 1024
 ONE_MEGABYTE = ONE_KILOBYTE * 1024
 
 
-class BotBase(commands.bot.BotBase, EventSchedulerMixin, discord.Client):
+class BotBase(commands.bot.BotBase, EmojiCacheMixin, EventSchedulerMixin, discord.Client):
     converters: dict[type, Callable[..., Any]]
     pool: asyncpg.pool.Pool
 

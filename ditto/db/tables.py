@@ -34,3 +34,22 @@ class TimeZones(Table, schema="core"):  # type: ignore[call-arg]
     async def get_timezone(cls, connection: asyncpg.Connection, /, user: User) -> Optional[zoneinfo.ZoneInfo]:
         record = await cls.fetch_row(connection, user_id=user.id)
         return zoneinfo.ZoneInfo(record["time_zone"]) if record is not None else None
+
+
+class Events(Table, schema="core"):  # type: ignore[call-arg]
+    id: Column[SQLType.Serial] = Column(primary_key=True)
+    created_at: Column[SQLType.Timestamp] = Column(default="NOW()")
+    scheduled_for: Column[SQLType.Timestamp] = Column(index=True)
+    event_type: Column[SQLType.Text] = Column(nullable=False, index=True)
+    data: Column[SQLType.JSONB] = Column(default="'{}'::jsonb")
+
+
+class Emoji(Table, schema="core"):  # type: ignore[call-arg]
+    emoji_id: Column[SQLType.BigInt] = Column(primary_key=True)
+    guild_id: Column[SQLType.BigInt] = Column(index=True, nullable=False)
+    last_fetched: Column[SQLType.Timestamp] = Column(default="NOW()")
+
+
+class UserEmoji(Table, schema="core"):  # type: ignore[call-arg]
+    emoji_id: Column[SQLType.BigInt] = Column(primary_key=True, references=Emoji.emoji_id, cascade=True)
+    user_id: Column[SQLType.BigInt] = Column(index=True, unique=True)

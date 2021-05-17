@@ -16,6 +16,11 @@
     IGNORE_BOTS: yes
     # INTENTS:  # Map a dictionary of intents
 
+  EMOJI: !Config
+    NOT_FOUND: ~
+    LEAVE_FREE: 5
+    GUILDS: []
+
   LOGGING: !Config
     LOG_LEVEL: !ENV LOG_LEVEL
     GLOBAL_LOG_LEVEL: !ENV LOG_LEVEL

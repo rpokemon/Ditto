@@ -8,20 +8,14 @@ import asyncpg
 
 import discord
 from discord.ext import tasks
-from donphan import MaybeAcquire, Table, SQLType, Column
+from donphan import MaybeAcquire
+
+from .tables import Events
 
 __all__ = ("ScheduledEvent", "EventSchedulerMixin")
 
 
 T = TypeVar("T", bound="ScheduledEvent")
-
-
-class Events(Table, schema="core"):  # type: ignore[call-arg]
-    id: Column[SQLType.Serial] = Column(primary_key=True)
-    created_at: Column[datetime.datetime] = Column(default="NOW()")
-    scheduled_for: Column[datetime.datetime] = Column(index=True)
-    event_type: Column[str] = Column(nullable=False, index=True)
-    data: Column[dict] = Column(default="'{}'::jsonb")
 
 
 @dataclass
