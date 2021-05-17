@@ -9,10 +9,10 @@ import asyncpg
 import discord
 from donphan import MaybeAcquire
 
-from ..types import User
-from .tables import Emoji, UserEmoji
-
 from PIL import Image, ImageChops, ImageDraw
+
+from .tables import Emoji, UserEmoji
+from ..types import User
 
 
 CONFIG: Any = None
