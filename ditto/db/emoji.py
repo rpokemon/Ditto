@@ -86,7 +86,7 @@ class EmojiCacheMixin(discord.Client):
             # Otherwise delete the oldest emoji
             record = await Emoji.fetch_row(connection, order_by=(Emoji.last_fetched, "ASC"))
             if record is None:
-                raise RuntimeError('Somehow this happened.')
+                raise RuntimeError("Somehow this happened.")
             await self.delete_emoji(record["emoji_id"], connection=connection)
 
             # return await self._find_guild(connection=connection)  # could recurse
