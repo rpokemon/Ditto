@@ -4,7 +4,6 @@ import random
 import re
 
 from typing import Any, Optional, TYPE_CHECKING
-from typing_extensions import runtime
 
 import asyncpg
 import discord

@@ -12,6 +12,9 @@ from ..types import User
 __all__ = (
     "Commands",
     "TimeZones",
+    "Events",
+    "Emoji",
+    "UserEmoji",
 )
 
 
