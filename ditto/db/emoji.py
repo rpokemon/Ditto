@@ -13,6 +13,7 @@ from PIL import Image, ImageChops, ImageDraw
 
 from .tables import Emoji, UserEmoji
 from ..types import User
+from ..utils.users import download_avatar
 
 
 CONFIG: Any = None
@@ -23,16 +24,7 @@ __all__ = ("EmojiCacheMixin",)
 
 async def create_user_image(user: User) -> io.BytesIO:
 
-    in_fp = io.BytesIO()
-
-    # Download User avatar
-    try:
-        await user.avatar.replace(size=128, static_format="png").save(in_fp)
-    except discord.NotFound:
-        discord.Member
-        await user.default_avatar.replace(size=128, static_format="png").save(in_fp)
-
-    avatar = Image.open(in_fp)
+    avatar = Image.open(await download_avatar(user, size=128, static=True))
 
     if avatar.mode != "RGBA":
         avatar = avatar.convert("RGBA")
