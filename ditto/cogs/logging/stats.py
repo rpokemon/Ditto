@@ -30,6 +30,7 @@ class CommandInvoke(NamedTuple):
 class Stats(Cog):
     def __init__(self, bot: BotBase) -> None:
         super().__init__(bot)
+        self._command_stats: Counter[str] = Counter()
         self._socket_stats: Counter[Optional[str]] = Counter()
         self._batch_lock = asyncio.Lock()
         self._batch_data: list[CommandInvoke] = []
@@ -62,7 +63,23 @@ class Stats(Cog):
         await menus.MenuPages(embed, delete_message_after=True).start(ctx)
 
     @commands.command()
-    async def socket_status(self, ctx: Context) -> None:
+    async def command_stats(self, ctx: Context) -> None:
+        """Displays basic information about command invocation statistics."""
+        total_occurunces = sum(self._command_stats.values())
+        total_per_min = total_occurunces / (self.bot.uptime.total_seconds() / 60)
+
+        embed = discord.Embed(
+            colour=ctx.me.colour, description=f"Processed {total_occurunces} command invokes. ({total_per_min:.2f}/min)"
+        ).set_author(name=f"{self.bot.user.name} command stats:", icon_url=self.bot.user.avatar.url)
+
+        for event, occurunces in self._command_stats.most_common(25):
+            per_minute = occurunces / (self.bot.uptime.total_seconds() / 60)
+            embed.add_field(name=f"`{event}`", value=f"{occurunces} ({per_minute:.2f}/min)", inline=True)
+
+        await ctx.send(embed=embed)
+
+    @commands.command()
+    async def socket_stats(self, ctx: Context) -> None:
         """Displays basic information about socket statistics."""
         total_occurunces = sum(self._socket_stats.values())
         total_per_min = total_occurunces / (self.bot.uptime.total_seconds() / 60)
@@ -101,6 +118,8 @@ class Stats(Cog):
             command.qualified_name,
             ctx.command_failed,
         )
+
+        self._command_stats[command.qualified_name] += 1
 
         async with self._batch_lock:
             self._batch_data.append(invoke)
