@@ -1,7 +1,8 @@
 import asyncio
 import datetime
 
-from typing import NamedTuple
+from collections import Counter
+from typing import Any, NamedTuple, Optional
 
 import asyncpg
 import discord
@@ -29,6 +30,7 @@ class CommandInvoke(NamedTuple):
 class Stats(Cog):
     def __init__(self, bot: BotBase) -> None:
         super().__init__(bot)
+        self._socket_stats: Counter[Optional[str]] = Counter()
         self._batch_lock = asyncio.Lock()
         self._batch_data: list[CommandInvoke] = []
 
@@ -58,6 +60,26 @@ class Stats(Cog):
             embed.add_line("No commands used.")
 
         await menus.MenuPages(embed, delete_message_after=True).start(ctx)
+
+    @commands.command()
+    async def socket_status(self, ctx: Context) -> None:
+        """Displays basic information about socket statistics."""
+        total_occurunces = sum(self._socket_stats.values())
+        total_per_min = total_occurunces / (self.bot.uptime.total_seconds() / 60)
+
+        embed = discord.Embed(
+            colour=ctx.me.colour, description=f"Observed {total_occurunces} socket events. ({total_per_min:.2f}/min)"
+        ).set_author(name=f"{self.bot.user.name} socket event stats:", icon_url=self.bot.user.avatar.url)
+
+        for event, occurunces in self._socket_stats.most_common(25):
+            per_minute = occurunces / (self.bot.uptime.total_seconds() / 60)
+            embed.add_field(name=f"`{event}`", value=f"{occurunces} ({per_minute:.2f}/min)", inline=True)
+
+        await ctx.send(embed=embed)
+
+    @commands.Cog.listener()
+    async def on_socket_response(self, msg: dict[str, Any]):
+        self._socket_stats[msg.get("t")] += 1
 
     @commands.Cog.listener("on_command_completion")
     @commands.Cog.listener("on_command_error")
