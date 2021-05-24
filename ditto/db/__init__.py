@@ -3,7 +3,7 @@ import asyncpg
 from typing import Any, NoReturn
 
 from discord.utils import MISSING
-from donphan import create_pool, CustomType, MaybeAcquire, Table, OPTIONAL_CODECS
+from donphan import create_pool, create_db, MaybeAcquire, OPTIONAL_CODECS
 
 from .tables import *
 from .emoji import *
@@ -39,6 +39,5 @@ async def setup_database() -> asyncpg.pool.Pool:
     # Connect to the DB
     pool = await create_pool(dsn, OPTIONAL_CODECS, server_settings={"application_name": CONFIG.APP_NAME})
     async with MaybeAcquire(pool=pool) as connection:
-        await CustomType.create_all(connection, if_not_exists=True)
-        await Table.create_all(connection, if_not_exists=True)
+        await create_db(connection, if_not_exists=True)
     return pool
