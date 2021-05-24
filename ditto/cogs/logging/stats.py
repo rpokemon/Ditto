@@ -12,6 +12,7 @@ from ... import BotBase, Cog, Context, CONFIG
 from ...db.tables import Commands
 
 from ...utils.paginator import EmbedPaginator
+from ...utils.time import human_friendly_timestamp
 
 
 class CommandInvoke(NamedTuple):
@@ -49,14 +50,14 @@ class Stats(Cog):
             for command in commands:
                 user = self.bot.get_user(command["user_id"]) or "Unknown user"
                 embed.add_field(
-                    name=f'{user} ({command["user_id"]}) @ {command["invoked_at"]}',
+                    name=f'{user} ({command["user_id"]}) @ {human_friendly_timestamp(command["invoked_at"])}',
                     value=f'`{command["prefix"]}{command["command"]}`',
                     inline=False,
                 )
         else:
             embed.add_line("No commands used.")
 
-        await menus.MenuPages(embed).start(ctx)
+        await menus.MenuPages(embed, delete_message_after=True).start(ctx)
 
     @commands.Cog.listener("on_command_completion")
     @commands.Cog.listener("on_command_error")
