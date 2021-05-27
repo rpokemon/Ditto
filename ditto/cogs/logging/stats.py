@@ -7,7 +7,7 @@ from typing import Any, NamedTuple, Optional
 import asyncpg
 import discord
 from discord.ext import commands, menus, tasks
-from donphan.connection import MaybeAcquire
+from donphan import MaybeAcquire
 
 from ... import BotBase, Cog, Context, CONFIG
 from ...db.tables import Commands
@@ -69,7 +69,8 @@ class Stats(Cog):
         total_per_min = total_occurunces / (self.bot.uptime.total_seconds() / 60)
 
         embed = discord.Embed(
-            colour=ctx.me.colour, description=f"Processed {total_occurunces} command invokes. ({total_per_min:.2f}/min)"
+            colour=ctx.me.colour,
+            description=f"Processed {total_occurunces} command invokes. ({total_per_min:.2f}/min)",
         ).set_author(name=f"{self.bot.user.name} command stats:", icon_url=self.bot.user.avatar.url)
 
         for event, occurunces in self._command_stats.most_common(25):
