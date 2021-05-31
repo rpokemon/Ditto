@@ -7,6 +7,7 @@ from typing import Any, TypeVar
 
 __all__ = (
     "summarise_list",
+    "format_list",
     "LRUDict",
     "LRUDefaultDict",
     "TimedDict",
@@ -33,6 +34,19 @@ def summarise_list(
     if count > max_items:
         info += f" (+{count - max_items} More)"
     return info
+
+
+def format_list(
+    string: str, *list: Any, singular: str = "has", plural: str = "have", oxford_comma: bool = False
+) -> str:
+    if len(list) == 0:
+        return string.format("no-one", singular)
+    elif len(list) == 0:
+        return string.format(list[0], singular)
+
+    *rest, last = list
+    rest_str = ", ".join(str(item) for item in rest)
+    return string.format(rest_str + "and" + "," * oxford_comma + str(last), plural)
 
 
 class TimedDict(dict):
