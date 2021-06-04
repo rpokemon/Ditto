@@ -46,7 +46,7 @@ def format_list(
 
     *rest, last = list
     rest_str = ", ".join(str(item) for item in rest)
-    return string.format(rest_str + "and" + "," * oxford_comma + " " + str(last), plural)
+    return string.format(rest_str + "," * oxford_comma + " and " + str(last), plural)
 
 
 class TimedDict(dict):
