@@ -161,6 +161,12 @@ class BotBase(commands.bot.BotBase, EmojiCacheMixin, EventSchedulerMixin, discor
         )
         return None
 
+    async def on_slash_command_error(self, interaction: discord.Interaction, command: discord.slash.Command, error: Exception) -> None:
+        tb = "".join(traceback.format_exception(type(error), error, error.__traceback__))
+        self.log.error(
+            f"Unhandled exception in command: {command.name}\n\n{type(error).__name__}: {error}\n\n{tb}"
+        )
+
     async def process_commands(self, message: discord.Message) -> None:
         if CONFIG.BOT.IGNORE_BOTS and message.author.bot:
             return
