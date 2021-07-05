@@ -1,7 +1,17 @@
+import asyncio
+from contextlib import suppress
+
 from typing import Any, Coroutine
 
 import discord
 from discord.types.interactions import ApplicationCommandInteractionData as ApplicationCommandInteractionDataPayload
+
+
+__all___ = (
+    "delete_after",
+    "error",
+    "send_message",
+)
 
 
 def send_message(interaction: discord.Interaction, *args: Any, **kwargs: Any) -> Coroutine[Any, Any, Any]:
@@ -9,6 +19,16 @@ def send_message(interaction: discord.Interaction, *args: Any, **kwargs: Any) ->
     if send_func is interaction.followup.send:
         kwargs.pop("ephemeral")
     return send_func(*args, **kwargs)
+
+
+async def _delete_after(interaction: discord.Interaction, after: float) -> None:
+    await asyncio.sleep(after)
+    with suppress(discord.NotFound):
+        await interaction.delete_original_message()
+
+
+def delete_after(interaction: discord.Interaction, after: float) -> None:
+    asyncio.create_task(_delete_after(interaction, after))
 
 
 def error(interaction: discord.Interaction, message: str) -> Coroutine[Any, Any, Any]:
