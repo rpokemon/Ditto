@@ -1,7 +1,7 @@
 import asyncio
 from contextlib import suppress
 
-from typing import Any, Coroutine
+from typing import Any, Coroutine, TYPE_CHECKING
 
 import discord
 from discord.types.interactions import ApplicationCommandInteractionData as ApplicationCommandInteractionDataPayload
@@ -32,7 +32,8 @@ def delete_after(interaction: discord.Interaction, after: float) -> None:
 
 
 def error(interaction: discord.Interaction, message: str) -> Coroutine[Any, Any, Any]:
-    assert isinstance(interaction.data, ApplicationCommandInteractionDataPayload)
+    if TYPE_CHECKING:
+        assert isinstance(interaction.data, ApplicationCommandInteractionDataPayload)
     return send_message(
         interaction,
         embed=discord.Embed(
