@@ -51,7 +51,7 @@ def env_var_constructor(loader: yaml.Loader, node: yaml.ScalarNode) -> Optional[
 
 def generate_constructor(func: Callable[..., Any]) -> Callable[[yaml.Loader, yaml.ScalarNode], Object]:
     def constructor(loader: yaml.Loader, node: yaml.ScalarNode) -> Object:
-        ids = [int(x) for x in loader.construct_scalar(node).split()]
+        ids = [int(x) for x in loader.construct_scalar(node).split()]  # type: ignore
         return Object(ids[-1], lambda: func(*ids))
 
     return constructor
@@ -121,10 +121,10 @@ DISCORD_CONSTRUCTORS: dict[str, Callable[..., Any]] = {
     "Emoji": lambda e: _bot.get_emoji(e),
     "Guild": lambda g: _bot.get_guild(g),
     "User": lambda u: _bot.get_user(u),
-    "Channel": lambda g, c: _bot.get_guild(g).get_channel(c),
-    "Member": lambda g, m: _bot.get_guild(g).get_member(m),
-    "Role": lambda g, r: _bot.get_guild(g).get_role(r),
-    "Message": lambda g, c, m: discord.PartialMessage(channel=_bot.get_guild(g).get_channel(c), id=m),
+    "Channel": lambda g, c: _bot.get_guild(g).get_channel(c),  # type: ignore
+    "Member": lambda g, m: _bot.get_guild(g).get_member(m),  # type: ignore
+    "Role": lambda g, r: _bot.get_guild(g).get_role(r),  # type: ignore
+    "Message": lambda g, c, m: discord.PartialMessage(channel=_bot.get_guild(g).get_channel(c), id=m),  # type: ignore
 }
 
 for key, func in DISCORD_CONSTRUCTORS.items():

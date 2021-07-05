@@ -4,6 +4,8 @@ import logging
 import logging.handlers
 import traceback
 
+from contextlib import suppress
+
 from collections.abc import Callable
 from typing import Any, Optional
 
@@ -20,6 +22,7 @@ from ..db import setup_database, EmojiCacheMixin, EventSchedulerMixin
 from ..types import CONVERTERS
 from ..utils.logging import WebhookHandler
 from ..utils.strings import codeblock
+from ..utils.slash.utils import send_message
 
 
 __all__ = (
@@ -111,7 +114,7 @@ class BotBase(commands.bot.BotBase, EmojiCacheMixin, EventSchedulerMixin, discor
         return datetime.datetime.now(datetime.timezone.utc) - self.start_time
 
     async def on_ready(self) -> None:
-        self.log.info(f"Succesfully logged in as {self.user} ({self.user.id})")
+        self.log.info(f"Succesfully logged in as {self.user} ({getattr(self.user, 'id')})")
         await self.is_owner(self.user)  # fetch owner id
         if self.owner_id:
             self.owner = await self.fetch_user(self.owner_id)
@@ -121,8 +124,8 @@ class BotBase(commands.bot.BotBase, EmojiCacheMixin, EventSchedulerMixin, discor
             self.owners = [await self.fetch_user(id) for id in self.owner_ids]
 
     async def on_command_error(self, ctx: Context, error: BaseException) -> Optional[discord.Message]:
-        if isinstance(error, commands.CommandNotFound):
-            return None
+        if isinstance(error, commands.CommandNotFound) or ctx.command is None:
+            return
 
         if isinstance(
             error,
@@ -143,7 +146,7 @@ class BotBase(commands.bot.BotBase, EmojiCacheMixin, EventSchedulerMixin, discor
             )
 
         if error.__cause__ is None:
-            return None
+            return
 
         error = error.__cause__
 
@@ -159,13 +162,23 @@ class BotBase(commands.bot.BotBase, EmojiCacheMixin, EventSchedulerMixin, discor
         self.log.error(
             f"Unhandled exception in command: {ctx.command.qualified_name}\n\n{type(error).__name__}: {error}\n\n{tb}"
         )
-        return None
 
-    async def on_slash_command_error(self, interaction: discord.Interaction, command: discord.slash.Command, error: Exception) -> None:
+    async def on_slash_command_error(
+        self, interaction: discord.Interaction, command: discord.slash.Command, error: Exception
+    ) -> None:
+
+        with suppress(Exception):
+            await send_message(
+                interaction,
+                embed=discord.Embed(
+                    colour=discord.Colour.dark_red(),
+                    title=f"Unexpected error with command {command.name}",
+                    description=codeblock(f"{type(error).__name__}: {error}", language="py"),
+                ),
+            )
+
         tb = "".join(traceback.format_exception(type(error), error, error.__traceback__))
-        self.log.error(
-            f"Unhandled exception in command: {command.name}\n\n{type(error).__name__}: {error}\n\n{tb}"
-        )
+        self.log.error(f"Unhandled exception in command: {command.name}\n\n{type(error).__name__}: {error}\n\n{tb}")
 
     async def process_commands(self, message: discord.Message) -> None:
         if CONFIG.BOT.IGNORE_BOTS and message.author.bot:

@@ -3,7 +3,7 @@ import io
 import random
 import re
 
-from typing import Any, Optional, TYPE_CHECKING
+from typing import Any, Optional, TYPE_CHECKING, cast
 
 import asyncpg
 import discord
@@ -34,9 +34,9 @@ async def create_user_image(user: User) -> io.BytesIO:
     if alpha.mode != "L":
         alpha = alpha.convert("L")
 
-    mask = Image.new("L", avatar.size, 0)
-    draw = ImageDraw.Draw(mask)
-    draw.ellipse((0, 0) + avatar.size, fill=255)
+    mask = Image.new("L", avatar.size) 
+    draw = cast(ImageDraw.ImageDraw, ImageDraw.Draw(mask))
+    draw.ellipse((0, 0) + avatar.size, fill=255)  # type: ignore
 
     mask = ImageChops.darker(mask, alpha)
     avatar.putalpha(mask)

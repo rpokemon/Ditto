@@ -1,8 +1,10 @@
+from __future__ import annotations
+
 import datetime
 import inspect
 import pathlib
 
-from typing import cast, get_args, Optional, Union
+from typing import TYPE_CHECKING, cast, get_args, Optional, Union
 
 import discord
 import ditto
@@ -11,12 +13,15 @@ from discord.ext import commands
 from PIL import Image
 
 from ... import BotBase, Cog, Context, CONFIG as BOT_CONFIG
-from ...types import DiscordObject, VocalGuildChannel, GuildChannel, User, DiscordEmoji, Message
+from ...types import DiscordObject, VocalGuildChannel, NonVocalGuildChannel, GuildChannel, User, DiscordEmoji, Message
 from ...utils.collections import summarise_list
 from ...utils.files import get_base_dir
 from ...utils.images import to_bytes
 from ...utils.strings import codeblock, yes_no, as_columns
 from ...utils.time import readable_timestamp
+
+if TYPE_CHECKING:
+    from typing_extensions import TypeGuard
 
 
 COLOUR_INFO_IMAGE_SIZE = 128
@@ -32,6 +37,14 @@ ListGuildChannel = Union[
 ]
 
 
+def is_voice_channel(channel: GuildChannel) -> TypeGuard[VocalGuildChannel]:
+    return isinstance(channel, get_args(VocalGuildChannel))
+
+
+def is_not_voice_channel(channel: GuildChannel) -> TypeGuard[NonVocalGuildChannel]:
+    return not is_voice_channel(channel)
+
+
 class Info(Cog):
     @commands.command()
     async def about(self, ctx: Context):
@@ -45,7 +58,7 @@ class Info(Cog):
             embed=discord.Embed(
                 colour=ctx.me.colour,
                 description=f"I am {self.bot.user}, a bot made by {owner}. My prefix is {self.bot.prefix}.",
-            ).set_author(name=f"About {self.bot.user.name}:", icon_url=self.bot.user.avatar.url)
+            ).set_author(name=f"About {ctx.me.name}:", icon_url=ctx.me.avatar.url)
         )
 
     # region: Object Info
@@ -110,14 +123,18 @@ class Info(Cog):
             raise commands.BadArgument("You cannot retrieve information on a server you are not in.")
 
         embed = self._object_info(server)
-        embed.set_thumbnail(url=server.icon.url)
+
+        if server.icon is not None:
+            embed.set_thumbnail(url=server.icon.url)
 
         embed.add_field(name="Voice Region:", value=str(server.region))
 
         owner = server.owner
-        if owner is None:
+        if owner is None and server.owner_id is not None:
             owner = await server.fetch_member(server.owner_id)
-        embed.add_field(name="Owner:", value=owner.mention)
+
+        if owner is not None:
+            embed.add_field(name="Owner:", value=owner.mention)
 
         embed.add_field(name="Members:", value=str(server.member_count))
 
@@ -190,7 +207,7 @@ class Info(Cog):
         if not isinstance(channel, discord.CategoryChannel):
             embed.add_field(name="Category", value=str(channel.category))
 
-        if not isinstance(channel, get_args(VocalGuildChannel)):
+        if is_not_voice_channel(channel):
             embed.add_field(name="Is NSFW:", value=str(channel.is_nsfw()))
 
         return embed
@@ -439,6 +456,7 @@ class Info(Cog):
 
         `message`: The message to get information on, either by ID, or the jump url. If none specified defaults to the message sent to invoke this command or the message it replied to.
         """
+        assert ctx.message is not None
 
         if message is None:
             reference = ctx.message.reference
@@ -479,21 +497,25 @@ class Info(Cog):
 
         `invite`: The server invite to get information on, either by name, or the url.
         """
-
         embed = self._object_info(invite)
         embed.set_author(name=f"Information on invite to {invite.guild}:")
-        embed.set_thumbnail(
-            url=invite.guild.icon.url if isinstance(invite.guild, discord.guild.Guild) else discord.Embed.Empty
-        )
+
+
+        if isinstance(invite.guild, (discord.Guild, discord.PartialInviteGuild)) and invite.guild.icon is not None:
+            embed.set_thumbnail(
+                url=invite.guild.icon.url if isinstance(invite.guild, discord.guild.Guild) else discord.Embed.Empty
+            )
 
         embed.add_field(name="Created By:", value=str(invite.inviter))
-        embed.add_field(
-            name="Expires At:",
-            value=readable_timestamp(invite.created_at + datetime.timedelta(seconds=invite.max_age))
-            if invite.max_age
-            else "Never",
-            inline=False,
-        )
+
+        if invite.created_at is not None:
+            embed.add_field(
+                name="Expires At:",
+                value=readable_timestamp(invite.created_at + datetime.timedelta(seconds=invite.max_age))
+                if invite.max_age
+                else "Never",
+                inline=False,
+            )
         embed.add_field(
             name="Channel:",
             value=str(invite.channel) if isinstance(invite.channel, get_args(GuildChannel)) else "Unknown",

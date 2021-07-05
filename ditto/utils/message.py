@@ -48,7 +48,7 @@ async def _prompt(
     delete_after: bool,
 ) -> T:
     def check(message: discord.Message) -> bool:
-        return message.author == user and message.channel == channel
+        return message.author == user and message.channel == channel  # type: ignore
 
     for i in range(1, max_tries + 1):
         try:

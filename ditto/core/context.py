@@ -5,7 +5,7 @@ import io
 import zoneinfo
 
 from collections.abc import Awaitable
-from typing import Optional, TYPE_CHECKING, Union, TypeVar
+from typing import Any, Coroutine, Optional, TYPE_CHECKING, Union, TypeVar
 
 import discord
 from discord.ext import commands
@@ -35,6 +35,7 @@ CHECK_MARK = "\N{WHITE HEAVY CHECK MARK}"
 class Context(commands.Context):
     bot: BotBase
     db: MaybeAcquire
+    message: discord.Message
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
@@ -43,7 +44,7 @@ class Context(commands.Context):
         else:
             self.db = NoDatabase()
 
-    def reply(self, *args, **kwargs):
+    def reply(self, *args: Any, **kwargs: Any) -> Coroutine[Any, Any, discord.Message]:
         mention_author = kwargs.pop("mention_author", True)
         return super().reply(*args, mention_author=mention_author, **kwargs)
 

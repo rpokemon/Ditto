@@ -174,7 +174,7 @@ resolved_reference = "309c70222eec33acacb8c21bbb0fbe9bc57de661"
 
 [[package]]
 name = "discord.py"
-version = "2.0.0a3385+g246064e3"
+version = "2.0.0a3397+gada7bb5e"
 description = "A Python wrapper for the Discord API"
 category = "main"
 optional = false
@@ -192,7 +192,7 @@ voice = ["PyNaCl (>=1.3.0,<1.5)"]
 type = "git"
 url = "https://github.com/rpokemon/discord.py"
 reference = "archive/slash-commands/02072021"
-resolved_reference = "246064e355145f274af3ecbef4143e33d2318226"
+resolved_reference = "ada7bb5ea291b2851fb831e3fae00fff38bd97a3"
 
 [[package]]
 name = "donphan"

@@ -3,7 +3,7 @@ from __future__ import annotations
 import datetime
 import zoneinfo
 
-from typing import Any, Generic, Optional, TYPE_CHECKING, TypeVar
+from typing import Any, Generic, Optional, TYPE_CHECKING, TypeVar, cast
 
 import aiohttp
 import parsedatetime
@@ -44,7 +44,7 @@ class CommandConverter(commands.Converter[commands.Command]):
 
         if result is None:
             raise commands.BadArgument(f'Command "{argument}" not found.')
-        return result
+        return result  # type: ignore
 
 
 class DatetimeConverter(commands.Converter[datetime.datetime]):
@@ -73,7 +73,7 @@ class DatetimeConverter(commands.Converter[datetime.datetime]):
             return times
 
         for _, _, begin, end, dt_string in dates:
-            dt, status = cls.calendar.parseDT(datetimeString=dt_string, sourceTime=now, tzinfo=timezone)
+            dt, status = cast(tuple[datetime.datetime, parsedatetime.pdtContext], cls.calendar.parseDT(datetimeString=dt_string, sourceTime=now, tzinfo=timezone))
 
             if not status.hasTime:
                 dt = update_time(dt, now)
