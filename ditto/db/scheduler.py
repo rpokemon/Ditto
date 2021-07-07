@@ -42,7 +42,7 @@ class ScheduledEvent:
         client.dispatch(self.event_type, *self.args, *self.kwargs)
 
 
-class EventSchedulerMixin(discord.Client):
+class EventSchedulerMixin:
     if TYPE_CHECKING:
         pool: asyncpg.pool.Pool
 
@@ -55,8 +55,8 @@ class EventSchedulerMixin(discord.Client):
         if CONFIG.DATABASE.DISABLED:
             return
 
-        self.__event_scheduler__active = asyncio.Event()
-        self.__event_scheduler__current = None
+        self.__event_scheduler__active: asyncio.Event = asyncio.Event()
+        self.__event_scheduler__current: Optional[ScheduledEvent] = None
         self._dispatch_task.add_exception_type(asyncpg.exceptions.PostgresConnectionError)
         self._dispatch_task.start()
 
@@ -109,6 +109,7 @@ class EventSchedulerMixin(discord.Client):
 
     @tasks.loop(seconds=0)
     async def _dispatch_task(self) -> None:
+        assert isinstance(self, discord.Client)
         while not self.is_closed():
             event = self.__event_scheduler__current = await self._wait_for_event()
 
@@ -126,4 +127,5 @@ class EventSchedulerMixin(discord.Client):
 
     @_dispatch_task.before_loop
     async def _before_dispatch_task(self):
+        assert isinstance(self, discord.Client)
         await self.wait_until_ready()

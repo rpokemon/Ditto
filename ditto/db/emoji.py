@@ -7,6 +7,7 @@ from typing import Any, Optional, TYPE_CHECKING, cast
 
 import asyncpg
 import discord
+from discord.client import Client
 from donphan import MaybeAcquire
 
 from PIL import Image, ImageChops, ImageDraw
@@ -49,7 +50,7 @@ async def create_user_image(user: User) -> io.BytesIO:
     return out_fp
 
 
-class EmojiCacheMixin(discord.Client):
+class EmojiCacheMixin:
     if TYPE_CHECKING:
         pool: asyncpg.pool.Pool
 
@@ -60,7 +61,7 @@ class EmojiCacheMixin(discord.Client):
 
         super().__init__(*args, **kwargs)
 
-        self._not_found_emoji = CONFIG.EMOJI.NOT_FOUND
+        self._not_found_emoji: discord.Emoji = CONFIG.EMOJI.NOT_FOUND
 
     async def _find_guild(self, *, connection: Optional[asyncpg.Connection] = None) -> discord.Guild:
         async with MaybeAcquire(connection, pool=self.pool) as connection:
@@ -77,7 +78,7 @@ class EmojiCacheMixin(discord.Client):
             # Otherwise delete the oldest emoji
             record = await Emoji.fetch_row(connection, order_by=(Emoji.last_fetched, "ASC"))
             if record is None:
-                raise RuntimeError("Somehow this happened.")
+                raise RuntimeError("Emoji cache simultaneously empty and full.")
             await self.delete_emoji(record["emoji_id"], connection=connection)
 
             # return await self._find_guild(connection=connection)  # could recurse
@@ -107,6 +108,7 @@ class EmojiCacheMixin(discord.Client):
     async def fetch_emoji(
         self, emoji_id: Optional[int], *, connection: Optional[asyncpg.Connection] = None
     ) -> discord.Emoji:
+        assert isinstance(self, discord.Client)
         if emoji_id is None:
             return self._not_found_emoji
 
@@ -142,6 +144,7 @@ class EmojiCacheMixin(discord.Client):
             return await self.create_user_emoji(user, connection=connection)
 
     async def delete_emoji(self, emoji_id: int, *, connection: Optional[asyncpg.Connection] = None) -> None:
+        assert isinstance(self, discord.Client)
         async with MaybeAcquire(connection, pool=self.pool) as connection:
             record = await Emoji.fetch_row(connection, emoji_id=emoji_id)
             if record is None:
