@@ -106,7 +106,7 @@ class BotBase(commands.bot.BotBase, EmojiCacheMixin, EventSchedulerMixin, discor
         for extension in CONFIG.EXTENSIONS.keys():
             try:
                 self.load_extension(extension)
-            except (commands.ExtensionError, ImportError):
+            except (commands.ExtensionError, ImportError, SyntaxError):
                 self.log.exception(f"Failed to load extension {extension}")
 
     @property
