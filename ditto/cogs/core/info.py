@@ -678,12 +678,14 @@ async def get_server(client: BotBase, interaction: discord.Interaction, private:
 @get.command(name="role")
 @discord.slash.check(guild_only)
 async def get_role(client: BotBase, interaction: discord.Interaction, role: discord.Role, private: bool = False) -> None:
+    """Get information on a role."""
     embed = Info._role_info(role)
     await interaction.response.send_message(embed=embed, ephemeral=private)
 
 @get.command(name="channel")
 @discord.slash.check(guild_only)
 async def get_channel(client: BotBase, interaction: discord.Interaction, channel: discord.TextChannel, private: bool = False) -> None:
+    """Get information on a channel."""
     if isinstance(channel, discord.TextChannel):
         embed = Info._text_channel_info(channel)
     elif isinstance(channel, get_args(VocalGuildChannel)):
@@ -696,6 +698,7 @@ async def get_channel(client: BotBase, interaction: discord.Interaction, channel
 
 @get.command(name="user")
 async def get_user(client: BotBase, interaction: discord.Interaction, user: discord.User, private: bool = False) -> None:
+    """Get information on a user."""
     if isinstance(user, discord.Member):
         embed = Info._member_info(user)
     else:
@@ -704,6 +707,7 @@ async def get_user(client: BotBase, interaction: discord.Interaction, user: disc
 
 @get.command(name="colour")
 async def get_colour(client: BotBase, interaction: discord.Interaction, value: str) -> None:
+    """Get information on a colour."""
     try:
         colour = await commands.ColorConverter().convert(discord.utils.MISSING, value)
     except (commands.BadArgument, commands.ConversionError):
