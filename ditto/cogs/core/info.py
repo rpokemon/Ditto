@@ -682,6 +682,7 @@ async def get_role(client: BotBase, interaction: discord.Interaction, role: disc
     await interaction.response.send_message(embed=embed, ephemeral=private)
 
 @get.command(name="channel")
+@discord.slash.check(guild_only)
 async def get_channel(client: BotBase, interaction: discord.Interaction, channel: discord.TextChannel, private: bool = False) -> None:
     if isinstance(channel, discord.TextChannel):
         embed = Info._text_channel_info(channel)
@@ -694,7 +695,6 @@ async def get_channel(client: BotBase, interaction: discord.Interaction, channel
     await interaction.response.send_message(embed=embed, ephemeral=private)
 
 @get.command(name="user")
-@discord.slash.check(guild_only)
 async def get_user(client: BotBase, interaction: discord.Interaction, user: discord.User, private: bool = False) -> None:
     if isinstance(user, discord.Member):
         embed = Info._member_info(user)
