@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Any, Callable, Coroutine, TypeVar, Union
 
 import discord
@@ -12,7 +14,8 @@ C = TypeVar("C", bound=discord.Client)
 
 if TYPE_CHECKING:
     P = ParamSpec("P")
-
+else:
+    P = TypeVar("P")
 
 __all__ = (
     "Emoji",
@@ -102,5 +105,7 @@ DiscordObject = Union[
     discord.Invite,
 ]
 
-
-SlashCommand = Callable[Concatenate[C, discord.Interaction, P], Coroutine[Any, Any, T]]
+if TYPE_CHECKING:
+    SlashCommand = Callable[Concatenate[C, discord.Interaction, P], Coroutine[Any, Any, T]]
+else:
+    SlashCommand = Union[C, P, T]
