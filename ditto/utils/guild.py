@@ -1,13 +1,14 @@
 import asyncio
 import datetime
-
-from typing import Optional, Union
+from io import DEFAULT_BUFFER_SIZE
+from typing import Any, Optional, Union
 
 import discord
 
-from .time import normalise_timedelta
 from ..types import User
+from .time import normalise_timedelta
 
+MISSING: Any = discord.utils.MISSING
 
 __all__ = (
     "user_in_guild",
@@ -15,7 +16,7 @@ __all__ = (
 )
 
 
-SLEEP_FOR = 3
+SLEEP_FOR = 5
 
 
 async def fetch_audit_log_entry(
@@ -25,12 +26,11 @@ async def fetch_audit_log_entry(
     user: Optional[User] = None,
     moderator: Optional[User] = None,
     action: Optional[discord.AuditLogAction] = None,
-    delta: Union[float, datetime.timedelta] = 10,
+    delta: Union[float, datetime.timedelta] = 1,
     retry: int = 3,
 ) -> Optional[discord.AuditLogEntry]:
 
     time = time or datetime.datetime.now(datetime.timezone.utc)
-
     delta = normalise_timedelta(delta)
 
     async for entry in guild.audit_logs(action=action, user=moderator):
@@ -45,7 +45,7 @@ async def fetch_audit_log_entry(
             user=user,
             moderator=moderator,
             action=action,
-            delta=delta,
+            delta=delta + datetime.timedelta(seconds=SLEEP_FOR),
             retry=retry - 1,
         )
 

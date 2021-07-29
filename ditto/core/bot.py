@@ -22,7 +22,7 @@ from ..db import setup_database, EmojiCacheMixin, EventSchedulerMixin
 from ..types import CONVERTERS
 from ..utils.logging import WebhookHandler
 from ..utils.strings import codeblock
-from ..utils.slash.utils import send_message
+from ..utils.interactions import send_message
 
 
 __all__ = (

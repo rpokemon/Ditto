@@ -20,7 +20,7 @@ from ...utils.images import to_bytes
 from ...utils.strings import codeblock, yes_no, as_columns
 from ...utils.time import readable_timestamp
 from ...utils.slash.checks import guild_only
-from ...utils.slash.utils import error
+from ...utils.interactions import error
 
 if TYPE_CHECKING:
     from typing_extensions import TypeGuard
@@ -730,3 +730,7 @@ async def get_colour(client: BotBase, interaction: discord.Interaction, value: s
 def setup(bot: BotBase):
     bot.add_cog(Info(bot))
     bot.add_slash_command(get)
+
+
+def teardown(bot: BotBase):
+    bot.remove_slash_command(get)

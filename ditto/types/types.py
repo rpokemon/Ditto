@@ -1,6 +1,17 @@
-from typing import Union
+from typing import TYPE_CHECKING, Any, Callable, Coroutine, TypeVar, Union
 
 import discord
+
+if TYPE_CHECKING:
+    from typing_extensions import Concatenate, ParamSpec
+
+
+T = TypeVar("T")
+
+C = TypeVar("C", bound=discord.Client)
+
+if TYPE_CHECKING:
+    P = ParamSpec("P")
 
 
 __all__ = (
@@ -15,6 +26,7 @@ __all__ = (
     "DiscordEmoji",
     "Message",
     "DiscordObject",
+    "SlashCommand",
 )
 
 
@@ -89,3 +101,6 @@ DiscordObject = Union[
     Message,
     discord.Invite,
 ]
+
+
+SlashCommand = Callable[Concatenate[C, discord.Interaction, P], Coroutine[Any, Any, T]]

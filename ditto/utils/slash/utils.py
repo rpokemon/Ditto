@@ -1,45 +1,50 @@
-import asyncio
-from contextlib import suppress
+from __future__ import annotations
 
-from typing import Any, Coroutine, TYPE_CHECKING
+from functools import wraps
+from typing import TYPE_CHECKING, Callable, Optional, TypeVar
 
 import discord
-from discord.types.interactions import ApplicationCommandInteractionData as ApplicationCommandInteractionDataPayload
+
+from ...types import SlashCommand
+from ..interactions import error
+from ..views import Prompt
+
+if TYPE_CHECKING:
+    from typing_extensions import ParamSpec
 
 
-__all___ = (
-    "delete_after",
-    "error",
-    "send_message",
-)
+T = TypeVar("T")
+
+C = TypeVar("C", bound=discord.Client)
+
+if TYPE_CHECKING:
+    P = ParamSpec("P")
 
 
-def send_message(interaction: discord.Interaction, *args: Any, **kwargs: Any) -> Coroutine[Any, Any, Any]:
-    send_func = interaction.followup.send if interaction.response.is_done() else interaction.response.send_message
-    if send_func is interaction.followup.send:
-        kwargs.pop("ephemeral")
-    return send_func(*args, **kwargs)
+__all__ = ("confirm",)
 
 
-async def _delete_after(interaction: discord.Interaction, after: float) -> None:
-    await asyncio.sleep(after)
-    with suppress(discord.NotFound):
-        await interaction.delete_original_message()
+def confirm(
+    message: str, ephemeral: bool = True
+) -> Callable[[SlashCommand[C, P, T]], SlashCommand[C, P, Optional[T]]]:
+    def inner(func: SlashCommand[C, P, T]) -> SlashCommand[C, P, Optional[T]]:
+        @wraps(func)
+        async def wrapper(
+            client: C, interaction: discord.Interaction, *args: P.args, **kwargs: P.kwargs
+        ) -> Optional[T]:
+            assert interaction.user is not None
 
+            prompt = Prompt(interaction.user)
+            await interaction.response.send_message(message, view=prompt, ephemeral=ephemeral)
+            await prompt.wait()
 
-def delete_after(interaction: discord.Interaction, after: float) -> None:
-    asyncio.create_task(_delete_after(interaction, after))
+            if prompt.response is None:
+                return await error(interaction, "Timed-out while waiting for a response.")
+            if prompt.response is False:
+                return await error(interaction, "Canceled.")
 
+            return await func(client, interaction, *args, **kwargs)
 
-def error(interaction: discord.Interaction, message: str) -> Coroutine[Any, Any, Any]:
-    if TYPE_CHECKING:
-        assert isinstance(interaction.data, ApplicationCommandInteractionDataPayload)
-    return send_message(
-        interaction,
-        embed=discord.Embed(
-            colour=discord.Colour.red(),
-            title=f"Error with command {interaction.data['name']}",
-            description=message,
-        ),
-        ephemeral=True,
-    )
+        return wrapper
+
+    return inner
