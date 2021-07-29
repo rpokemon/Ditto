@@ -7,6 +7,8 @@ __all__ = (
     "Emoji",
     "TextChannel",
     "VocalGuildChannel",
+    "PrivateChannel",
+    "MessageableGuildChannel",
     "NonVocalGuildChannel",
     "GuildChannel",
     "User",
@@ -15,16 +17,16 @@ __all__ = (
     "DiscordObject",
 )
 
+
 Emoji = Union[
     discord.Emoji,
     str,
 ]
 
 
-TextChannel = Union[
-    discord.TextChannel,
+PrivateChannel = Union[
     discord.DMChannel,
-    discord.abc.Messageable,
+    discord.GroupChannel,
 ]
 
 
@@ -33,15 +35,30 @@ VocalGuildChannel = Union[
     discord.StageChannel,
 ]
 
-NonVocalGuildChannel = Union[
+
+MessageableGuildChannel = Union[
     discord.TextChannel,
+    discord.Thread,
+]
+
+
+NonVocalGuildChannel = Union[
+    MessageableGuildChannel,
     discord.CategoryChannel,
     discord.StoreChannel,
 ]
 
+
 GuildChannel = Union[
     VocalGuildChannel,
     NonVocalGuildChannel,
+]
+
+
+TextChannel = Union[
+    PrivateChannel,
+    MessageableGuildChannel,
+    discord.abc.Messageable,
 ]
 
 

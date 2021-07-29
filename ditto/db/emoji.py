@@ -35,7 +35,7 @@ async def create_user_image(user: User) -> io.BytesIO:
     if alpha.mode != "L":
         alpha = alpha.convert("L")
 
-    mask = Image.new("L", avatar.size) 
+    mask = Image.new("L", avatar.size)
     draw = cast(ImageDraw.ImageDraw, ImageDraw.Draw(mask))
     draw.ellipse((0, 0) + avatar.size, fill=255)  # type: ignore
 

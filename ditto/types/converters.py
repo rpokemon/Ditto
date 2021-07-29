@@ -73,7 +73,10 @@ class DatetimeConverter(commands.Converter[datetime.datetime]):
             return times
 
         for _, _, begin, end, dt_string in dates:
-            dt, status = cast(tuple[datetime.datetime, parsedatetime.pdtContext], cls.calendar.parseDT(datetimeString=dt_string, sourceTime=now, tzinfo=timezone))
+            dt, status = cast(
+                tuple[datetime.datetime, parsedatetime.pdtContext],
+                cls.calendar.parseDT(datetimeString=dt_string, sourceTime=now, tzinfo=timezone),
+            )
 
             if not status.hasTime:
                 dt = update_time(dt, now)

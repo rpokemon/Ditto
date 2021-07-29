@@ -675,16 +675,22 @@ async def get_server(client: BotBase, interaction: discord.Interaction, private:
     embed = await Info._server_info(interaction.guild)
     await interaction.response.send_message(embed=embed, ephemeral=private)
 
+
 @get.command(name="role")
 @discord.slash.check(guild_only)
-async def get_role(client: BotBase, interaction: discord.Interaction, role: discord.Role, private: bool = False) -> None:
+async def get_role(
+    client: BotBase, interaction: discord.Interaction, role: discord.Role, private: bool = False
+) -> None:
     """Get information on a role."""
     embed = Info._role_info(role)
     await interaction.response.send_message(embed=embed, ephemeral=private)
 
+
 @get.command(name="channel")
 @discord.slash.check(guild_only)
-async def get_channel(client: BotBase, interaction: discord.Interaction, channel: discord.TextChannel, private: bool = False) -> None:
+async def get_channel(
+    client: BotBase, interaction: discord.Interaction, channel: discord.TextChannel, private: bool = False
+) -> None:
     """Get information on a channel."""
     if isinstance(channel, discord.TextChannel):
         embed = Info._text_channel_info(channel)
@@ -696,14 +702,18 @@ async def get_channel(client: BotBase, interaction: discord.Interaction, channel
         embed = Info._channel_info(channel)
     await interaction.response.send_message(embed=embed, ephemeral=private)
 
+
 @get.command(name="user")
-async def get_user(client: BotBase, interaction: discord.Interaction, user: discord.User, private: bool = False) -> None:
+async def get_user(
+    client: BotBase, interaction: discord.Interaction, user: discord.User, private: bool = False
+) -> None:
     """Get information on a user."""
     if isinstance(user, discord.Member):
         embed = Info._member_info(user)
     else:
         embed = Info._user_info(user)
     await interaction.response.send_message(embed=embed, ephemeral=private)
+
 
 @get.command(name="colour")
 async def get_colour(client: BotBase, interaction: discord.Interaction, value: str) -> None:
@@ -715,6 +725,7 @@ async def get_colour(client: BotBase, interaction: discord.Interaction, value: s
 
     embed = Info._colour_info(colour)
     await interaction.response.send_message(embed=embed)
+
 
 def setup(bot: BotBase):
     bot.add_cog(Info(bot))

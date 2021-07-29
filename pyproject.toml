@@ -58,5 +58,5 @@ testpaths = "tests"
 filterwarnings = "default"
 
 [build-system]
-requires = ["poetry-core>=1.0.0", "poetry-git-version-changer"]
+requires = ["poetry-core>=1.0.0", "poetry-git-version-changer>=1.0.4a"]
 build-backend = "poetry.core.masonry.api"
