@@ -664,73 +664,67 @@ class Info(Cog):
         await ctx.send(f"<{GITHUB_URL}{repository}/blob/{commit_hash}/{filename}#L{first_line}-#L{last_line}>")
 
 
-get = discord.slash.TopLevelCommand(name="get", description="Get information on something.")
+class Get(discord.slash.TopLevelCommand):
+    """Get information on something."""
 
+    @discord.slash.command()
+    @discord.slash.check(guild_only)
+    async def server(interaction: discord.Interaction, client: BotBase, private: bool = False) -> None:
+        """Get information on the current server."""
+        assert interaction.guild is not None
+        embed = await Info._server_info(interaction.guild)
+        await interaction.response.send_message(embed=embed, ephemeral=private)
 
-@get.command(name="server")
-@discord.slash.check(guild_only)
-async def get_server(client: BotBase, interaction: discord.Interaction, private: bool = False) -> None:
-    """Get information on the current server."""
-    assert interaction.guild is not None
-    embed = await Info._server_info(interaction.guild)
-    await interaction.response.send_message(embed=embed, ephemeral=private)
+    @discord.slash.command()
+    @discord.slash.check(guild_only)
+    async def role(
+        interaction: discord.Interaction, client: BotBase, role: discord.Role, private: bool = False
+    ) -> None:
+        """Get information on a role."""
+        embed = Info._role_info(role)
+        await interaction.response.send_message(embed=embed, ephemeral=private)
 
+    @discord.slash.command()
+    @discord.slash.check(guild_only)
+    async def channel(
+        interaction: discord.Interaction, client: BotBase, channel: GuildChannel, private: bool = False
+    ) -> None:
+        """Get information on a channel."""
+        if isinstance(channel, discord.TextChannel):
+            embed = Info._text_channel_info(channel)
+        elif isinstance(channel, get_args(VocalGuildChannel)):
+            embed = Info._vocal_channel_info(channel)  # type: ignore
+        elif isinstance(channel, discord.CategoryChannel):
+            embed = Info._category_channel_info(channel)
+        else:
+            embed = Info._channel_info(channel)
+        await interaction.response.send_message(embed=embed, ephemeral=private)
 
-@get.command(name="role")
-@discord.slash.check(guild_only)
-async def get_role(
-    client: BotBase, interaction: discord.Interaction, role: discord.Role, private: bool = False
-) -> None:
-    """Get information on a role."""
-    embed = Info._role_info(role)
-    await interaction.response.send_message(embed=embed, ephemeral=private)
+    @discord.slash.command()
+    async def user(interaction: discord.Interaction, client: BotBase, user: User, private: bool = False) -> None:
+        """Get information on a user."""
+        if isinstance(user, discord.Member):
+            embed = Info._member_info(user)
+        else:
+            embed = Info._user_info(user)
+        await interaction.response.send_message(embed=embed, ephemeral=private)
 
+    @discord.slash.command()
+    async def colour(interaction: discord.Interaction, client: BotBase, value: str) -> None:
+        """Get information on a colour."""
+        try:
+            colour = await commands.ColorConverter().convert(discord.utils.MISSING, value)
+        except (commands.BadArgument, commands.ConversionError):
+            return await error(interaction, f"Could not find colour for value: {value}")
 
-@get.command(name="channel")
-@discord.slash.check(guild_only)
-async def get_channel(
-    client: BotBase, interaction: discord.Interaction, channel: discord.TextChannel, private: bool = False
-) -> None:
-    """Get information on a channel."""
-    if isinstance(channel, discord.TextChannel):
-        embed = Info._text_channel_info(channel)
-    elif isinstance(channel, get_args(VocalGuildChannel)):
-        embed = Info._vocal_channel_info(channel)
-    elif isinstance(channel, discord.CategoryChannel):
-        embed = Info._category_channel_info(channel)
-    else:
-        embed = Info._channel_info(channel)
-    await interaction.response.send_message(embed=embed, ephemeral=private)
-
-
-@get.command(name="user")
-async def get_user(
-    client: BotBase, interaction: discord.Interaction, user: discord.User, private: bool = False
-) -> None:
-    """Get information on a user."""
-    if isinstance(user, discord.Member):
-        embed = Info._member_info(user)
-    else:
-        embed = Info._user_info(user)
-    await interaction.response.send_message(embed=embed, ephemeral=private)
-
-
-@get.command(name="colour")
-async def get_colour(client: BotBase, interaction: discord.Interaction, value: str) -> None:
-    """Get information on a colour."""
-    try:
-        colour = await commands.ColorConverter().convert(discord.utils.MISSING, value)
-    except (commands.BadArgument, commands.ConversionError):
-        return await error(interaction, f"Could not find colour for value: {value}")
-
-    embed = Info._colour_info(colour)
-    await interaction.response.send_message(embed=embed)
+        embed = Info._colour_info(colour)
+        await interaction.response.send_message(embed=embed)
 
 
 def setup(bot: BotBase):
     bot.add_cog(Info(bot))
-    bot.add_slash_command(get)
+    bot.add_slash_command(Get)
 
 
 def teardown(bot: BotBase):
-    bot.remove_slash_command(get)
+    bot.remove_slash_command(Get)
