@@ -28,6 +28,7 @@ __all__ = (
     "User",
     "DiscordEmoji",
     "Message",
+    "Mentionable",
     "DiscordObject",
     "SlashCommand",
 )
@@ -83,6 +84,12 @@ User = Union[
 ]
 
 
+Mentionable = Union[
+    User,
+    discord.Role,
+]
+
+
 DiscordEmoji = Union[
     discord.Emoji,
     discord.PartialEmoji,
@@ -97,12 +104,12 @@ Message = Union[
 
 DiscordObject = Union[
     discord.Guild,
-    discord.Role,
     GuildChannel,
-    User,
+    Mentionable,
     DiscordEmoji,
     Message,
     discord.Invite,
+    discord.Command,
 ]
 
 if TYPE_CHECKING:
