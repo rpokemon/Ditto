@@ -4,7 +4,7 @@ import datetime
 import inspect
 import pathlib
 
-from typing import TYPE_CHECKING, cast, get_args, Optional, Union
+from typing import TYPE_CHECKING, cast, get_args, Annotated, Optional, Union
 
 import discord
 import ditto
@@ -678,7 +678,10 @@ class Get(discord.slash.TopLevelCommand):
     @discord.slash.command()
     @discord.slash.check(guild_only)
     async def role(
-        interaction: discord.Interaction, client: BotBase, role: discord.Role, private: bool = False
+        interaction: discord.Interaction,
+        client: BotBase,
+        role: Annotated[discord.Role, "The role to get information on."],
+        private: bool = False,
     ) -> None:
         """Get information on a role."""
         embed = Info._role_info(role)
@@ -687,7 +690,10 @@ class Get(discord.slash.TopLevelCommand):
     @discord.slash.command()
     @discord.slash.check(guild_only)
     async def channel(
-        interaction: discord.Interaction, client: BotBase, channel: GuildChannel, private: bool = False
+        interaction: discord.Interaction,
+        client: BotBase,
+        channel: Annotated[GuildChannel, "The channel to get information on."],
+        private: bool = False,
     ) -> None:
         """Get information on a channel."""
         if isinstance(channel, discord.TextChannel):
@@ -701,7 +707,12 @@ class Get(discord.slash.TopLevelCommand):
         await interaction.response.send_message(embed=embed, ephemeral=private)
 
     @discord.slash.command()
-    async def user(interaction: discord.Interaction, client: BotBase, user: User, private: bool = False) -> None:
+    async def user(
+        interaction: discord.Interaction,
+        client: BotBase,
+        user: Annotated[User, "The user to get information on."],
+        private: bool = False,
+    ) -> None:
         """Get information on a user."""
         if isinstance(user, discord.Member):
             embed = Info._member_info(user)
@@ -710,7 +721,11 @@ class Get(discord.slash.TopLevelCommand):
         await interaction.response.send_message(embed=embed, ephemeral=private)
 
     @discord.slash.command()
-    async def colour(interaction: discord.Interaction, client: BotBase, value: str) -> None:
+    async def colour(
+        interaction: discord.Interaction,
+        client: BotBase,
+        value: Annotated[str, "The colour to get information on, accepts hex, css rgb selector or name."],
+    ) -> None:
         """Get information on a colour."""
         try:
             colour = await commands.ColorConverter().convert(discord.utils.MISSING, value)
@@ -723,8 +738,8 @@ class Get(discord.slash.TopLevelCommand):
 
 def setup(bot: BotBase):
     bot.add_cog(Info(bot))
-    bot.add_slash_command(Get)
+    bot.add_slash_command(Get)  # type: ignore
 
 
 def teardown(bot: BotBase):
-    bot.remove_slash_command(Get)
+    bot.remove_slash_command(Get)  # type: ignore
