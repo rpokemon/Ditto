@@ -213,7 +213,8 @@ class Info(Cog):
     def _channel_info(cls, channel: GuildChannel) -> discord.Embed:
         embed = cls._server_object_info(channel)
 
-        embed.add_field(name="Position", value=str(channel.position))
+        if not isinstance(channel, discord.Thread):
+            embed.add_field(name="Position", value=str(channel.position))
 
         if not isinstance(channel, discord.CategoryChannel):
             embed.add_field(name="Category", value=str(channel.category))
@@ -738,8 +739,8 @@ class Get(discord.slash.TopLevelCommand):
 
 def setup(bot: BotBase):
     bot.add_cog(Info(bot))
-    bot.add_slash_command(Get)  # type: ignore
+    bot.add_application_command(Get)  # type: ignore
 
 
 def teardown(bot: BotBase):
-    bot.remove_slash_command(Get)  # type: ignore
+    bot.remove_application_command(Get)  # type: ignore

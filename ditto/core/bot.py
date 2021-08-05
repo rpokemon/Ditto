@@ -163,7 +163,7 @@ class BotBase(commands.bot.BotBase, EmojiCacheMixin, EventSchedulerMixin, discor
             f"Unhandled exception in command: {ctx.command.qualified_name}\n\n{type(error).__name__}: {error}\n\n{tb}"
         )
 
-    async def on_slash_command_error(
+    async def on_application_command_error(
         self, interaction: discord.Interaction, command: discord.slash.Command, error: Exception
     ) -> None:
 
