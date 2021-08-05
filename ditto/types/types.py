@@ -113,6 +113,8 @@ DiscordObject = Union[
 ]
 
 if TYPE_CHECKING:
-    SlashCommand = Callable[Concatenate[C, discord.Interaction, P], Coroutine[Any, Any, T]]
+    SlashCommand = Callable[Concatenate[discord.Interaction, C, P], Coroutine[Any, Any, T]]
 else:
     SlashCommand = Union[C, P, T]
+
+CheckFunc = Callable[[discord.Interaction, C], Coroutine[Any, Any, bool]]

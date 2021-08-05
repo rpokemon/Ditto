@@ -30,7 +30,7 @@ def confirm(
     def inner(func: SlashCommand[C, P, T]) -> SlashCommand[C, P, Optional[T]]:
         @wraps(func)
         async def wrapper(
-            client: C, interaction: discord.Interaction, *args: P.args, **kwargs: P.kwargs
+            interaction: discord.Interaction, client: C, *args: P.args, **kwargs: P.kwargs
         ) -> Optional[T]:
             assert interaction.user is not None
 
@@ -43,7 +43,7 @@ def confirm(
             if prompt.response is False:
                 return await error(interaction, "Canceled.")
 
-            return await func(client, interaction, *args, **kwargs)
+            return await func(interaction, client, *args, **kwargs)
 
         return wrapper
 
