@@ -96,8 +96,8 @@ class BotBase(commands.bot.BotBase, EmojiCacheMixin, EventSchedulerMixin, discor
             help_command=EmbedHelpCommand(),
             allowed_mentions=allowed_mentions,
             intents=intents,
-            sync_global_applcation_commands=CONFIG.BOT.SYNC_GLOBAL_COMMANDS,
-            sync_guild_applcation_commands=CONFIG.BOT.SYNC_GUILD_COMMANDS,
+            sync_global_commands_at_startup=CONFIG.BOT.SYNC_GLOBAL_COMMANDS,
+            sync_guild_commands_at_startup=CONFIG.BOT.SYNC_GUILD_COMMANDS,
             **kwargs,
         )
 
