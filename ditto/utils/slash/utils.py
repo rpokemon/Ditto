@@ -38,6 +38,11 @@ def confirm(
             await interaction.response.send_message(message, view=prompt, ephemeral=ephemeral)
             await prompt.wait()
 
+            try:
+                await interaction.delete_original_message()
+            except discord.HTTPException:
+                pass
+
             if prompt.response is None:
                 return await error(interaction, "Timed-out while waiting for a response.")
             if prompt.response is False:
