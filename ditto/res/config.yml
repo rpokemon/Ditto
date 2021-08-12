@@ -14,6 +14,8 @@
     PREFIX: !ENV BOT_PREFIX
     TOKEN: !ENV BOT_TOKEN
     IGNORE_BOTS: yes
+    SYNC_GLOBAL_COMMANDS: yes
+    SYNC_GUILD_COMMANDS: no
     # INTENTS:  # Map a dictionary of intents
 
   EMOJI: !Config
