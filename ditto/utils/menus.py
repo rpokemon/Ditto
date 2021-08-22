@@ -1,7 +1,7 @@
 from typing import Generic, Optional, TypeVar
 
 import discord
-from discord.ext import menus  # type: ignore
+from discord.ext import menus
 
 from .. import Context
 

@@ -11,7 +11,9 @@ _GT = TypeVar("_GT", bound=commands.Group)
 
 
 async def _call_help(ctx: Context):
-    await ctx.send_help(ctx.command.parent)  # type: ignore
+    assert ctx.command is not None
+    assert ctx.command.parent is not None
+    await ctx.send_help(ctx.command.parent)
 
 
 def auto_help(group: _GT, *, cls: type[_CT] = commands.Command) -> _GT:

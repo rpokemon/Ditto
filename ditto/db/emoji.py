@@ -37,7 +37,7 @@ async def create_user_image(user: User) -> io.BytesIO:
 
     mask = Image.new("L", avatar.size)
     draw = cast(ImageDraw.ImageDraw, ImageDraw.Draw(mask))
-    draw.ellipse((0, 0) + avatar.size, fill=255)  # type: ignore
+    draw.ellipse((0, 0) + avatar.size, fill=255)
 
     mask = ImageChops.darker(mask, alpha)
     avatar.putalpha(mask)
@@ -64,6 +64,7 @@ class EmojiCacheMixin:
         self._not_found_emoji: discord.Emoji = CONFIG.EMOJI.NOT_FOUND
 
     async def _find_guild(self, *, connection: Optional[asyncpg.Connection] = None) -> discord.Guild:
+        assert isinstance(self, discord.Client)
         async with MaybeAcquire(connection, pool=self.pool) as connection:
             free_spaces = {}
             for guild in CONFIG.EMOJI.GUILDS:
@@ -81,8 +82,7 @@ class EmojiCacheMixin:
                 raise RuntimeError("Emoji cache simultaneously empty and full.")
             await self.delete_emoji(record["emoji_id"], connection=connection)
 
-            # return await self._find_guild(connection=connection)  # could recurse
-            return self.get_guild(record["guild_id"])  # type: ignore
+            return await self._find_guild(connection=connection)
 
     async def create_emoji(
         self, name: str, image: io.BytesIO, *, connection: Optional[asyncpg.Connection] = None
@@ -124,7 +124,7 @@ class EmojiCacheMixin:
                 await Emoji.delete_record(connection, record)
                 raise RuntimeError("Emoji in cache was deleted.")
 
-        return emoji  # type: ignore
+        return emoji
 
     async def fetch_user_emoji(
         self, user: Optional[User], *, connection: Optional[asyncpg.Connection] = None

@@ -18,11 +18,13 @@ __all__ = (
     "load_global_config",
 )
 
+MISSING: Any = discord.utils.MISSING
+
 
 BASE_DIR = get_base_dir()
 
 
-_bot: discord.Client = None  # type: ignore
+_bot: discord.Client = MISSING
 
 
 class Object(discord.Object):
@@ -37,6 +39,15 @@ class Object(discord.Object):
 
     def __repr__(self) -> str:
         return getattr(self._func(), "__repr__", super().__repr__)()
+
+
+def _get_object(*getters: tuple[Callable[[Any, int], Any], int]) -> Any:
+    obj = _bot
+    for func, id in getters:
+        obj = func(obj, id)
+        if obj is None:
+            return discord.Object(id=id)
+    return obj
 
 
 def env_var_constructor(loader: yaml.Loader, node: yaml.ScalarNode) -> Optional[str]:
@@ -118,13 +129,13 @@ yaml.FullLoader.add_constructor("!ENV", env_var_constructor)
 
 # Add discord specific constructors
 DISCORD_CONSTRUCTORS: dict[str, Callable[..., Any]] = {
-    "Emoji": lambda e: _bot.get_emoji(e),
-    "Guild": lambda g: _bot.get_guild(g),
-    "User": lambda u: _bot.get_user(u),
-    "Channel": lambda g, c: _bot.get_guild(g).get_channel(c),  # type: ignore
-    "Member": lambda g, m: _bot.get_guild(g).get_member(m),  # type: ignore
-    "Role": lambda g, r: _bot.get_guild(g).get_role(r),  # type: ignore
-    "Message": lambda g, c, m: discord.PartialMessage(channel=_bot.get_guild(g).get_channel(c), id=m),  # type: ignore
+    "Emoji": lambda e: _get_object((discord.Client.get_emoji, e)),
+    "Guild": lambda g: _get_object((discord.Client.get_guild, g)),
+    "User": lambda u: _get_object((discord.Client.get_user, u)),
+    "Channel": lambda g, c: _get_object((discord.Client.get_guild, g), (discord.Guild.get_channel, c)),
+    "Member": lambda g, m: _get_object((discord.Client.get_guild, g), (discord.Guild.get_member, m)),
+    "Role": lambda g, r: _get_object((discord.Client.get_guild, g), (discord.Guild.get_role, r)),
+    "Message": lambda g, c, m: discord.PartialMessage(channel=_get_object((discord.Client.get_guild, g), (discord.Guild.get_channel, c)), id=m),
 }
 
 for key, func in DISCORD_CONSTRUCTORS.items():

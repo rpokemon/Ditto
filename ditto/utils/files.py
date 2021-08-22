@@ -8,5 +8,5 @@ def get_base_dir(module: Optional[types.ModuleType] = None) -> pathlib.Path:
     if module is None:
         file = pathlib.Path(__file__).parent
     else:
-        file = module.__file__  # type: ignore
+        file = module.__file__
     return pathlib.Path(file).parent.relative_to(pathlib.Path.cwd())

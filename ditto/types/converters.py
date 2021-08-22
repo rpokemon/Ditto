@@ -10,6 +10,7 @@ import parsedatetime
 
 import discord
 from discord.ext import commands
+from discord.enums import try_enum
 
 from jishaku.codeblocks import codeblock_converter, Codeblock
 from jishaku.modules import ExtensionConverter
@@ -44,7 +45,7 @@ class CommandConverter(commands.Converter[commands.Command]):
 
         if result is None:
             raise commands.BadArgument(f'Command "{argument}" not found.')
-        return result  # type: ignore
+        return result
 
 
 class DatetimeConverter(commands.Converter[datetime.datetime]):
@@ -148,7 +149,7 @@ class DatetimeConverter(commands.Converter[datetime.datetime]):
 
 class WhenAndWhatConverter(commands.Converter[tuple[datetime.datetime, str]]):
     @classmethod
-    async def convert(cls, ctx: Context, argument: str) -> tuple[datetime.datetime, str]:  # type: ignore[override]
+    async def convert(cls, ctx: Context, argument: str) -> tuple[datetime.datetime, str]:
 
         timezone = await DatetimeConverter.get_timezone(ctx)
         now = ctx.message.created_at.astimezone(tz=timezone)
@@ -204,7 +205,7 @@ class ZoneInfoConverter(commands.Converter[zoneinfo.ZoneInfo]):
             raise commands.BadArgument(f'Time Zone "{argument}" not found.')
 
 
-class PosixFlags(commands.FlagConverter, prefix="--", delimiter=" "):  # type: ignore[call-arg]
+class PosixFlags(commands.FlagConverter, prefix="--", delimiter=" "):
     ...
 
 
@@ -228,10 +229,10 @@ class EnumConverter(commands.Converter[discord.Enum], Generic[ET]):
     @classmethod
     async def convert(cls, ctx: Context, argument: str) -> ET:
         value = int(argument) if argument.isdigit() else argument
-        value = cls._type.try_value(value)  # type: ignore
+        value = try_enum(cls._type, value)
         if value == argument:
             raise commands.BadArgument(f"Could not convert to Enum: {cls._type.__name__}")
-        return value  # type: ignore
+        return value
 
 
 CONVERTERS: dict[type[Any], Any] = {
@@ -241,6 +242,6 @@ CONVERTERS: dict[type[Any], Any] = {
     discord.Embed: EmbedConverter,
     commands.Command: CommandConverter,
     zoneinfo.ZoneInfo: ZoneInfoConverter,
-    tuple[datetime.datetime, str]: WhenAndWhatConverter,  # type: ignore[misc]
+    tuple[datetime.datetime, str]: WhenAndWhatConverter,
     discord.Status: EnumConverter[discord.Status],
 }

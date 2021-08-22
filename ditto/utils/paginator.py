@@ -128,7 +128,7 @@ class EmbedPaginator(discord.Embed, PaginatorSource[EmbT]):
         return page
 
     @property
-    def pages(self) -> list[EmbT]:  # type: ignore[return-value, override]
+    def pages(self) -> list[EmbT]:
         if len(self._current_page.description) or len(self._current_page.fields) > 0:
             self.close_page()
 

@@ -21,24 +21,23 @@ from ..utils.users import download_avatar
 
 if TYPE_CHECKING:
     from discord.asset import ValidAssetFormatTypes
-    from .bot import BotBase
+    from .bot import BotBase, Bot, AutoShardedBot
 
 __all__ = ("Context",)
 
 
 T = TypeVar("T")
+BotT = TypeVar("BotT", bound=Union["Bot", "AutoShardedBot"])
 
 
 CHECK_MARK = "\N{WHITE HEAVY CHECK MARK}"
 
 
-class Context(commands.Context):
-    bot: BotBase
-    db: MaybeAcquire
-    message: discord.Message
+class Context(commands.Context[BotT]):
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
+        self.db: MaybeAcquire
         if self.bot.pool:
             self.db = MaybeAcquire(pool=self.bot.pool)
         else:
@@ -56,10 +55,10 @@ class Context(commands.Context):
             return await TimeZones.get_timezone(connection, self.author)
 
     async def fetch_previous_message(self, message: Optional[Message]) -> Optional[discord.Message]:
-        return await fetch_previous_message(message or self.message)  # type: ignore
+        return await fetch_previous_message(message or self.message)
 
     async def download_attachment(self, message: Optional[discord.Message], *, index: int = 0) -> io.BytesIO:
-        return await download_attachment(message or self.message, index=index)  # type: ignore
+        return await download_attachment(message or self.message, index=index)
 
     async def download_avatar(
         self, user: Optional[User], size: int = 256, static: bool = False, format: ValidAssetFormatTypes = "png"
@@ -92,7 +91,7 @@ class Context(commands.Context):
         )
 
     async def bulk_add_reactions(self, *reactions: Emoji, message: Optional[discord.Message] = None) -> None:
-        return await bulk_add_reactions(message or self.message, *reactions)  # type: ignore
+        return await bulk_add_reactions(message or self.message, *reactions)
 
     async def tick(self, *, message: Optional[discord.Message] = None, emoji: Emoji = CHECK_MARK) -> None:
         await (message or self.message).add_reaction(emoji)
@@ -121,7 +120,7 @@ class Context(commands.Context):
         *args,
         channel: Optional[TextChannel] = None,
         user: Optional[User] = None,
-        converter: type[T] = str,  # type: ignore
+        converter: type[T] = str,
         timeout: float = 60,
         max_tries: int = 3,
         confirm_after: bool = False,

@@ -48,7 +48,7 @@ async def _prompt(
     delete_after: bool,
 ) -> T:
     def check(message: discord.Message) -> bool:
-        return message.author == user and message.channel == channel  # type: ignore
+        return message.author == user and message.channel == channel
 
     for i in range(1, max_tries + 1):
         try:
@@ -184,7 +184,7 @@ async def prompt(
     bot: Optional[BotBase] = None,
     channel: Optional[TextChannel] = None,
     user: Optional[User] = None,
-    converter: type[T] = str,  # type: ignore
+    converter: type[T] = str,
     timeout: float = 60,
     max_tries: int = 3,
     confirm_after: bool = False,
@@ -199,23 +199,27 @@ async def prompt(
         channel = channel or context.channel
         user = user or context.author
 
-    message = await channel.send(*args, **kwargs)  # type: ignore
+    assert isinstance(bot, BotBase)
+    assert isinstance(channel, TextChannel)
+    assert isinstance(user, User)
+
+    message = await channel.send(*args, **kwargs)
 
     if context is None:
         # this is a hack because >circular imports<
         from ..core import Context
 
-        context = await bot.get_context(message, cls=Context)  # type: ignore
+        context = await bot.get_context(message, cls=Context)
 
     to_delete: list[discord.Message] = [message]
 
-    async with channel.typing():  # type: ignore
+    async with channel.typing():
         result = await _prompt(
-            bot,  # type: ignore
+            bot,
             context,
             to_delete,
-            channel,  # type: ignore
-            user,  # type: ignore
+            channel,
+            user,
             converter,
             timeout,
             max_tries,
