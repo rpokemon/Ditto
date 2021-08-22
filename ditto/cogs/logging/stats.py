@@ -102,9 +102,9 @@ class Stats(Cog):
     @commands.Cog.listener("on_command_completion")
     @commands.Cog.listener("on_command_error")
     async def on_command(self, ctx: Context, error: BaseException = None) -> None:
-        command = ctx.command
+        assert ctx.prefix is not None
 
-        if command is None:
+        if ctx.command is None:
             return
 
         guild_id = getattr(ctx.guild, "id", None)
@@ -116,11 +116,11 @@ class Stats(Cog):
             ctx.author.id,
             ctx.message.created_at,
             ctx.prefix,
-            command.qualified_name,
+            ctx.command.qualified_name,
             ctx.command_failed,
         )
 
-        self._command_stats[command.qualified_name] += 1
+        self._command_stats[ctx.command.qualified_name] += 1
 
         async with self._batch_lock:
             self._batch_data.append(invoke)

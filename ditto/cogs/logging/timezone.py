@@ -23,7 +23,7 @@ class Timezone(Cog):
             argument = zoneinfo.ZoneInfo("UTC")
 
         if isinstance(argument, get_args(User)):
-            return await ctx.invoke(self.timezone_get, user=argument)
+            return await ctx.invoke(self.timezone_get, user=argument)  # type: ignore
 
         argument = cast(zoneinfo.ZoneInfo, argument)
 
@@ -91,7 +91,7 @@ class Timezone(Cog):
     @commands.command()
     @discord.utils.copy_doc(timezone_list)
     async def timezones(self, ctx: Context) -> None:
-        return await ctx.invoke(self.timezone_list)
+        return await self.timezone_list(ctx)
 
 
 def setup(bot: BotBase):

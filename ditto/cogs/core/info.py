@@ -4,7 +4,7 @@ import datetime
 import inspect
 import pathlib
 
-from typing import TYPE_CHECKING, cast, get_args, Annotated, Optional, Union
+from typing import Any, TYPE_CHECKING, Tuple, cast, get_args, Annotated, Optional, Union, overload
 
 import discord
 import ditto
@@ -95,11 +95,12 @@ class Info(Cog):
         embed.set_author(name=f"Information on {item}:")
 
         embed.add_field(name="ID:", value=str(item.id), inline=False)
-        embed.add_field(
-            name="Created At:",
-            value=readable_timestamp(item.created_at) if item.created_at else "Unknown",
-            inline=False,
-        )
+        if not isinstance(item, discord.Thread):
+            embed.add_field(
+                name="Created At:",
+                value=readable_timestamp(item.created_at) if item.created_at else "Unknown",
+                inline=False,
+            )
 
         return embed
 
@@ -390,7 +391,7 @@ class Info(Cog):
             return await ctx.invoke(self.text_channel_info, channel=channel)
 
         if isinstance(channel, get_args(VocalGuildChannel)):
-            return await ctx.invoke(self.vocal_channel_info, channel=channel)
+            return await ctx.invoke(self.vocal_channel_info, channel=channel)  # type: ignore
 
         if isinstance(channel, discord.CategoryChannel):
             return await ctx.invoke(self.category_channel_info, channel=channel)
@@ -607,16 +608,16 @@ class Info(Cog):
             return await ctx.invoke(self.role_info, role=item)
 
         elif isinstance(item, get_args(GuildChannel)):
-            return await ctx.invoke(self.channel_info, channel=item)
+            return await ctx.invoke(self.channel_info, channel=item)  # type: ignore
 
         elif isinstance(item, get_args(User)):
-            return await ctx.invoke(self.user_info, user=item)
+            return await ctx.invoke(self.user_info, user=item)  # type: ignore
 
         elif isinstance(item, get_args(DiscordEmoji)):
-            return await ctx.invoke(self.emoji_info, emoji=item)
+            return await ctx.invoke(self.emoji_info, emoji=item)  # type: ignore
 
         elif isinstance(item, get_args(Message)):
-            return await ctx.invoke(self.message_info, message=item)
+            return await ctx.invoke(self.message_info, message=item)  # type: ignore
 
         elif isinstance(item, discord.Invite):
             return await ctx.invoke(self.invite_info, invite=item)

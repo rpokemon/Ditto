@@ -19,7 +19,7 @@ class Admin(Cog):
         if jsk_py is None:
             raise commands.CommandNotFound()
         else:
-            await ctx.invoke(jsk_py, argument=code)
+            await ctx.invoke(jsk_py, argument=code)  # type: ignore
 
     @commands.command(aliases=["sh"])
     async def shell(self, ctx: Context, *, code: Codeblock) -> None:
@@ -30,7 +30,7 @@ class Admin(Cog):
         if jsk_py is None:
             raise commands.CommandNotFound()
         else:
-            await ctx.invoke(jsk_py, argument=code)
+            await ctx.invoke(jsk_py, argument=code)  # type: ignore
 
     @commands.command()
     async def git(self, ctx: Context, *, code: Codeblock) -> None:
@@ -41,7 +41,18 @@ class Admin(Cog):
         if jsk_git is None:
             raise commands.CommandNotFound()
         else:
-            await ctx.invoke(jsk_git, argument=code)
+            await ctx.invoke(jsk_git, argument=code)  # type: ignore
+
+    @commands.command()
+    async def poetry(self, ctx: Context, *, code: Codeblock) -> None:
+        """Executes a poetry command.
+        `code`: The command to run.
+        """
+        jsk_git = self.bot.get_command("jsk poetry")
+        if jsk_git is None:
+            raise commands.CommandNotFound()
+        else:
+            await ctx.invoke(jsk_git, argument=code)  # type: ignore
 
     @commands.command()
     async def load(self, ctx: Context, *extensions: Extension) -> None:
@@ -52,7 +63,7 @@ class Admin(Cog):
         if jsk_load is None:
             raise commands.CommandNotFound()
         else:
-            await ctx.invoke(jsk_load, *extensions)
+            await ctx.invoke(jsk_load, *extensions)  # type: ignore
 
     @commands.command()
     async def unload(self, ctx: Context, *extensions: Extension) -> None:
@@ -63,7 +74,7 @@ class Admin(Cog):
         if jsk_unload is None:
             raise commands.CommandNotFound()
         else:
-            await ctx.invoke(jsk_unload, *extensions)
+            await ctx.invoke(jsk_unload, *extensions)  # type: ignore
 
     @commands.group(invoke_without_command=False)
     async def reload(self, ctx: Context, *extensions: Extension) -> None:
@@ -74,7 +85,7 @@ class Admin(Cog):
         if jsk_reload is None:
             raise commands.CommandNotFound()
         else:
-            await ctx.invoke(jsk_reload, *extensions)
+            await ctx.invoke(jsk_reload, *extensions)  # type: ignore
 
     @reload.command(name="config")
     async def reload_config(self, ctx: Context):
@@ -89,7 +100,7 @@ class Admin(Cog):
             await self.bot.close()
             return
         else:
-            await ctx.invoke(jsk_shutdown)
+            await ctx.invoke(jsk_shutdown)  # type: ignore
 
 
 def setup(bot: BotBase):

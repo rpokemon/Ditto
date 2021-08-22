@@ -117,7 +117,7 @@ class BotBase(commands.bot.BotBase, EmojiCacheMixin, EventSchedulerMixin, discor
 
     async def on_ready(self) -> None:
         self.log.info(f"Succesfully logged in as {self.user} ({getattr(self.user, 'id')})")
-        await self.is_owner(self.user)  # fetch owner id
+        await self.is_owner(self.user)  # type: ignore
         if self.owner_id:
             self.owner = await self.fetch_user(self.owner_id)
             self.owners = []
