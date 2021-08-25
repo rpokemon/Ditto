@@ -60,7 +60,7 @@ class Info(Cog):
             embed=discord.Embed(
                 colour=ctx.me.colour,
                 description=f"I am {self.bot.user}, a bot made by {owner}. My prefix is {self.bot.prefix}.",
-            ).set_author(name=f"About {ctx.me.name}:", icon_url=ctx.me.avatar.url)
+            ).set_author(name=f"About {ctx.me.name}:", icon_url=ctx.me.display_avatar.url)
         )
 
     # region: Object Info
@@ -404,7 +404,7 @@ class Info(Cog):
     @classmethod
     def _user_info(cls, user: User) -> discord.Embed:
         embed = cls._object_info(user)
-        embed.set_thumbnail(url=user.avatar.url)
+        embed.set_thumbnail(url=user.display_avatar.url)
         embed.add_field(name="Is Bot:", value=yes_no(user.bot))
         return embed
 

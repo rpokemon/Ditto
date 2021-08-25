@@ -31,12 +31,12 @@ async def download_avatar(
     avatar = io.BytesIO()
     if static:
         try:
-            await user.avatar.replace(size=size, static_format=format).save(avatar) # type: ignore
+            await user.display_avatar.replace(size=size, static_format=format).save(avatar) # type: ignore
         except discord.NotFound:
             await user.default_avatar.replace(size=size, static_format=format).save(avatar) # type: ignore
     else:
         try:
-            await user.avatar.replace(size=size, format=format).save(avatar)
+            await user.display_avatar.replace(size=size, format=format).save(avatar)
         except discord.NotFound:
             await user.default_avatar.replace(size=size, format=format).save(avatar)  # type: ignore
     return avatar

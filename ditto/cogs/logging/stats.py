@@ -44,7 +44,7 @@ class Stats(Cog):
     @commands.command()
     async def command_history(self, ctx: Context) -> None:
         embed = EmbedPaginator[discord.Embed](colour=ctx.me.colour, max_fields=10)
-        embed.set_author(name="Command History:", icon_url=ctx.me.avatar.url)
+        embed.set_author(name="Command History:", icon_url=ctx.me.display_avatar.url)
 
         async with ctx.db as connection:
             commands = await Commands.fetch(connection, order_by=(Commands.invoked_at, "DESC"), limit=100)
@@ -71,7 +71,7 @@ class Stats(Cog):
         embed = discord.Embed(
             colour=ctx.me.colour,
             description=f"Processed {total_occurunces} command invokes. ({total_per_min:.2f}/min)",
-        ).set_author(name=f"{ctx.me} command stats:", icon_url=ctx.me.avatar.url)
+        ).set_author(name=f"{ctx.me} command stats:", icon_url=ctx.me.display_avatar.url)
 
         for event, occurunces in self._command_stats.most_common(25):
             per_minute = occurunces / (self.bot.uptime.total_seconds() / 60)
@@ -87,7 +87,7 @@ class Stats(Cog):
 
         embed = discord.Embed(
             colour=ctx.me.colour, description=f"Observed {total_occurunces} socket events. ({total_per_min:.2f}/min)"
-        ).set_author(name=f"{ctx.me.name} socket event stats:", icon_url=ctx.me.avatar.url)
+        ).set_author(name=f"{ctx.me.name} socket event stats:", icon_url=ctx.me.display_avatar.url)
 
         for event, occurunces in self._socket_stats.most_common(25):
             per_minute = occurunces / (self.bot.uptime.total_seconds() / 60)
