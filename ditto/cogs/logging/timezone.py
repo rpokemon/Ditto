@@ -89,8 +89,8 @@ class Timezone(Cog):
         await menus.MenuPages(embed).start(ctx)
 
     @commands.command()
-    @discord.utils.copy_doc(timezone_list)
     async def timezones(self, ctx: Context) -> None:
+        """List all avilable time zones."""
         return await self.timezone_list(ctx)
 
 
