@@ -16,6 +16,12 @@ from ...utils.time import MAIN_TIMEZONES, human_friendly_timestamp
 
 
 class Timezone(Cog):
+    """User Timezone Management Commands."""
+
+    @property
+    def display_emoji(self) -> discord.PartialEmoji:
+        return discord.PartialEmoji(name="\N{WORLD MAP}")
+
     @commands.group(aliases=["time"], invoke_without_command=True)
     async def timezone(self, ctx: Context, *, argument: Optional[Union[zoneinfo.ZoneInfo, User]] = None) -> None:
         """Get the current time for a user or time zone."""

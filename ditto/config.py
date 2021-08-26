@@ -135,7 +135,9 @@ DISCORD_CONSTRUCTORS: dict[str, Callable[..., Any]] = {
     "Channel": lambda g, c: _get_object((discord.Client.get_guild, g), (discord.Guild.get_channel, c)),
     "Member": lambda g, m: _get_object((discord.Client.get_guild, g), (discord.Guild.get_member, m)),
     "Role": lambda g, r: _get_object((discord.Client.get_guild, g), (discord.Guild.get_role, r)),
-    "Message": lambda g, c, m: discord.PartialMessage(channel=_get_object((discord.Client.get_guild, g), (discord.Guild.get_channel, c)), id=m),
+    "Message": lambda g, c, m: discord.PartialMessage(
+        channel=_get_object((discord.Client.get_guild, g), (discord.Guild.get_channel, c)), id=m
+    ),
 }
 
 for key, func in DISCORD_CONSTRUCTORS.items():

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from functools import wraps
-from typing import TYPE_CHECKING, Callable, Optional, TypeVar
+from typing import TYPE_CHECKING, Callable, Optional, TypeVar, Type, List
 
 import discord
 
@@ -10,6 +10,7 @@ from ..interactions import error
 from ..views import Prompt
 
 if TYPE_CHECKING:
+    from ...core.bot import BotBase
     from typing_extensions import ParamSpec
 
 
@@ -20,8 +21,14 @@ C = TypeVar("C", bound=discord.Client)
 if TYPE_CHECKING:
     P = ParamSpec("P")
 
+    from ...core import Cog
 
-__all__ = ("confirm",)
+
+__all__ = (
+    "confirm",
+    "with_cog",
+    "available_commands",
+)
 
 
 def confirm(
@@ -53,3 +60,29 @@ def confirm(
         return wrapper
 
     return inner
+
+
+def with_cog(cog: Type[Cog]) -> Callable[[T], T]:
+    def decorator(command: T) -> T:
+        command._cog = cog  # type: ignore
+        return command
+
+    return decorator
+
+
+def available_commands(bot: BotBase, guild: Optional[discord.Guild] = None) -> List[discord.slash.Command]:
+    commands = []
+    command_store = bot._connection._command_store
+
+    # Global commands
+    for application_command in command_store._commands:
+        if application_command.is_global:
+            commands.append(application_command)
+
+    # Guild specific commands
+    if guild is not None:
+        for command_id in command_store._guild_command_ids[guild.id]:
+            application_command = command_store._registered_command[command_id]
+            commands.append(application_command)
+
+    return commands

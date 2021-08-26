@@ -4,7 +4,7 @@ import datetime
 import inspect
 import pathlib
 
-from typing import Any, TYPE_CHECKING, Tuple, cast, get_args, Annotated, Optional, Union, overload
+from typing import TYPE_CHECKING, cast, get_args, Annotated, Optional, Union
 
 import discord
 import ditto
@@ -19,6 +19,7 @@ from ...utils.files import get_base_dir
 from ...utils.images import to_bytes
 from ...utils.strings import codeblock, yes_no, as_columns
 from ...utils.time import readable_timestamp
+from ...utils.slash.utils import with_cog
 from ...utils.slash.checks import guild_only
 from ...utils.interactions import error
 
@@ -48,6 +49,12 @@ def is_not_voice_channel(channel: GuildChannel) -> TypeGuard[NonVocalGuildChanne
 
 
 class Info(Cog):
+    """Bot and Discord information commands."""
+
+    @property
+    def display_emoji(self) -> discord.PartialEmoji:
+        return discord.PartialEmoji(name="\N{GEAR}")
+
     @commands.command()
     async def about(self, ctx: Context):
         """Display some basic information about the bot."""
@@ -666,6 +673,7 @@ class Info(Cog):
         await ctx.send(f"<{GITHUB_URL}{repository}/blob/{commit_hash}/{filename}#L{first_line}-#L{last_line}>")
 
 
+@with_cog(Info)
 class Get(discord.slash.TopLevelCommand):
     """Get information on something."""
 

@@ -16,7 +16,7 @@ from discord.ext import commands
 from discord.ext.alternatives import converter_dict as converter_dict
 
 from .context import Context
-from .help import EmbedHelpCommand
+from .help import ViewHelpCommand, help
 from ..config import CONFIG, load_global_config
 from ..db import setup_database, EmojiCacheMixin, EventSchedulerMixin
 from ..types import CONVERTERS
@@ -93,7 +93,7 @@ class BotBase(commands.bot.BotBase, EmojiCacheMixin, EventSchedulerMixin, discor
         super().__init__(
             *args,
             command_prefix=prefix,
-            help_command=EmbedHelpCommand(),
+            help_command=ViewHelpCommand(),
             allowed_mentions=allowed_mentions,
             intents=intents,
             sync_global_commands_at_startup=CONFIG.BOT.SYNC_GLOBAL_COMMANDS,
@@ -110,6 +110,9 @@ class BotBase(commands.bot.BotBase, EmojiCacheMixin, EventSchedulerMixin, discor
                 self.load_extension(extension)
             except (commands.ExtensionError, ImportError, SyntaxError):
                 self.log.exception(f"Failed to load extension {extension}")
+
+        # Add help command
+        self.add_application_command(help)
 
     @property
     def uptime(self) -> datetime.timedelta:

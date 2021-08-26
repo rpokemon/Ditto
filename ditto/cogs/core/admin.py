@@ -1,3 +1,4 @@
+import discord
 from discord.ext import commands
 from jishaku.codeblocks import Codeblock
 
@@ -6,9 +7,15 @@ from ...config import load_global_config
 from ...types import Extension
 
 
-class Admin(Cog):
+class Admin(Cog, hidden=True):
+    """Bot administration commands."""
+
     async def cog_check(self, ctx: Context) -> bool:
         return await commands.is_owner().predicate(ctx)
+
+    @property
+    def display_emoji(self) -> discord.PartialEmoji:
+        return discord.PartialEmoji(name="\N{INFORMATION SOURCE}")
 
     @commands.command()
     async def eval(self, ctx: Context, *, code: Codeblock) -> None:
@@ -48,11 +55,22 @@ class Admin(Cog):
         """Executes a poetry command.
         `code`: The command to run.
         """
-        jsk_git = self.bot.get_command("jsk poetry")
+        jsk_git = self.bot.get_command("jsk sh")
         if jsk_git is None:
             raise commands.CommandNotFound()
         else:
-            await ctx.invoke(jsk_git, argument=code)  # type: ignore
+            await ctx.invoke(jsk_git, argument=Codeblock(None, f"poetry {code.content}"))  # type: ignore
+
+    @commands.command()
+    async def pip(self, ctx: Context, *, code: Codeblock) -> None:
+        """Executes a pip command.
+        `code`: The command to run.
+        """
+        jsk_git = self.bot.get_command("jsk sh")
+        if jsk_git is None:
+            raise commands.CommandNotFound()
+        else:
+            await ctx.invoke(jsk_git, argument=Codeblock(None, f"poetry run pip {code.content}"))  # type: ignore
 
     @commands.command()
     async def load(self, ctx: Context, *extensions: Extension) -> None:

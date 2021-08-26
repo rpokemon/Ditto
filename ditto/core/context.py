@@ -34,7 +34,6 @@ CHECK_MARK = "\N{WHITE HEAVY CHECK MARK}"
 
 
 class Context(commands.Context[BotT]):
-
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.db: MaybeAcquire

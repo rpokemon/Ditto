@@ -27,7 +27,13 @@ class CommandInvoke(NamedTuple):
     failed: bool
 
 
-class Stats(Cog):
+class Stats(Cog, hidden=True):
+    """Bot stats commands."""
+
+    @property
+    def display_emoji(self) -> discord.PartialEmoji:
+        return discord.PartialEmoji(name="\N{BAR CHART}")
+
     def __init__(self, bot: BotBase) -> None:
         super().__init__(bot)
         self._command_stats: Counter[str] = Counter()
@@ -43,6 +49,7 @@ class Stats(Cog):
 
     @commands.command()
     async def command_history(self, ctx: Context) -> None:
+        """Shows recent command invoke history."""
         embed = EmbedPaginator[discord.Embed](colour=ctx.me.colour, max_fields=10)
         embed.set_author(name="Command History:", icon_url=ctx.me.display_avatar.url)
 
