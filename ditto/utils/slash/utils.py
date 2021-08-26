@@ -82,7 +82,7 @@ def available_commands(bot: BotBase, guild: Optional[discord.Guild] = None) -> L
     # Guild specific commands
     if guild is not None:
         for command_id in command_store._guild_command_ids[guild.id]:
-            application_command = command_store._registered_command[command_id]
+            application_command = command_store._registered_commands[command_id]
             commands.append(application_command)
 
     return commands
