@@ -188,7 +188,7 @@ voice = ["PyNaCl (>=1.3.0,<1.5)"]
 
 [package.source]
 type = "git"
-url = "https://github.com/bijij/discord.py-fork"
+url = "https://github.com/rpokemon/discord.py"
 reference = "_slash"
 resolved_reference = "5ba63d5ef84ffec41420f6caecec7585f820a27b"
 
@@ -485,7 +485,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "6b29e3f70c11c2c3dacd64c03f7472ca66a6bf53a8f84a39d37850e39b235d90"
+content-hash = "c31ec3db4681d7fca7be712abb903c2d5f1f8b4604efa7f628a4224d579980a5"
 
 [metadata.files]
 aiohttp = [
