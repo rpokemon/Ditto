@@ -15,7 +15,7 @@ class Admin(Cog, hidden=True):
 
     @property
     def display_emoji(self) -> discord.PartialEmoji:
-        return discord.PartialEmoji(name="\N{INFORMATION SOURCE}")
+        return discord.PartialEmoji(name="\N{GEAR}")
 
     @commands.command()
     async def eval(self, ctx: Context, *, code: Codeblock) -> None:

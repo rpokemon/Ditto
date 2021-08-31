@@ -4,6 +4,7 @@ import datetime
 import inspect
 import pathlib
 
+from collections import namedtuple
 from typing import TYPE_CHECKING, cast, get_args, Annotated, Optional, Union
 
 import discord
@@ -53,7 +54,7 @@ class Info(Cog):
 
     @property
     def display_emoji(self) -> discord.PartialEmoji:
-        return discord.PartialEmoji(name="\N{GEAR}")
+        return discord.PartialEmoji(name="\N{INFORMATION SOURCE}")
 
     @commands.command()
     async def about(self, ctx: Context):
@@ -728,6 +729,24 @@ class Get(discord.slash.TopLevelCommand):
             embed = Info._member_info(user)
         else:
             embed = Info._user_info(user)
+        await interaction.response.send_message(embed=embed, ephemeral=private)
+
+    @discord.slash.command()
+    async def emoji(
+        interaction: discord.Interaction,
+        client: BotBase,
+        value: Annotated[str, "The emoji to get information on."],
+        private: bool = False,
+    ) -> None:
+        """Get information on an emoji."""
+        ctx: Context = namedtuple("Context", "guild bot")(interaction.guild, client)  # type: ignore  # duck typed
+
+        try:
+            emoji = await commands.EmojiConverter().convert(ctx, value)
+        except (commands.BadArgument, commands.ConversionError):
+            raise commands.BadArgument(f"Could not find emoji: {value}")
+
+        embed = Info._emoji_info(emoji)
         await interaction.response.send_message(embed=embed, ephemeral=private)
 
     @discord.slash.command()
