@@ -742,8 +742,12 @@ class Get(discord.slash.TopLevelCommand):
         except (commands.BadArgument, commands.ConversionError):
             return await error(interaction, f"Could not find colour for value: {value}")
 
-        embed = Info._colour_info(colour)
-        await interaction.response.send_message(embed=embed)
+        size = (COLOUR_INFO_IMAGE_SIZE, COLOUR_INFO_IMAGE_SIZE)
+        image = to_bytes(Image.new("RGB", size, colour.to_rgb()))
+        filename = f"{colour.value:0>6x}.png"
+
+        embed = Info._colour_info(colour, filename)
+        await interaction.response.send_message(embed=embed, file=discord.File(image, filename))
 
 
 def setup(bot: BotBase):
