@@ -60,7 +60,7 @@ class WebServerMixin:
             ]
         )
 
-        aiohttp_jinja2.setup(self.app, loader=jinja2.FileSystemLoader(CONFIG.WEB.TEMPLATE_DIR))
+        aiohttp_jinja2.setup(self.app, enable_async=True, loader=jinja2.FileSystemLoader(CONFIG.WEB.TEMPLATE_DIR))
 
     @cached_property
     def auth_uri(self) -> str:
