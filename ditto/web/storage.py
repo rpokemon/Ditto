@@ -53,9 +53,8 @@ class PostgresStorage(AbstractStorage):
         now = datetime.datetime.now(datetime.timezone.utc)
 
         async with MaybeAcquire(pool=self.bot.pool) as conn:
-            session = await HTTPSessions.fetch_row_where(
-                conn, "key = $1 AND (expires_at IS NULL OR expires_at > $2)", key, now
-            )
+            # WHERE (expires_at is NULL or expires_at > NOW()) AND key = key
+            session = await HTTPSessions.fetch_row(conn, expires_at=None, or_expires_at__gt=now, key=key)
 
         if session is None:
             return Session(None, data=None, new=True, max_age=self.max_age)
@@ -86,4 +85,10 @@ class PostgresStorage(AbstractStorage):
             else None
         )
         async with MaybeAcquire(pool=self.bot.pool) as conn:
-            await HTTPSessions.insert(conn, key=key, data=data, expires_at=expires)
+            await HTTPSessions.insert(
+                conn,
+                key=key,
+                data=data,
+                expires_at=expires,
+                update_on_conflict=[HTTPSessions.data, HTTPSessions.expires_at],
+            )

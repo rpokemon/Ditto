@@ -3,7 +3,7 @@ from __future__ import annotations
 import sys
 from functools import cached_property
 from urllib.parse import quote
-from typing import TYPE_CHECKING, Any, Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Any, Callable, Coroutine, Protocol, TypeVar, runtime_checkable, Dict
 
 import aiohttp
 import aiohttp_jinja2
@@ -12,6 +12,7 @@ import aiohttp_session
 from aiohttp.web import Application, AppRunner, normalize_path_middleware, Request, Response, HTTPFound, get, static
 from aiohttp.web_runner import TCPSite
 
+import discord
 import jinja2
 
 
@@ -31,6 +32,10 @@ else:
 __all__ = ("WebServerMixin",)
 
 
+T = TypeVar("T")
+Coro = Coroutine[Any, Any, T]
+
+
 class WebServerMixin:
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         assert isinstance(self, BotBase)
@@ -41,6 +46,7 @@ class WebServerMixin:
             return
 
         self.app: Application = Application(middlewares=[normalize_path_middleware()])
+        self._permission_checks: Dict[str, Callable[[discord.User], Coro[bool]]] = {}
 
         self.storage: PostgresStorage = PostgresStorage(self, cookie_name="session")
         aiohttp_session.setup(self.app, self.storage)
@@ -55,8 +61,8 @@ class WebServerMixin:
         self.app.add_routes(
             [
                 static("/static", CONFIG.WEB.STATIC_DIR),
-                get("/login", self.web_login),
-                get("/logout", self.web_logout),
+                get("/login", self._web_login),
+                get("/logout", self._web_logout),
             ]
         )
 
@@ -81,7 +87,7 @@ class WebServerMixin:
 
         await super().connect(*args, **kwargs)  # type: ignore
 
-    async def web_login(self, request: Request) -> Response:
+    async def _web_login(self, request: Request) -> Response:
         assert isinstance(self, BotBase)
         user_id = await validate_login(self, request)
 
@@ -89,7 +95,13 @@ class WebServerMixin:
         await aiohttp_security.remember(request, redirect, user_id)
         return redirect
 
-    async def web_logout(self, request: Request) -> Response:
+    async def _web_logout(self, request: Request) -> Response:
         redirect = HTTPFound("/")
         await aiohttp_security.forget(request, redirect)
         return redirect
+
+    def add_permission_check(self, permission: str, check: Callable[[discord.User], Coro[bool]]) -> None:
+        self._permission_checks[permission] = check
+
+    def remove_permission_check(self, permission: str) -> None:
+        self._permission_checks.pop(permission, None)

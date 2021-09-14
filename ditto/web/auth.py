@@ -62,7 +62,7 @@ class DiscordAuthorizationPolicy(AbstractAuthorizationPolicy):
     async def permits(self, identity: str, permission: str, context: Optional[Request]) -> bool:
         user = await self.authorized_userid(identity)
 
-        if permission == "user":
-            return True
+        if permission in self.bot.web_permission_checks:
+            return await self.bot.web_permission_checks[permission](user)
 
         return False  # TODO: DB/CONFIG system for permissions

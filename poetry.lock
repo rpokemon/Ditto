@@ -215,7 +215,7 @@ resolved_reference = "fbb8803779373357e274e1540b368365fd9d8074"
 
 [[package]]
 name = "discord.py"
-version = "2.1.0a3587+g5ba63d5e"
+version = "2.1.0a3588+gf2e4acf8"
 description = "A Python wrapper for the Discord API"
 category = "main"
 optional = false
@@ -234,11 +234,11 @@ voice = ["PyNaCl (>=1.3.0,<1.5)"]
 type = "git"
 url = "https://github.com/rpokemon/discord.py"
 reference = "_slash"
-resolved_reference = "5ba63d5ef84ffec41420f6caecec7585f820a27b"
+resolved_reference = "f2e4acf8955c957b8cb553504d779f2ea898f4f2"
 
 [[package]]
 name = "donphan"
-version = "4.5.0"
+version = "4.5.2"
 description = "Asynchronous Database ORM for Postgres"
 category = "main"
 optional = false
@@ -551,7 +551,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "95d0b5608f96847ea09fd043185dd23fcf2fdbd6b20365e1686203cb21227c23"
+content-hash = "3f165d32f502a38c4c293e52d8b86c095fc7b6dc08aa294c838a905250eec408"
 
 [metadata.files]
 aiohttp = [
@@ -660,8 +660,8 @@ discord-ext-alternatives = []
 discord-ext-menus = []
 "discord.py" = []
 donphan = [
-    {file = "Donphan-4.5.0-py3-none-any.whl", hash = "sha256:84b378e5024c4ea6912de9e5935f9903fcc537c5c5e52f8ef4bc482468b339ba"},
-    {file = "Donphan-4.5.0.tar.gz", hash = "sha256:806a9d7127f846b340110ff6a38a0fc2c4619a7a2c7aec873c5622ac038f197d"},
+    {file = "Donphan-4.5.2-py3-none-any.whl", hash = "sha256:36f57a82037ce2fb9b5151c19773b580f49d34f19cf5f571b6933039f328bafe"},
+    {file = "Donphan-4.5.2.tar.gz", hash = "sha256:e29cc9926f4bba2c5fae22b88f327f181b69a7cfc95f76a3707e4cc56ea8a734"},
 ]
 humanize = [
     {file = "humanize-3.11.0-py3-none-any.whl", hash = "sha256:06c79af7873473c47477840010ccb9b11b0d431f37f4a81b71edd653211936be"},
