@@ -46,7 +46,7 @@ class WebServerMixin:
             return
 
         self.app: Application = Application(middlewares=[normalize_path_middleware()])
-        self._permission_checks: Dict[str, Callable[[discord.User], Coro[bool]]] = {}
+        self._permission_checks: Dict[str, Callable[[BotBase, discord.User], Coro[bool]]] = {}
 
         self.storage: PostgresStorage = PostgresStorage(self, cookie_name="session")
         aiohttp_session.setup(self.app, self.storage)
@@ -100,8 +100,15 @@ class WebServerMixin:
         await aiohttp_security.forget(request, redirect)
         return redirect
 
-    def add_permission_check(self, permission: str, check: Callable[[discord.User], Coro[bool]]) -> None:
+    def add_permission_check(self, permission: str, check: Callable[[BotBase, discord.User], Coro[bool]]) -> None:
         self._permission_checks[permission] = check
 
     def remove_permission_check(self, permission: str) -> None:
         self._permission_checks.pop(permission, None)
+
+    def permission_check(self, permission: str) -> Callable[[Callable[[BotBase, discord.User], Coro[bool]]], Callable[[BotBase, discord.User], Coro[bool]]]:
+        def decorator(func: Callable[[BotBase, discord.User], Coro[bool]]) -> Callable[[BotBase, discord.User], Coro[bool]]:
+            self.add_permission_check(permission, func)
+            return func
+
+        return decorator
