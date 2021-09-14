@@ -55,8 +55,8 @@ class WebServerMixin:
         self.app.add_routes(
             [
                 static("/static", CONFIG.WEB.STATIC_DIR),
-                get("/login", self.login),
-                get("/logout", self.logout),
+                get("/login", self.web_login),
+                get("/logout", self.web_logout),
             ]
         )
 
@@ -81,7 +81,7 @@ class WebServerMixin:
 
         await super().connect(*args, **kwargs)  # type: ignore
 
-    async def login(self, request: Request) -> Response:
+    async def web_login(self, request: Request) -> Response:
         assert isinstance(self, BotBase)
         user_id = await validate_login(self, request)
 
@@ -89,7 +89,7 @@ class WebServerMixin:
         await aiohttp_security.remember(request, redirect, user_id)
         return redirect
 
-    async def logout(self, request: Request) -> Response:
+    async def web_logout(self, request: Request) -> Response:
         redirect = HTTPFound("/")
         await aiohttp_security.forget(request, redirect)
         return redirect
