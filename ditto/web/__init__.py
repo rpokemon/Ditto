@@ -50,7 +50,7 @@ class WebServerMixin:
         )
 
         self.policy: DiscordAuthorizationPolicy = DiscordAuthorizationPolicy(self)
-        aiohttp_security.setup(self.app, aiohttp_security.SessionIdentityPolicy("session"), self.policy)
+        aiohttp_security.setup(self.app, aiohttp_security.SessionIdentityPolicy(), self.policy)
 
         self.app.add_routes(
             [
