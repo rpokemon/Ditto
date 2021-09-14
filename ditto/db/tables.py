@@ -15,6 +15,7 @@ __all__ = (
     "Events",
     "Emoji",
     "UserEmoji",
+    "HTTPSessions",
 )
 
 
@@ -56,3 +57,9 @@ class Emoji(Table, schema="core"):
 class UserEmoji(Table, schema="core"):
     emoji_id: Column[SQLType.BigInt] = Column(primary_key=True, references=Emoji.emoji_id, cascade=True)
     user_id: Column[SQLType.BigInt] = Column(index=True, unique=True)
+
+
+class HTTPSessions(Table, schema="web"):
+    key: Column[SQLType.UUID] = Column(primary_key=True)
+    data: Column[SQLType.JSONB] = Column(default="'{}'::jsonb")
+    expires_at: Column[SQLType.Timestamp] = Column(nullable=True, index=True)

@@ -4,10 +4,22 @@
 !Config
 
   APP_NAME: 'Ditto'
+  VERSION: '1.0.0'
   
   SOURCE: !Config
     DITTO: 'bijij/ditto'
     CUSTOM: 'bijij/ditto'
+
+  APPLICATION: !Config
+    SECRET: !ENV APPLICATION_SECRET
+    REDIRECT_URI: !ENV APPLICATION_REDIRECT_URI
+
+  WEB: !Config
+    DISABLED: no
+    HOST: 'localhost'
+    PORT: '8080'
+    TEMPLATE_DIR: 'web/templates'
+    STATIC_DIR: 'web/static'
 
   BOT: !Config
     ALLOW_MENTIONS_AS_PREFIX: yes

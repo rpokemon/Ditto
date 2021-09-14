@@ -24,6 +24,9 @@ Pillow = ">=8.2.0"
 parsedatetime = ">=2.6"
 psutil = "^5.8.0"
 humanize = ">=3.4.1"
+aiohttp-session = "^2.9.0"
+aiohttp_security = "^0.4.0"
+aiohttp-jinja2 = "^1.5"
 
 [tool.poetry.dev-dependencies]
 black = ">=20.8b1"

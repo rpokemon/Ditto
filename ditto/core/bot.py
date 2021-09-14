@@ -19,6 +19,7 @@ from .context import Context
 from .help import ViewHelpCommand, help
 from ..config import CONFIG, load_global_config
 from ..db import setup_database, EmojiCacheMixin, EventSchedulerMixin
+from ..web import WebServerMixin
 from ..types import CONVERTERS
 from ..utils.logging import WebhookHandler
 from ..utils.strings import codeblock
@@ -36,7 +37,7 @@ ONE_KILOBYTE = 1024
 ONE_MEGABYTE = ONE_KILOBYTE * 1024
 
 
-class BotBase(commands.bot.BotBase, EmojiCacheMixin, EventSchedulerMixin, discord.Client):
+class BotBase(commands.bot.BotBase, WebServerMixin, EmojiCacheMixin, EventSchedulerMixin, discord.Client):
     converters: dict[type, Callable[..., Any]]
     pool: asyncpg.pool.Pool
 
