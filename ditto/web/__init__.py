@@ -42,7 +42,7 @@ class WebServerMixin:
 
         self.app: Application = Application(middlewares=[normalize_path_middleware()])
 
-        self.storage: PostgresStorage = PostgresStorage(self)
+        self.storage: PostgresStorage = PostgresStorage(self, cookie_name="session")
         aiohttp_session.setup(self.app, self.storage)
 
         self.user_agent: str = USER_AGENT.format(
@@ -50,7 +50,7 @@ class WebServerMixin:
         )
 
         self.policy: DiscordAuthorizationPolicy = DiscordAuthorizationPolicy(self)
-        aiohttp_security.setup(self.app, aiohttp_security.SessionIdentityPolicy(), self.policy)
+        aiohttp_security.setup(self.app, aiohttp_security.SessionIdentityPolicy("session"), self.policy)
 
         self.app.add_routes(
             [
