@@ -283,7 +283,9 @@ async def help(
         if application_command.type is discord.CommandType.chat_input:
             if application_command.name == command:
                 # TODO: Display group command subcommands?
-                return await interaction.response.send_message(embed=slash_command_help(bot, application_command), ephemeral=private)
+                return await interaction.response.send_message(
+                    embed=slash_command_help(bot, application_command), ephemeral=private
+                )
 
             cog = getattr(application_command, "_cog", None)
             if cog is not None:

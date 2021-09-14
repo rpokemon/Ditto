@@ -1,16 +1,23 @@
 import asyncio
 import datetime
 from dataclasses import dataclass
-
-from typing import Any, Optional, TYPE_CHECKING, TypeVar
+from typing import TYPE_CHECKING, Any, Optional, Protocol, TypeVar, runtime_checkable
 
 import asyncpg
-
 import discord
 from discord.ext import tasks
 from donphan import MaybeAcquire
 
 from .tables import Events
+
+if TYPE_CHECKING:
+    from ..core.bot import BotBase
+else:
+
+    @runtime_checkable
+    class BotBase(Protocol):
+        ...
+
 
 __all__ = ("ScheduledEvent", "EventSchedulerMixin")
 
@@ -43,9 +50,6 @@ class ScheduledEvent:
 
 
 class EventSchedulerMixin:
-    if TYPE_CHECKING:
-        pool: asyncpg.pool.Pool
-
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         # this is a hack because >circular imports<
         from ..config import CONFIG
@@ -61,6 +65,7 @@ class EventSchedulerMixin:
         self._dispatch_task.start()
 
     async def schedule_event(self, time: datetime.datetime, type: str, /, *args: Any, **kwargs: Any) -> ScheduledEvent:
+        assert isinstance(self, BotBase)
 
         now = datetime.datetime.now(tz=datetime.timezone.utc)
 
@@ -95,6 +100,8 @@ class EventSchedulerMixin:
         return self.__event_scheduler__current
 
     async def _wait_for_event(self) -> ScheduledEvent:
+        assert isinstance(self, BotBase)
+
         async with MaybeAcquire(pool=self.pool) as connection:
             record = await Events.fetch_row(connection, order_by=(Events.scheduled_for, "ASC"))
 
@@ -109,7 +116,7 @@ class EventSchedulerMixin:
 
     @tasks.loop(seconds=0)
     async def _dispatch_task(self) -> None:
-        assert isinstance(self, discord.Client)
+        assert isinstance(self, BotBase)
         while not self.is_closed():
             event = self.__event_scheduler__current = await self._wait_for_event()
 
@@ -127,5 +134,5 @@ class EventSchedulerMixin:
 
     @_dispatch_task.before_loop
     async def _before_dispatch_task(self):
-        assert isinstance(self, discord.Client)
+        assert isinstance(self, BotBase)
         await self.wait_until_ready()

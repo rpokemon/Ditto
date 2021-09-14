@@ -60,7 +60,7 @@ def env_var_constructor(loader: yaml.Loader, node: yaml.ScalarNode) -> Optional[
     return os.getenv(key)
 
 
-def generate_constructor(func: Callable[..., Any]) -> Callable[[yaml.Loader, yaml.ScalarNode], Object]:
+def generate_constructor(func: Callable[..., Any]) -> Callable[[yaml.Loader, yaml.ScalarNode], discord.abc.Snowflake]:
     def constructor(loader: yaml.Loader, node: yaml.ScalarNode) -> Object:
         ids = [int(x) for x in loader.construct_scalar(node).split()]  # type: ignore
         return Object(ids[-1], lambda: func(*ids))

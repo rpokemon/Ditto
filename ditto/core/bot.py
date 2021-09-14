@@ -199,9 +199,9 @@ class BotBase(commands.bot.BotBase, WebServerMixin, EmojiCacheMixin, EventSchedu
     async def setup_database(self):
         self.pool = await setup_database()
 
-    async def connect(self, *args, **kwargs):
+    async def connect(self, *args: Any, **kwargs: Any) -> None:
         await self.setup_database()
-        return await super().connect(*args, **kwargs)
+        await super().connect(*args, **kwargs)
 
     def run(self):
         if CONFIG.BOT.TOKEN is None:
