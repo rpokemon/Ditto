@@ -18,7 +18,7 @@ AUTH_URI = Route.BASE + "/oauth2/authorize?client_id={0}&redirect_uri={1}&respon
 USER_AGENT = "{0} (https://rpkmn.center/silvally {1}) Python/{2[0]}.{2[1]} aiohttp/{3}"
 
 
-async def validate_login(bot: BotBase, request: Request) -> int:
+async def validate_login(bot: BotBase, request: Request) -> str:
 
     if "code" not in request.query:
         raise HTTPUnauthorized
@@ -48,17 +48,18 @@ async def validate_login(bot: BotBase, request: Request) -> int:
 
         async with session.get(uri, headers={"Authorization": f"Bearer {token}"}) as resp:
             result = await resp.json()
-            return int(result["id"])
+            return result["id"]
 
 
 class DiscordAuthorizationPolicy(AbstractAuthorizationPolicy):
     def __init__(self, bot: BotBase) -> None:
         self.bot: BotBase = bot
 
-    async def authorized_userid(self, identity: int) -> User:
-        return self.bot.get_user(identity) or await self.bot.fetch_user(identity)
+    async def authorized_userid(self, identity: str) -> User:
+        user_id = int(identity)
+        return self.bot.get_user(user_id) or await self.bot.fetch_user(user_id)
 
-    async def permits(self, identity: int, permission: str, context: Optional[Request]) -> bool:
+    async def permits(self, identity: str, permission: str, context: Optional[Request]) -> bool:
         user = await self.authorized_userid(identity)
 
         if permission == "user":
