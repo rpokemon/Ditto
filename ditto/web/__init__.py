@@ -76,14 +76,13 @@ class WebServerMixin:
     async def connect(self, *args: Any, **kwargs: Any) -> None:
         assert isinstance(self, BotBase)
 
-        if CONFIG.WEB.DISABLED:
-            return
+        if not CONFIG.WEB.DISABLED:
 
-        self._web_runner: AppRunner = AppRunner(self.app)
-        await self._web_runner.setup()
+            self._web_runner: AppRunner = AppRunner(self.app)
+            await self._web_runner.setup()
 
-        self._web_site = TCPSite(self._web_runner, CONFIG.WEB.HOST, CONFIG.WEB.PORT)
-        await self._web_site.start()
+            self._web_site = TCPSite(self._web_runner, CONFIG.WEB.HOST, CONFIG.WEB.PORT)
+            await self._web_site.start()
 
         await super().connect(*args, **kwargs)  # type: ignore
 
