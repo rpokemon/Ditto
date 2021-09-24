@@ -268,6 +268,19 @@ def slash_command_help(bot: BotBase, command: discord.slash.Command) -> discord.
     )
 
 
+def _get_commands(bot: BotBase, guild: Optional[discord.Guild]) -> Dict[Optional[Cog], List[discord.slash.Command]]:
+    cogs = DefaultDict[Optional[Cog], List[discord.slash.Command]](list)
+
+    application_commands = available_commands(bot, guild)
+    for application_command in application_commands:
+            cog = getattr(application_command, "_cog", None)
+            if cog is not None:
+                cog = bot.cogs.get(cog.__cog_name__, None)
+            cogs[cog].append(application_command)  # type: ignore
+    
+    return cogs
+
+
 @discord.slash.command()
 async def help(
     interaction: discord.Interaction,
@@ -276,21 +289,16 @@ async def help(
     private: Annotated[bool, "Whether to invoke this command privately"] = True,
 ) -> None:
     """Displays help about the bot, a command, or a category"""
-    cogs = DefaultDict[Optional[Cog], List[discord.slash.Command]](list)
+    cogs = _get_commands(bot, interaction.guild)
 
-    application_commands = available_commands(bot, interaction.guild)
-    for application_command in application_commands:
-        if application_command.type is discord.CommandType.chat_input:
-            if application_command.name == command:
-                # TODO: Display group command subcommands?
-                return await interaction.response.send_message(
-                    embed=slash_command_help(bot, application_command), ephemeral=private
-                )
-
-            cog = getattr(application_command, "_cog", None)
-            if cog is not None:
-                cog = bot.cogs.get(cog.__cog_name__, None)
-            cogs[cog].append(application_command)  # type: ignore
+    for cog in cogs:
+        for application_command in cogs[cog]:
+            if application_command.type is discord.CommandType.chat_input:
+                if application_command.name == command:
+                    # TODO: Display group command subcommands?
+                    return await interaction.response.send_message(
+                        embed=slash_command_help(bot, application_command), ephemeral=private
+                    )
 
     # Send Bot Help
     if command is None:
@@ -305,3 +313,24 @@ async def help(
             await SlashHelpView.send(interaction, bot, source, ephemeral=private)  # type: ignore
 
     return await error(interaction, f'Could not find command or category with name "{command}"')
+
+
+@help.autocomplete(help.options[0])
+async def help_autocomplete_command(
+    interaction: discord.Interaction,
+    bot: BotBase,
+    value: Optional[str],
+    focused: bool
+) -> None:
+    cogs = _get_commands(bot, interaction.guild)
+
+    value = (value or "").lower()
+    suggestions = []
+
+    for cog in cogs:
+        for application_command in cogs[cog]:
+            if application_command.type is discord.CommandType.chat_input:
+                if application_command.name.startswith(value):
+                    suggestions.append(application_command.name)
+
+    return await interaction.response.autocomplete([discord.CommandOptionChoice(command, command) for command in suggestions[:25]])

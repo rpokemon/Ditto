@@ -215,7 +215,7 @@ resolved_reference = "fbb8803779373357e274e1540b368365fd9d8074"
 
 [[package]]
 name = "discord.py"
-version = "2.1.0a3588+gf2e4acf8"
+version = "2.1.0a3602+g74fa1516"
 description = "A Python wrapper for the Discord API"
 category = "main"
 optional = false
@@ -234,11 +234,11 @@ voice = ["PyNaCl (>=1.3.0,<1.5)"]
 type = "git"
 url = "https://github.com/rpokemon/discord.py"
 reference = "_slash"
-resolved_reference = "f2e4acf8955c957b8cb553504d779f2ea898f4f2"
+resolved_reference = "74fa1516f9e119dc58886ffccacfd16854e40729"
 
 [[package]]
 name = "donphan"
-version = "4.5.2"
+version = "4.5.3"
 description = "Asynchronous Database ORM for Postgres"
 category = "main"
 optional = false
@@ -307,7 +307,7 @@ i18n = ["Babel (>=2.7)"]
 
 [[package]]
 name = "jishaku"
-version = "2.3.0a345+gd3f5074.master"
+version = "2.3.0a346+g4027c12.master"
 description = "A discord.py extension including useful tools for bot development and debugging."
 category = "main"
 optional = false
@@ -330,7 +330,7 @@ voice = ["youtube-dl"]
 type = "git"
 url = "https://github.com/Gorialis/jishaku"
 reference = "master"
-resolved_reference = "d3f50749b5a977b544e5fd14894585f656247486"
+resolved_reference = "4027c127bc67b8c2b799b81934001e25c26ff15e"
 
 [[package]]
 name = "markupsafe"
@@ -660,8 +660,8 @@ discord-ext-alternatives = []
 discord-ext-menus = []
 "discord.py" = []
 donphan = [
-    {file = "Donphan-4.5.2-py3-none-any.whl", hash = "sha256:36f57a82037ce2fb9b5151c19773b580f49d34f19cf5f571b6933039f328bafe"},
-    {file = "Donphan-4.5.2.tar.gz", hash = "sha256:e29cc9926f4bba2c5fae22b88f327f181b69a7cfc95f76a3707e4cc56ea8a734"},
+    {file = "Donphan-4.5.3-py3-none-any.whl", hash = "sha256:14b2279e7d15136a222a83c8964984f16286c346d80237af9b374e331c37d1e9"},
+    {file = "Donphan-4.5.3.tar.gz", hash = "sha256:13c7b13168a76360391237b69e57232b5677348a47246747653285b5330f43e4"},
 ]
 humanize = [
     {file = "humanize-3.11.0-py3-none-any.whl", hash = "sha256:06c79af7873473c47477840010ccb9b11b0d431f37f4a81b71edd653211936be"},
