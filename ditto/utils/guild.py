@@ -23,9 +23,9 @@ async def fetch_audit_log_entry(
     guild: discord.Guild,
     *,
     time: Optional[datetime.datetime] = None,
-    user: Optional[User] = None,
-    moderator: Optional[User] = None,
-    action: Optional[discord.AuditLogAction] = None,
+    user: User = MISSING,
+    moderator: User = MISSING,
+    action: discord.AuditLogAction = MISSING,
     delta: Union[float, datetime.timedelta] = 1,
     retry: int = 3,
 ) -> Optional[discord.AuditLogEntry]:
@@ -34,7 +34,7 @@ async def fetch_audit_log_entry(
     delta = normalise_timedelta(delta)
 
     async for entry in guild.audit_logs(action=action, user=moderator):  # type: ignore
-        if (time - entry.created_at) < delta and (user is None or entry.target == user):
+        if (time - entry.created_at) < delta and (user is MISSING or entry.target == user):
             return entry
 
     if retry > 0:
