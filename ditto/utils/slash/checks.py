@@ -3,7 +3,6 @@ import discord
 from .utils import error, check
 
 __all__ = (
-    "check",
     "guild_only",
     "dm_only",
 )

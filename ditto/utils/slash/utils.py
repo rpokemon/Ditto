@@ -17,6 +17,7 @@ if TYPE_CHECKING:
 
 T = TypeVar("T")
 C = TypeVar("C", bound=discord.Client)
+ClientT = TypeVar("ClientT", bound=discord.Client)
 CommandT = TypeVar("CommandT", bound=BaseCommand)
 
 Coro = Coroutine[Any, Any, T]
@@ -32,6 +33,7 @@ __all__ = (
     "with_cog",
     "available_commands",
     "check",
+    "with_client",
 )
 
 
@@ -98,3 +100,14 @@ def check(
         return wrapper
 
     return decorator
+
+
+def with_client(
+    coro: Callable[[CommandT, ClientT, discord.Interaction], Coro[T]] 
+) -> Callable[[CommandT, discord.Interaction], Coro[T]]:
+
+    @wraps(coro)
+    async def wrapper(self: CommandT, interaction: discord.Interaction) -> T:
+        return await coro(self, interaction._state._get_client(), interaction)
+
+    return wrapper

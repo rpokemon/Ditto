@@ -21,7 +21,7 @@ from ...utils.files import get_base_dir
 from ...utils.images import to_bytes
 from ...utils.strings import codeblock, yes_no, as_columns
 from ...utils.time import readable_timestamp
-from ...utils.slash.utils import with_cog
+from ...utils.slash.utils import with_cog, with_client
 from ...utils.slash.checks import guild_only
 from ...utils.interactions import error
 
@@ -769,9 +769,9 @@ class Get_Emoji(discord.slash.Command, name="emoji"):
     private: Optional[bool]
     """Whether to invoke this command privately"""
 
-    async def execute(self, interaction: discord.Interaction):
+    @with_client
+    async def execute(self, client: BotBase, interaction: discord.Interaction):
         private = True if self.private is None else self.private
-        client = interaction._state._get_client()
         ctx: Context = namedtuple("Context", "guild bot")(interaction.guild, client)  # type: ignore  # duck typed
 
         try:
