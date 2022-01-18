@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import datetime
+from dis import disco
 import inspect
 import pathlib
 
@@ -675,91 +676,125 @@ class Info(Cog):
 
 
 @with_cog(Info)
-class Get(discord.slash.TopLevelCommand):
+class Get(discord.slash.CommandGroup):
     """Get information on something."""
 
-    @discord.slash.command()
-    @discord.slash.check(guild_only)
-    async def server(interaction: discord.Interaction, client: BotBase, private: bool = False) -> None:
-        """Get information on the current server."""
+
+@Get.command
+class Get_Server(discord.slash.Command, name="server"):
+    """Get information on the current server."""
+
+    private: Optional[bool]
+    """Whether to invoke this command privately"""
+
+    @guild_only
+    async def execute(self, interaction: discord.Interaction):
         assert interaction.guild is not None
+        private = True if self.private is None else self.private
         embed = await Info._server_info(interaction.guild)
         await interaction.response.send_message(embed=embed, ephemeral=private)
 
-    @discord.slash.command()
-    @discord.slash.check(guild_only)
-    async def role(
-        interaction: discord.Interaction,
-        client: BotBase,
-        role: Annotated[discord.Role, "The role to get information on."],
-        private: bool = False,
-    ) -> None:
-        """Get information on a role."""
-        embed = Info._role_info(role)
+
+@Get.command
+class Get_Role(discord.slash.Command, name="role"):
+    """Get information on a role."""
+
+    role: discord.Role
+    """The role to get information on."""
+
+    private: Optional[bool]
+    """Whether to invoke this command privately"""
+
+    @guild_only
+    async def execute(self, interaction: discord.Interaction):
+        assert interaction.guild is not None
+        private = True if self.private is None else self.private
+        embed = Info._role_info(self.role)
         await interaction.response.send_message(embed=embed, ephemeral=private)
 
-    @discord.slash.command()
-    @discord.slash.check(guild_only)
-    async def channel(
-        interaction: discord.Interaction,
-        client: BotBase,
-        channel: Annotated[GuildChannel, "The channel to get information on."],
-        private: bool = False,
-    ) -> None:
-        """Get information on a channel."""
-        if isinstance(channel, discord.TextChannel):
-            embed = Info._text_channel_info(channel)
-        elif isinstance(channel, get_args(VocalGuildChannel)):
-            embed = Info._vocal_channel_info(channel)  # type: ignore
-        elif isinstance(channel, discord.CategoryChannel):
-            embed = Info._category_channel_info(channel)
+
+@Get.command
+class Get_Channel(discord.slash.Command, name="channel"):
+    """Get information on a channel."""
+
+    channel: GuildChannel
+    """The channel to get information on."""
+
+    private: Optional[bool]
+    """Whether to invoke this command privately"""
+
+    @guild_only
+    async def execute(self, interaction: discord.Interaction):
+        assert interaction.guild is not None
+        private = True if self.private is None else self.private
+
+        if isinstance(self.channel, discord.TextChannel):
+            embed = Info._text_channel_info(self.channel)
+        elif isinstance(self.channel, get_args(VocalGuildChannel)):
+            embed = Info._vocal_channel_info(self.channel)  # type: ignore
+        elif isinstance(self.channel, discord.CategoryChannel):
+            embed = Info._category_channel_info(self.channel)
         else:
-            embed = Info._channel_info(channel)
+            embed = Info._channel_info(self.channel)
         await interaction.response.send_message(embed=embed, ephemeral=private)
 
-    @discord.slash.command()
-    async def user(
-        interaction: discord.Interaction,
-        client: BotBase,
-        user: Annotated[User, "The user to get information on."],
-        private: bool = False,
-    ) -> None:
-        """Get information on a user."""
-        if isinstance(user, discord.Member):
-            embed = Info._member_info(user)
+
+@Get.command
+class Get_User(discord.slash.Command, name="user"):
+    """Get information on a user."""
+
+    user: User
+    """The user to get information on."""
+
+    private: Optional[bool]
+    """Whether to invoke this command privately"""
+
+    async def execute(self, interaction: discord.Interaction):
+        private = True if self.private is None else self.private
+
+        if isinstance(self.user, discord.Member):
+            embed = Info._member_info(self.user)
         else:
-            embed = Info._user_info(user)
+            embed = Info._user_info(self.user)
         await interaction.response.send_message(embed=embed, ephemeral=private)
 
-    @discord.slash.command()
-    async def emoji(
-        interaction: discord.Interaction,
-        client: BotBase,
-        value: Annotated[str, "The emoji to get information on."],
-        private: bool = False,
-    ) -> None:
-        """Get information on an emoji."""
+
+@Get.command
+class Get_Emoji(discord.slash.Command, name="emoji"):
+    """Get information on an emoji."""
+
+    emoji: str
+    """The emoji to get information on."""
+
+    private: Optional[bool]
+    """Whether to invoke this command privately"""
+
+    async def execute(self, interaction: discord.Interaction):
+        private = True if self.private is None else self.private
+        client = interaction._state._get_client()
         ctx: Context = namedtuple("Context", "guild bot")(interaction.guild, client)  # type: ignore  # duck typed
 
         try:
-            emoji = await commands.EmojiConverter().convert(ctx, value)
+            emoji = await commands.EmojiConverter().convert(ctx, self.emoji)
         except (commands.BadArgument, commands.ConversionError):
-            raise commands.BadArgument(f"Could not find emoji: {value}")
+            raise commands.BadArgument(f"Could not find emoji: {self.emoji}")
 
         embed = Info._emoji_info(emoji)
         await interaction.response.send_message(embed=embed, ephemeral=private)
 
-    @discord.slash.command()
-    async def colour(
-        interaction: discord.Interaction,
-        client: BotBase,
-        value: Annotated[str, "The colour to get information on, accepts hex, css rgb selector or name."],
-    ) -> None:
-        """Get information on a colour."""
+
+@Get.command
+class Get_Colour(discord.slash.Command, name="colour"):
+    """Get information on a colour.""""""Get information on an emoji."""
+
+    colour: str
+    """The colour to get information on, accepts hex, css rgb selector or name."""
+
+    async def execute(self, interaction: discord.Interaction):
         try:
-            colour = await commands.ColorConverter().convert(discord.utils.MISSING, value)
+            colour = await commands.ColorConverter().convert(discord.utils.MISSING, self.colour)
         except (commands.BadArgument, commands.ConversionError):
-            return await error(interaction, f"Could not find colour for value: {value}")
+            return await error(interaction, f"Could not find colour for value: {self.colour}")
 
         size = (COLOUR_INFO_IMAGE_SIZE, COLOUR_INFO_IMAGE_SIZE)
         image = to_bytes(Image.new("RGB", size, colour.to_rgb()))
@@ -771,8 +806,9 @@ class Get(discord.slash.TopLevelCommand):
 
 def setup(bot: BotBase):
     bot.add_cog(Info(bot))
-    bot.add_application_command(Get)  # type: ignore
+    bot.add_application_command(Get)
 
 
 def teardown(bot: BotBase):
-    bot.remove_application_command(Get)  # type: ignore
+    pass
+    # bot.remove_application_command(Get)

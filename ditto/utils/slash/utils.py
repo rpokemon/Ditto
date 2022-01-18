@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 from functools import wraps
-from typing import TYPE_CHECKING, Callable, Optional, TypeVar, Type, List
+from typing import TYPE_CHECKING, Any, Callable, Coroutine, Optional, TypeVar, Type, List
 
 import discord
+from discord.slash.command import BaseCommand
 
 from ...types import SlashCommand
 from ..interactions import error
@@ -15,8 +16,10 @@ if TYPE_CHECKING:
 
 
 T = TypeVar("T")
-
 C = TypeVar("C", bound=discord.Client)
+CommandT = TypeVar("CommandT", bound=BaseCommand)
+
+Coro = Coroutine[Any, Any, T]
 
 if TYPE_CHECKING:
     P = ParamSpec("P")
@@ -28,6 +31,7 @@ __all__ = (
     "confirm",
     "with_cog",
     "available_commands",
+    "check",
 )
 
 
@@ -70,19 +74,27 @@ def with_cog(cog: Type[Cog]) -> Callable[[T], T]:
     return decorator
 
 
-def available_commands(bot: BotBase, guild: Optional[discord.Guild] = None) -> List[discord.slash.Command]:
+def available_commands(bot: BotBase, guild: Optional[discord.Guild] = None) -> List[discord.PartialCommand]:
     commands = []
-    command_store = bot._connection._command_store
 
     # Global commands
-    for application_command in command_store._commands:
-        if application_command.is_global:
-            commands.append(application_command)
-
-    # Guild specific commands
-    if guild is not None:
-        for command_id in command_store._guild_command_ids[guild.id]:
-            application_command = command_store._registered_commands[command_id]
-            commands.append(application_command)
+    for command in bot.application_commands:
+        commands.append(command)
 
     return commands
+
+
+def check(
+    check_coro: Callable[[discord.Interaction], Coro[bool]]
+) -> Callable[[Callable[[CommandT, discord.Interaction], Coro[T]]], Callable[[CommandT, discord.Interaction], Coro[Optional[T]]]]:
+    
+    def decorator(coro: Callable[[CommandT, discord.Interaction], Coro[T]]) -> Callable[[CommandT, discord.Interaction], Coro[Optional[T]]]:
+        
+        @wraps(coro)
+        async def wrapper(self: CommandT, interaction: discord.Interaction) -> Optional[T]:
+            if await check_coro(interaction):
+                return await coro(self, interaction)
+
+        return wrapper
+
+    return decorator

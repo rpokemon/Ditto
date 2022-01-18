@@ -16,7 +16,7 @@ from discord.ext import commands
 from discord.ext.alternatives import converter_dict as converter_dict
 
 from .context import Context
-from .help import ViewHelpCommand, help
+from .help import ViewHelpCommand, Help
 from ..config import CONFIG, load_global_config
 from ..db import setup_database, EmojiCacheMixin, EventSchedulerMixin
 from ..web import WebServerMixin
@@ -113,7 +113,7 @@ class BotBase(commands.bot.BotBase, WebServerMixin, EmojiCacheMixin, EventSchedu
                 self.log.exception(f"Failed to load extension {extension}")
 
         # Add help command
-        self.add_application_command(help)
+        self.add_application_command(Help)
 
     @property
     def uptime(self) -> datetime.timedelta:
@@ -168,23 +168,6 @@ class BotBase(commands.bot.BotBase, WebServerMixin, EmojiCacheMixin, EventSchedu
         self.log.error(
             f"Unhandled exception in command: {ctx.command.qualified_name}\n\n{type(error).__name__}: {error}\n\n{tb}"
         )
-
-    async def on_application_command_error(
-        self, interaction: discord.Interaction, command: discord.slash.Command, error: Exception
-    ) -> None:
-
-        with suppress(Exception):
-            await send_message(
-                interaction,
-                embed=discord.Embed(
-                    colour=discord.Colour.dark_red(),
-                    title=f"Unexpected error with command {command.name}",
-                    description=codeblock(f"{type(error).__name__}: {error}", language="py"),
-                ),
-            )
-
-        tb = "".join(traceback.format_exception(type(error), error, error.__traceback__))
-        self.log.error(f"Unhandled exception in command: {command.name}\n\n{type(error).__name__}: {error}\n\n{tb}")
 
     async def process_commands(self, message: discord.Message) -> None:
         if CONFIG.BOT.IGNORE_BOTS and message.author.bot:
