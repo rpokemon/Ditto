@@ -21,7 +21,7 @@ else:
     BotBase = Any
 
 
-__all__ = ("HelpView", "SlashHelpView", "ViewHelpCommand", "help")
+__all__ = ("HelpView", "SlashHelpView", "ViewHelpCommand", "Help")
 
 
 MISSING: Any = discord.utils.MISSING
