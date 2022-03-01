@@ -51,6 +51,7 @@ class BotBase(commands.bot.BotBase, WebServerMixin, EmojiCacheMixin, EventSchedu
         CONFIG = load_global_config(self)
 
         self.start_time = datetime.datetime.now(datetime.timezone.utc)
+        self._sync_commands: bool = True
 
         # Setup logging
         self.log = logging.getLogger(__name__)
@@ -126,6 +127,16 @@ class BotBase(commands.bot.BotBase, WebServerMixin, EmojiCacheMixin, EventSchedu
     async def on_ready(self) -> None:
         self.log.info(f"Succesfully logged in as {self.user} ({getattr(self.user, 'id')})")
         await self.is_owner(self.user)  # type: ignore
+
+        if self._sync_commands:
+            await self.tree.sync(guild=None)
+            for guild_id in set(self.tree._guild_commands.keys()):
+                guild = self.get_guild(guild_id)
+                if guild is not None:
+                    await self.tree.sync(guild=guild)
+
+            self._sync_commands = False
+
         if self.owner_id:
             self.owner = await self.fetch_user(self.owner_id)
             self.owners = []
