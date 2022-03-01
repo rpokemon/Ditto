@@ -733,7 +733,7 @@ class Get(discord.app_commands.Group):
 
     @discord.app_commands.command()
     @discord.app_commands.describe(
-        channel="The user to get information on.",
+        user="The user to get information on.",
         private="Whether to invoke this command privately.",
     )
     async def user(self, interaction: discord.Interaction, user: User, private: bool = False) -> None:
@@ -746,7 +746,7 @@ class Get(discord.app_commands.Group):
 
     @discord.app_commands.command()
     @discord.app_commands.describe(
-        channel="The emoji to get information on.",
+        value="The emoji to get information on.",
         private="Whether to invoke this command privately.",
     )
     async def emoji(self, interaction: discord.Interaction, value: str, private: bool = False) -> None:
