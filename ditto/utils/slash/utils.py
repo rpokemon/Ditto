@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from functools import wraps
-from typing import TYPE_CHECKING, Callable, Optional, TypeVar, Type, List
+from typing import TYPE_CHECKING, Callable, Optional, TypeVar, Type, List, Union
 
 import discord
 
@@ -60,7 +60,7 @@ def confirm(message: str, ephemeral: bool = True) -> Callable[[SlashCommand[P, T
 
 def with_cog(cog: Type[Cog]) -> Callable[[T], T]:
     def decorator(command: T) -> T:
-        command._cog = cog  # type: ignore
+        command.__ditto_cog__ = cog  # type: ignore
         return command
 
     return decorator
@@ -68,11 +68,10 @@ def with_cog(cog: Type[Cog]) -> Callable[[T], T]:
 
 def available_commands(
     tree: CommandTree, guild: Optional[discord.Guild] = None
-) -> List[discord.app_commands.AppCommand]:
-    commands = []
+) -> List[Union[discord.app_commands.Command, discord.app_commands.Group]]:
 
     # Global commands
-    commands.extend(tree.get_commands(guild=None))
+    commands = tree.get_commands(guild=None)
 
     # Guild specific commands
     if guild is not None:

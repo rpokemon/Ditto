@@ -26,7 +26,7 @@ __title__ = "ditto"
 __author__ = "Bijij"
 __license__ = "MIT"
 __copyright__ = "Copyright 2018-present Bijij"
-__version__ = "1.0.0a"
+__version__ = "2.0.0a"
 
 from . import (
     types as types,

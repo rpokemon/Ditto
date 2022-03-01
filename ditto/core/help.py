@@ -26,7 +26,8 @@ __all__ = ("HelpView", "SlashHelpView", "ViewHelpCommand", "help")
 MISSING: Any = discord.utils.MISSING
 
 
-Command = Union[commands.Command[Any, Any, Any], discord.app_commands.AppCommand]
+AppCommand = Union[discord.app_commands.Group, discord.app_commands.Command]
+Command = Union[commands.Command[Any, Any, Any], AppCommand]
 
 
 class HelpEmbed(discord.Embed):
@@ -81,7 +82,7 @@ class CommandListSource(EmbedPaginator):
         HelpEmbed._set(self, bot, command_prefix)
 
         for command in commands:
-            if isinstance(command, discord.app_commands.AppCommand):
+            if isinstance(command, (discord.app_commands.Group, discord.app_commands.Command)):
                 name = f"/{command.name}"
                 description = command.description
             else:
@@ -254,14 +255,14 @@ class ViewHelpCommand(commands.HelpCommand):
         return f"Syntax: `{signature}`"
 
 
-def slash_command_help(bot: BotBase, command: discord.app_commands.AppCommand) -> discord.Embed:
+def slash_command_help(bot: BotBase, command: AppCommand) -> discord.Embed:
     assert bot.user is not None
 
     syntax = f"/{command.name}"
 
     options = ""
-    for option in command.options:
-        options += f"{option.name} ({option.type.name}): {option.description}\n"
+    for option in command.to_dict()['options']:
+        options += f"{option['name']}: {option['description']}\n"
 
     return HelpEmbed(
         bot, "/", title=command.name, description=f"Syntax: `{syntax}`\n\n{command.description}\n{options}"
@@ -270,12 +271,12 @@ def slash_command_help(bot: BotBase, command: discord.app_commands.AppCommand) -
 
 def _get_commands(
     bot: BotBase, guild: Optional[discord.Guild]
-) -> Dict[Optional[Cog], List[discord.app_commands.AppCommand]]:
-    cogs = DefaultDict[Optional[Cog], List[discord.app_commands.AppCommand]](list)
+) -> Dict[Optional[Cog], List[AppCommand]]:
+    cogs = DefaultDict[Optional[Cog], List[AppCommand]](list)
 
     application_commands = available_commands(bot.tree, guild)
     for application_command in application_commands:
-        cog = getattr(application_command, "_cog", None)
+        cog = getattr(application_command, "__ditto_cog__", None)
         if cog is not None:
             cog = bot.cogs.get(cog.__cog_name__, None)
         cogs[cog].append(application_command)  # type: ignore
@@ -300,12 +301,11 @@ async def help(
 
     for cog in cogs:
         for application_command in cogs[cog]:
-            if application_command.type is discord.app_commands.AppCommandType.chat_input:
-                if application_command.name == command:
-                    # TODO: Display group command subcommands?
-                    return await interaction.response.send_message(
-                        embed=slash_command_help(bot, application_command), ephemeral=private
-                    )
+            if application_command.name == command:
+                # TODO: Display group command subcommands?
+                return await interaction.response.send_message(
+                    embed=slash_command_help(bot, application_command), ephemeral=private
+                )
 
     # Send Bot Help
     if command is None:
@@ -337,8 +337,7 @@ async def help_autocomplete_command(
 
     for cog in cogs:
         for application_command in cogs[cog]:
-            if application_command.type is discord.app_commands.AppCommandType.chat_input:
-                if application_command.name.startswith(value):
-                    suggestions.append(application_command.name)
+            if application_command.name.startswith(value):
+                suggestions.append(application_command.name)
 
     return [discord.app_commands.Choice(name=command, value=command) for command in suggestions[:25]]

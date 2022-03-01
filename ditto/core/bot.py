@@ -49,6 +49,7 @@ class BotBase(commands.bot.BotBase, WebServerMixin, EmojiCacheMixin, EventSchedu
 
     def __init__(self, *args, **kwargs) -> None:
         CONFIG = load_global_config(self)
+        self._sync: bool = True
 
         self.start_time = datetime.datetime.now(datetime.timezone.utc)
 
@@ -127,6 +128,11 @@ class BotBase(commands.bot.BotBase, WebServerMixin, EmojiCacheMixin, EventSchedu
 
     async def on_ready(self) -> None:
         self.log.info(f"Succesfully logged in as {self.user} ({getattr(self.user, 'id')})")
+
+        if self._sync:
+            await self.tree.global_sync()
+            self._sync = False
+
         await self.is_owner(self.user)  # type: ignore
 
         if self.owner_id:
@@ -192,7 +198,6 @@ class BotBase(commands.bot.BotBase, WebServerMixin, EmojiCacheMixin, EventSchedu
     async def connect(self, *args: Any, **kwargs: Any) -> None:
         await self.setup_database()
         await super().connect(*args, **kwargs)
-        await self.tree.global_sync()
 
     def run(self):
         if CONFIG.BOT.TOKEN is None:
