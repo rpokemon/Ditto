@@ -51,7 +51,9 @@ class BotBase(commands.bot.BotBase, WebServerMixin, EmojiCacheMixin, EventSchedu
         CONFIG = load_global_config(self)
 
         self.start_time = datetime.datetime.now(datetime.timezone.utc)
-        self._sync_commands: bool = True
+
+        # setup command tree
+        self.tree: CommandTree = CommandTree(self)
 
         # Setup logging
         self.log = logging.getLogger(__name__)
@@ -117,7 +119,6 @@ class BotBase(commands.bot.BotBase, WebServerMixin, EmojiCacheMixin, EventSchedu
                 self.log.exception(f"Failed to load extension {extension}")
 
         # Add help command
-        self.tree: CommandTree = CommandTree(self)
         self.tree.add_command(help)
 
     @property
@@ -127,15 +128,6 @@ class BotBase(commands.bot.BotBase, WebServerMixin, EmojiCacheMixin, EventSchedu
     async def on_ready(self) -> None:
         self.log.info(f"Succesfully logged in as {self.user} ({getattr(self.user, 'id')})")
         await self.is_owner(self.user)  # type: ignore
-
-        if self._sync_commands:
-            await self.tree.sync(guild=None)
-            for guild_id in set(self.tree._guild_commands.keys()):
-                guild = self.get_guild(guild_id)
-                if guild is not None:
-                    await self.tree.sync(guild=guild)
-
-            self._sync_commands = False
 
         if self.owner_id:
             self.owner = await self.fetch_user(self.owner_id)
@@ -200,6 +192,7 @@ class BotBase(commands.bot.BotBase, WebServerMixin, EmojiCacheMixin, EventSchedu
     async def connect(self, *args: Any, **kwargs: Any) -> None:
         await self.setup_database()
         await super().connect(*args, **kwargs)
+        await self.tree.global_sync()
 
     def run(self):
         if CONFIG.BOT.TOKEN is None:
@@ -242,6 +235,14 @@ class CommandTree(discord.app_commands.CommandTree):
         self.client.log.error(
             f"Unhandled exception in command: {command.name if command is not None else 'UNKNOWN'}\n\n{type(error).__name__}: {error}\n\n{tb}"
         )
+
+    async def global_sync(self) -> None:
+        await self.sync(guild=None)
+        for guild_id in set(self._guild_commands.keys()):
+            try:
+                await self.sync(guild=discord.Object(id=guild_id))
+            except (discord.NotFound, discord.Forbidden):
+                pass
 
 
 class Bot(BotBase, commands.Bot):
