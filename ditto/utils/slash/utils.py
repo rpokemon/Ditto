@@ -10,7 +10,7 @@ from ..interactions import error
 from ..views import Prompt
 
 if TYPE_CHECKING:
-    from ...core.bot import BotBase
+    from ...core.bot import CommandTree
     from typing_extensions import ParamSpec
 
 
@@ -31,14 +31,10 @@ __all__ = (
 )
 
 
-def confirm(
-    message: str, ephemeral: bool = True
-) -> Callable[[SlashCommand[C, P, T]], SlashCommand[C, P, Optional[T]]]:
-    def inner(func: SlashCommand[C, P, T]) -> SlashCommand[C, P, Optional[T]]:
+def confirm(message: str, ephemeral: bool = True) -> Callable[[SlashCommand[P, T]], SlashCommand[P, Optional[T]]]:
+    def inner(func: SlashCommand[P, T]) -> SlashCommand[P, Optional[T]]:
         @wraps(func)
-        async def wrapper(
-            interaction: discord.Interaction, client: C, *args: P.args, **kwargs: P.kwargs
-        ) -> Optional[T]:
+        async def wrapper(interaction: discord.Interaction, *args: P.args, **kwargs: P.kwargs) -> Optional[T]:
             assert interaction.user is not None
 
             prompt = Prompt(interaction.user)
@@ -55,7 +51,7 @@ def confirm(
             if prompt.response is False:
                 return await error(interaction, "Canceled.")
 
-            return await func(interaction, client, *args, **kwargs)
+            return await func(interaction, *args, **kwargs)
 
         return wrapper
 
@@ -70,19 +66,16 @@ def with_cog(cog: Type[Cog]) -> Callable[[T], T]:
     return decorator
 
 
-def available_commands(bot: BotBase, guild: Optional[discord.Guild] = None) -> List[discord.slash.Command]:
+def available_commands(
+    tree: CommandTree, guild: Optional[discord.Guild] = None
+) -> List[discord.app_commands.AppCommand]:
     commands = []
-    command_store = bot._connection._command_store
 
     # Global commands
-    for application_command in command_store._commands:
-        if application_command.is_global:
-            commands.append(application_command)
+    commands.extend(tree.get_commands(guild=None))
 
     # Guild specific commands
     if guild is not None:
-        for command_id in command_store._guild_command_ids[guild.id]:
-            application_command = command_store._registered_commands[command_id]
-            commands.append(application_command)
+        commands.extend(tree.get_commands(guild=guild))
 
     return commands

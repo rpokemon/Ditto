@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import datetime
 
 import logging
@@ -7,7 +9,7 @@ import traceback
 from contextlib import suppress
 
 from collections.abc import Callable
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 import asyncpg
 import discord
@@ -27,6 +29,7 @@ from ..utils.interactions import send_message
 
 
 __all__ = (
+    "CommandTree",
     "BotBase",
     "Bot",
     "AutoShardedBot",
@@ -113,7 +116,8 @@ class BotBase(commands.bot.BotBase, WebServerMixin, EmojiCacheMixin, EventSchedu
                 self.log.exception(f"Failed to load extension {extension}")
 
         # Add help command
-        self.add_application_command(help)
+        self.tree: CommandTree = CommandTree(self)
+        self.tree.add_command(help)
 
     @property
     def uptime(self) -> datetime.timedelta:
@@ -169,23 +173,6 @@ class BotBase(commands.bot.BotBase, WebServerMixin, EmojiCacheMixin, EventSchedu
             f"Unhandled exception in command: {ctx.command.qualified_name}\n\n{type(error).__name__}: {error}\n\n{tb}"
         )
 
-    async def on_application_command_error(
-        self, interaction: discord.Interaction, command: discord.slash.Command, error: Exception
-    ) -> None:
-
-        with suppress(Exception):
-            await send_message(
-                interaction,
-                embed=discord.Embed(
-                    colour=discord.Colour.dark_red(),
-                    title=f"Unexpected error with command {command.name}",
-                    description=codeblock(f"{type(error).__name__}: {error}", language="py"),
-                ),
-            )
-
-        tb = "".join(traceback.format_exception(type(error), error, error.__traceback__))
-        self.log.error(f"Unhandled exception in command: {command.name}\n\n{type(error).__name__}: {error}\n\n{tb}")
-
     async def process_commands(self, message: discord.Message) -> None:
         if CONFIG.BOT.IGNORE_BOTS and message.author.bot:
             return
@@ -213,6 +200,37 @@ class BotBase(commands.bot.BotBase, WebServerMixin, EmojiCacheMixin, EventSchedu
         if not CONFIG.DATABASE.DISABLED:
             await self.pool.close()
         await super().close()
+
+
+class CommandTree(discord.app_commands.CommandTree):
+    client: BotBase
+
+    async def on_error(
+        self,
+        interaction: discord.Interaction,
+        command: Optional[Union[discord.app_commands.commands.ContextMenu, discord.app_commands.Command]],
+        error: discord.app_commands.AppCommandError,
+    ) -> None:
+
+        with suppress(Exception):
+            if command is None:
+                message = "Unexpected error"
+            else:
+                message = f"Unexpected error with command {command.name}"
+
+            await send_message(
+                interaction,
+                embed=discord.Embed(
+                    colour=discord.Colour.dark_red(),
+                    title=message,
+                    description=codeblock(f"{type(error).__name__}: {error}", language="py"),
+                ),
+            )
+
+        tb = "".join(traceback.format_exception(type(error), error, error.__traceback__))
+        self.client.log.error(
+            f"Unhandled exception in command: {command.name if command is not None else 'UNKNOWN'}\n\n{type(error).__name__}: {error}\n\n{tb}"
+        )
 
 
 class Bot(BotBase, commands.Bot):

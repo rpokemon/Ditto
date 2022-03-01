@@ -105,8 +105,12 @@ class WebServerMixin:
     def remove_permission_check(self, permission: str) -> None:
         self._permission_checks.pop(permission, None)
 
-    def permission_check(self, permission: str) -> Callable[[Callable[[BotBase, discord.User], Coro[bool]]], Callable[[BotBase, discord.User], Coro[bool]]]:
-        def decorator(func: Callable[[BotBase, discord.User], Coro[bool]]) -> Callable[[BotBase, discord.User], Coro[bool]]:
+    def permission_check(
+        self, permission: str
+    ) -> Callable[[Callable[[BotBase, discord.User], Coro[bool]]], Callable[[BotBase, discord.User], Coro[bool]]]:
+        def decorator(
+            func: Callable[[BotBase, discord.User], Coro[bool]]
+        ) -> Callable[[BotBase, discord.User], Coro[bool]]:
             self.add_permission_check(permission, func)
             return func
 

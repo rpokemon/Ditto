@@ -14,7 +14,7 @@ include = ["ditto/res/*"]
 [tool.poetry.dependencies]
 python = "^3.9"
 donphan = ">=4.5.1"
-"discord.py" = {git = "https://github.com/rpokemon/discord.py", branch = "_slash"}
+"discord.py" = {git = "https://github.com/rapptz/discord.py-2.0"}
 PyYAML = ">=5.4.1"
 discord-ext-menus = {git = "https://github.com/rapptz/discord-ext-menus"}
 discord-ext-alternatives = {git = "https://github.com/ext-creators/discord-ext-alternatives", branch = "discord.py@v2"}

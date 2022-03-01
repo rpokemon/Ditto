@@ -1,4 +1,5 @@
 from __future__ import annotations
+from re import A
 
 from typing import TYPE_CHECKING, Any, Callable, Coroutine, TypeVar, Union
 
@@ -9,8 +10,6 @@ if TYPE_CHECKING:
 
 
 T = TypeVar("T")
-
-C = TypeVar("C", bound=discord.Client)
 
 if TYPE_CHECKING:
     P = ParamSpec("P")
@@ -31,6 +30,7 @@ __all__ = (
     "Mentionable",
     "DiscordObject",
     "SlashCommand",
+    "AppCommandChannel",
 )
 
 
@@ -68,6 +68,12 @@ NonVocalGuildChannel = Union[
 GuildChannel = Union[
     VocalGuildChannel,
     NonVocalGuildChannel,
+]
+
+
+AppCommandChannel = Union[
+    discord.app_commands.AppCommandChannel,
+    discord.app_commands.AppCommandThread,
 ]
 
 
@@ -109,12 +115,12 @@ DiscordObject = Union[
     DiscordEmoji,
     Message,
     discord.Invite,
-    discord.Command,
+    AppCommandChannel,
 ]
 
 if TYPE_CHECKING:
-    SlashCommand = Callable[Concatenate[discord.Interaction, C, P], Coroutine[Any, Any, T]]
+    SlashCommand = Callable[Concatenate[discord.Interaction, P], Coroutine[Any, Any, T]]
 else:
     SlashCommand = Union[C, P, T]
 
-CheckFunc = Callable[[discord.Interaction, C], Coroutine[Any, Any, bool]]
+CheckFunc = Callable[[discord.Interaction], Coroutine[Any, Any, bool]]

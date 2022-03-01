@@ -5,7 +5,7 @@ import inspect
 import pathlib
 
 from collections import namedtuple
-from typing import TYPE_CHECKING, cast, get_args, Annotated, Optional, Union
+from typing import TYPE_CHECKING, cast, get_args, Any, Annotated, Optional, Union
 
 import discord
 import ditto
@@ -13,8 +13,17 @@ import jishaku
 from discord.ext import commands
 from PIL import Image
 
-from ... import BotBase, Cog, Context, CONFIG as BOT_CONFIG
-from ...types import DiscordObject, VocalGuildChannel, NonVocalGuildChannel, GuildChannel, User, DiscordEmoji, Message
+from ... import BotBase, CommandTree, Cog, Context, CONFIG as BOT_CONFIG
+from ...types import (
+    DiscordObject,
+    VocalGuildChannel,
+    NonVocalGuildChannel,
+    GuildChannel,
+    User,
+    DiscordEmoji,
+    Message,
+    AppCommandChannel,
+)
 from ...utils.collections import summarise_list
 from ...utils.files import get_base_dir
 from ...utils.images import to_bytes
@@ -41,11 +50,11 @@ ListGuildChannel = Union[
 ]
 
 
-def is_voice_channel(channel: GuildChannel) -> TypeGuard[VocalGuildChannel]:
+def is_voice_channel(channel: Union[GuildChannel, AppCommandChannel]) -> TypeGuard[VocalGuildChannel]:
     return isinstance(channel, get_args(VocalGuildChannel))
 
 
-def is_not_voice_channel(channel: GuildChannel) -> TypeGuard[NonVocalGuildChannel]:
+def is_not_voice_channel(channel: Union[GuildChannel, AppCommandChannel]) -> TypeGuard[NonVocalGuildChannel]:
     return not is_voice_channel(channel)
 
 
@@ -113,7 +122,7 @@ class Info(Cog):
         return embed
 
     @classmethod
-    def _server_object_info(cls, item: Union[discord.Role, GuildChannel]) -> discord.Embed:
+    def _server_object_info(cls, item: Union[discord.Role, GuildChannel, AppCommandChannel]) -> discord.Embed:
         embed = cls._object_info(item)
         embed.add_field(name="Server:", value=str(item.guild))
 
@@ -125,8 +134,6 @@ class Info(Cog):
 
         if server.icon is not None:
             embed.set_thumbnail(url=server.icon.url)
-
-        embed.add_field(name="Voice Region:", value=str(server.region))
 
         owner = server.owner
         if owner is None and server.owner_id is not None:
@@ -219,16 +226,16 @@ class Info(Cog):
         await ctx.send(embed=embed)
 
     @classmethod
-    def _channel_info(cls, channel: GuildChannel) -> discord.Embed:
+    def _channel_info(cls, channel: Union[GuildChannel, AppCommandChannel]) -> discord.Embed:
         embed = cls._server_object_info(channel)
 
-        if not isinstance(channel, discord.Thread):
+        if not isinstance(channel, (discord.Thread, get_args(AppCommandChannel))):
             embed.add_field(name="Position", value=str(channel.position))
 
-        if not isinstance(channel, discord.CategoryChannel):
+        if not isinstance(channel, (discord.CategoryChannel, get_args(AppCommandChannel))):
             embed.add_field(name="Category", value=str(channel.category))
 
-        if is_not_voice_channel(channel):
+        if is_not_voice_channel(channel) and not isinstance(channel, get_args(AppCommandChannel)):
             embed.add_field(name="Is NSFW:", value=str(channel.is_nsfw()))
 
         return embed
@@ -638,9 +645,10 @@ class Info(Cog):
     # endregion: Object info
 
     @commands.command()
-    async def source(self, ctx: Context, *, command: commands.Command = None):
+    async def source(self, ctx: Context, *, command: Optional[commands.Command] = None) -> None:
         if command is None:
-            return await ctx.send(f"<{GITHUB_URL}{BOT_CONFIG.SOURCE.CUSTOM}>")
+            await ctx.send(f"<{GITHUB_URL}{BOT_CONFIG.SOURCE.CUSTOM}>")
+            return
 
         if command.name == "help":
             code = type(self.bot.help_command)
@@ -675,55 +683,51 @@ class Info(Cog):
 
 
 @with_cog(Info)
-class Get(discord.slash.TopLevelCommand):
+class Get(discord.app_commands.Group):
     """Get information on something."""
 
-    @discord.slash.command()
-    @discord.slash.check(guild_only)
-    async def server(interaction: discord.Interaction, client: BotBase, private: bool = False) -> None:
+    def __init__(self, client: BotBase, *args: Any, **kwargs: Any) -> None:
+        self.client: BotBase = client
+        super().__init__(*args, **kwargs)
+
+    @discord.app_commands.command()
+    @discord.app_commands.describe(private="Invoke this command privately?")
+    async def server(self, interaction: discord.Interaction, private: bool = False) -> None:
         """Get information on the current server."""
         assert interaction.guild is not None
         embed = await Info._server_info(interaction.guild)
         await interaction.response.send_message(embed=embed, ephemeral=private)
 
-    @discord.slash.command()
-    @discord.slash.check(guild_only)
-    async def role(
-        interaction: discord.Interaction,
-        client: BotBase,
-        role: Annotated[discord.Role, "The role to get information on."],
-        private: bool = False,
-    ) -> None:
+    @discord.app_commands.command()
+    @discord.app_commands.describe(role="The role to get information on.", private="Invoke this command privately?")
+    async def role(self, interaction: discord.Interaction, role: discord.Role, private: bool = False) -> None:
         """Get information on a role."""
         embed = Info._role_info(role)
         await interaction.response.send_message(embed=embed, ephemeral=private)
 
-    @discord.slash.command()
-    @discord.slash.check(guild_only)
+    @discord.app_commands.command()
+    @discord.app_commands.describe(
+        channel="The channel to get information on.", private="Invoke this command privately?"
+    )
     async def channel(
-        interaction: discord.Interaction,
-        client: BotBase,
-        channel: Annotated[GuildChannel, "The channel to get information on."],
-        private: bool = False,
+        self, interaction: discord.Interaction, channel: AppCommandChannel, private: bool = False
     ) -> None:
         """Get information on a channel."""
-        if isinstance(channel, discord.TextChannel):
-            embed = Info._text_channel_info(channel)
-        elif isinstance(channel, get_args(VocalGuildChannel)):
-            embed = Info._vocal_channel_info(channel)  # type: ignore
-        elif isinstance(channel, discord.CategoryChannel):
-            embed = Info._category_channel_info(channel)
+        channel_ = channel.resolve() or channel
+
+        if isinstance(channel_, discord.TextChannel):
+            embed = Info._text_channel_info(channel_)
+        elif isinstance(channel_, get_args(VocalGuildChannel)):
+            embed = Info._vocal_channel_info(channel_)  # type: ignore
+        elif isinstance(channel_, discord.CategoryChannel):
+            embed = Info._category_channel_info(channel_)
         else:
-            embed = Info._channel_info(channel)
+            embed = Info._channel_info(channel_)
         await interaction.response.send_message(embed=embed, ephemeral=private)
 
-    @discord.slash.command()
-    async def user(
-        interaction: discord.Interaction,
-        client: BotBase,
-        user: Annotated[User, "The user to get information on."],
-        private: bool = False,
-    ) -> None:
+    @discord.app_commands.command()
+    @discord.app_commands.describe(channel="The user to get information on.", private="Invoke this command privately?")
+    async def user(self, interaction: discord.Interaction, user: User, private: bool = False) -> None:
         """Get information on a user."""
         if isinstance(user, discord.Member):
             embed = Info._member_info(user)
@@ -731,15 +735,13 @@ class Get(discord.slash.TopLevelCommand):
             embed = Info._user_info(user)
         await interaction.response.send_message(embed=embed, ephemeral=private)
 
-    @discord.slash.command()
-    async def emoji(
-        interaction: discord.Interaction,
-        client: BotBase,
-        value: Annotated[str, "The emoji to get information on."],
-        private: bool = False,
-    ) -> None:
+    @discord.app_commands.command()
+    @discord.app_commands.describe(
+        channel="The emoji to get information on.", private="Invoke this command privately?"
+    )
+    async def emoji(self, interaction: discord.Interaction, value: str, private: bool = False) -> None:
         """Get information on an emoji."""
-        ctx: Context = namedtuple("Context", "guild bot")(interaction.guild, client)  # type: ignore  # duck typed
+        ctx: Context = namedtuple("Context", "guild bot")(interaction.guild, self.client)  # type: ignore  # duck typed
 
         try:
             emoji = await commands.EmojiConverter().convert(ctx, value)
@@ -749,12 +751,12 @@ class Get(discord.slash.TopLevelCommand):
         embed = Info._emoji_info(emoji)
         await interaction.response.send_message(embed=embed, ephemeral=private)
 
-    @discord.slash.command()
-    async def colour(
-        interaction: discord.Interaction,
-        client: BotBase,
-        value: Annotated[str, "The colour to get information on, accepts hex, css rgb selector or name."],
-    ) -> None:
+    @discord.app_commands.command()
+    @discord.app_commands.describe(
+        colour="The colour to get information on, accepts hex, css rgb selector or name.",
+        private="Invoke this command privately?",
+    )
+    async def colour(self, interaction: discord.Interaction, value: str, private: bool = False) -> None:
         """Get information on a colour."""
         try:
             colour = await commands.ColorConverter().convert(discord.utils.MISSING, value)
@@ -766,13 +768,13 @@ class Get(discord.slash.TopLevelCommand):
         filename = f"{colour.value:0>6x}.png"
 
         embed = Info._colour_info(colour, filename)
-        await interaction.response.send_message(embed=embed, file=discord.File(image, filename))
+        await interaction.response.send_message(embed=embed, file=discord.File(image, filename), ephemeral=private)
 
 
 def setup(bot: BotBase):
     bot.add_cog(Info(bot))
-    bot.add_application_command(Get)  # type: ignore
+    bot.tree.add_command(Get(bot))
 
 
 def teardown(bot: BotBase):
-    bot.remove_application_command(Get)  # type: ignore
+    bot.tree.remove_command("get")
