@@ -52,9 +52,6 @@ class BotBase(commands.bot.BotBase, WebServerMixin, EmojiCacheMixin, EventSchedu
 
         self.start_time = datetime.datetime.now(datetime.timezone.utc)
 
-        # setup command tree
-        self.tree: CommandTree = CommandTree(self)
-
         # Setup logging
         self.log = logging.getLogger(__name__)
         if CONFIG.LOGGING.LOG_LEVEL is not None:
@@ -107,6 +104,9 @@ class BotBase(commands.bot.BotBase, WebServerMixin, EmojiCacheMixin, EventSchedu
             sync_guild_commands_at_startup=CONFIG.BOT.SYNC_GUILD_COMMANDS,
             **kwargs,
         )
+
+        # setup command tree
+        self.tree: CommandTree = CommandTree(self)
 
         # Add extra converters
         self.converters |= CONVERTERS
