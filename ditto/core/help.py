@@ -284,10 +284,14 @@ def _get_commands(
 
 
 @discord.app_commands.command()
+@discord.app_commands.describe(
+    command="The command or category to get help on.",
+    private="Whether to invoke this command privately.",
+)
 async def help(
     interaction: discord.Interaction,
-    command: Annotated[Optional[str], "The command or category to get help on."] = None,
-    private: Annotated[bool, "Whether to invoke this command privately"] = True,
+    command: Optional[str],
+    private: bool = True,
 ) -> None:
     """Displays help about the bot, a command, or a category"""
     bot: BotBase = interaction._state._get_client()  # type: ignore

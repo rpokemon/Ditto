@@ -8,7 +8,9 @@ from typing import Any, Coroutine, TYPE_CHECKING
 import discord
 
 if TYPE_CHECKING:
-    from discord.types.interactions import ApplicationCommandInteractionData as ApplicationCommandInteractionDataPayload
+    from discord.types.interactions import (
+        ApplicationCommandInteractionData as ApplicationCommandInteractionDataPayload,
+    )
 
 
 __all___ = (

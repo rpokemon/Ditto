@@ -691,7 +691,9 @@ class Get(discord.app_commands.Group):
         super().__init__(*args, **kwargs)
 
     @discord.app_commands.command()
-    @discord.app_commands.describe(private="Invoke this command privately?")
+    @discord.app_commands.describe(
+        private="Whether to invoke this command privately.",
+    )
     async def server(self, interaction: discord.Interaction, private: bool = False) -> None:
         """Get information on the current server."""
         assert interaction.guild is not None
@@ -699,7 +701,10 @@ class Get(discord.app_commands.Group):
         await interaction.response.send_message(embed=embed, ephemeral=private)
 
     @discord.app_commands.command()
-    @discord.app_commands.describe(role="The role to get information on.", private="Invoke this command privately?")
+    @discord.app_commands.describe(
+        role="The role to get information on.",
+        private="Whether to invoke this command privately.",
+    )
     async def role(self, interaction: discord.Interaction, role: discord.Role, private: bool = False) -> None:
         """Get information on a role."""
         embed = Info._role_info(role)
@@ -707,7 +712,8 @@ class Get(discord.app_commands.Group):
 
     @discord.app_commands.command()
     @discord.app_commands.describe(
-        channel="The channel to get information on.", private="Invoke this command privately?"
+        channel="The channel to get information on.",
+        private="Whether to invoke this command privately.",
     )
     async def channel(
         self, interaction: discord.Interaction, channel: AppCommandChannel, private: bool = False
@@ -726,7 +732,10 @@ class Get(discord.app_commands.Group):
         await interaction.response.send_message(embed=embed, ephemeral=private)
 
     @discord.app_commands.command()
-    @discord.app_commands.describe(channel="The user to get information on.", private="Invoke this command privately?")
+    @discord.app_commands.describe(
+        channel="The user to get information on.",
+        private="Whether to invoke this command privately.",
+    )
     async def user(self, interaction: discord.Interaction, user: User, private: bool = False) -> None:
         """Get information on a user."""
         if isinstance(user, discord.Member):
@@ -737,7 +746,8 @@ class Get(discord.app_commands.Group):
 
     @discord.app_commands.command()
     @discord.app_commands.describe(
-        channel="The emoji to get information on.", private="Invoke this command privately?"
+        channel="The emoji to get information on.",
+        private="Whether to invoke this command privately.",
     )
     async def emoji(self, interaction: discord.Interaction, value: str, private: bool = False) -> None:
         """Get information on an emoji."""
@@ -754,7 +764,7 @@ class Get(discord.app_commands.Group):
     @discord.app_commands.command()
     @discord.app_commands.describe(
         colour="The colour to get information on, accepts hex, css rgb selector or name.",
-        private="Invoke this command privately?",
+        private="Whether to invoke this command privately.",
     )
     async def colour(self, interaction: discord.Interaction, value: str, private: bool = False) -> None:
         """Get information on a colour."""
