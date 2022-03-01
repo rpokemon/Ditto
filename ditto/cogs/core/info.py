@@ -763,7 +763,7 @@ class Get(discord.app_commands.Group):
 
     @discord.app_commands.command()
     @discord.app_commands.describe(
-        colour="The colour to get information on, accepts hex, css rgb selector or name.",
+        value="The colour to get information on, accepts hex, css rgb selector or name.",
         private="Whether to invoke this command privately.",
     )
     async def colour(self, interaction: discord.Interaction, value: str, private: bool = False) -> None:
