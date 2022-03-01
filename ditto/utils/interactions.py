@@ -1,10 +1,14 @@
+from __future__ import annotations
+
 import asyncio
 from contextlib import suppress
 
 from typing import Any, Coroutine, TYPE_CHECKING
 
 import discord
-from discord.types.interactions import ApplicationCommandInteractionData as ApplicationCommandInteractionDataPayload
+
+if TYPE_CHECKING:
+    from discord.types.interactions import ApplicationCommandInteractionData as ApplicationCommandInteractionDataPayload
 
 
 __all___ = (
