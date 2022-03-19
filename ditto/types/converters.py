@@ -112,7 +112,7 @@ class DatetimeConverter(commands.Converter[datetime.datetime]):
                 data={
                     "locale": "en_US",  # Todo: locale based on tz?
                     "text": argument,
-                    "dims": str(["time"]),
+                    "dims": str(["time", "duration"]),
                     "tz": str(timezone),
                     # 'reftime': now.isoformat(),
                 },
@@ -124,6 +124,15 @@ class DatetimeConverter(commands.Converter[datetime.datetime]):
                         times.append(
                             (
                                 datetime.datetime.fromisoformat(time["value"]["value"]),
+                                time["start"],
+                                time["end"],
+                            )
+                        )
+                    elif time["dim"] == "duration":
+                        times.append(
+                            (
+                                datetime.datetime.now(datetime.timezone.utc)
+                                + datetime.timedelta(seconds=time["value"]["normalized"]["value"]),
                                 time["start"],
                                 time["end"],
                             )

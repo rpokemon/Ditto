@@ -27,8 +27,8 @@ __all__ = ("HelpView", "SlashHelpView", "ViewHelpCommand", "help")
 MISSING: Any = discord.utils.MISSING
 
 
-AppCommand = Union[discord.app_commands.Group, discord.app_commands.Command[Any, ..., Any]]
-Command = Union[commands.Command[Any, ..., Any], AppCommand]
+AppCommand = Union[discord.app_commands.Group, discord.app_commands.Command[Any, ... if TYPE_CHECKING else Any, Any]]
+Command = Union[commands.Command[Any, ... if TYPE_CHECKING else Any, Any], AppCommand]
 
 
 class HelpEmbed(discord.Embed):

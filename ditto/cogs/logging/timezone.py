@@ -111,20 +111,20 @@ async def set_timezone(
     interaction: discord.Interaction,
     timezone: discord.app_commands.Transform[zoneinfo.ZoneInfo, ZoneInfoTransformer],
 ) -> None:
-        async with interaction.client.db as connection:  # type: ignore
-            await TimeZones.insert(
-                connection,
-                update_on_conflict=(TimeZones.time_zone,),
-                returning=None,
-                user_id=interaction.user.id,
-                time_zone=str(timezone),
-            )
+    async with interaction.client.db as connection:  # type: ignore
+        await TimeZones.insert(
+            connection,
+            update_on_conflict=(TimeZones.time_zone,),
+            returning=None,
+            user_id=interaction.user.id,
+            time_zone=str(timezone),
+        )
 
-        local_time = human_friendly_timestamp(datetime.datetime.now(tz=timezone))
-        embed = discord.Embed(title=f"Local Time: {local_time}")
-        embed.set_author(name=f"Timezone set to {timezone}")
+    local_time = human_friendly_timestamp(datetime.datetime.now(tz=timezone))
+    embed = discord.Embed(title=f"Local Time: {local_time}")
+    embed.set_author(name=f"Timezone set to {timezone}")
 
-        await interaction.response.send_message(embed=embed, ephemeral=True)
+    await interaction.response.send_message(embed=embed, ephemeral=True)
 
 
 @set_timezone.autocomplete("timezone")
