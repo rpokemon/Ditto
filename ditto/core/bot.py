@@ -72,10 +72,6 @@ class BotBase(commands.bot.BotBase, WebServerMixin, EmojiCacheMixin, EventSchedu
             handler.setFormatter(logging.Formatter("{asctime} - {module}:{levelname} - {message}", style="{"))
             global_log.addHandler(handler)
 
-        if CONFIG.LOGGING.WEBHOOK_URI is not None:
-            handler = WebhookHandler(CONFIG.LOGGING.WEBHOOK_URI)
-            global_log.addHandler(handler)
-
         global_log.addHandler(logging.StreamHandler())
 
         allowed_mentions = discord.AllowedMentions.none()  # <3 Moogy
@@ -113,6 +109,12 @@ class BotBase(commands.bot.BotBase, WebServerMixin, EmojiCacheMixin, EventSchedu
 
     async def setup_hook(self) -> None:
 
+        # we need to do this later because asyncio.loop doesn't exist at before this point
+        global_log = logging.getLogger()
+        if CONFIG.LOGGING.WEBHOOK_URI is not None:
+            handler = WebhookHandler(CONFIG.LOGGING.WEBHOOK_URI)
+            global_log.addHandler(handler)
+
         await self.is_owner(discord.Object(id=0))  # type: ignore
 
         # Add help command
@@ -125,6 +127,7 @@ class BotBase(commands.bot.BotBase, WebServerMixin, EmojiCacheMixin, EventSchedu
             except (commands.ExtensionError, ImportError, SyntaxError):
                 self.log.exception(f"Failed to load extension {extension}")
 
+        self.pool = await setup_database()
         await self.tree.global_sync()
 
     @property
@@ -190,13 +193,6 @@ class BotBase(commands.bot.BotBase, WebServerMixin, EmojiCacheMixin, EventSchedu
 
         ctx = await self.get_context(message, cls=Context)
         await self.invoke(ctx)
-
-    async def setup_database(self):
-        self.pool = await setup_database()
-
-    async def connect(self, *args: Any, **kwargs: Any) -> None:
-        await self.setup_database()
-        await super().connect(*args, **kwargs)
 
     def run(self):
         if CONFIG.BOT.TOKEN is None:
