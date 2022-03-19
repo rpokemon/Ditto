@@ -130,6 +130,8 @@ class BotBase(commands.bot.BotBase, WebServerMixin, EmojiCacheMixin, EventSchedu
         self.pool = await setup_database()
         await self.tree.global_sync()
 
+        await super().setup_hook()
+
     @property
     def uptime(self) -> datetime.timedelta:
         return datetime.datetime.now(datetime.timezone.utc) - self.start_time

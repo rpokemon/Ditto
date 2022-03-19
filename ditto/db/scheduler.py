@@ -62,7 +62,10 @@ class EventSchedulerMixin:
         self.__event_scheduler__active: asyncio.Event = asyncio.Event()
         self.__event_scheduler__current: Optional[ScheduledEvent] = None
         self._dispatch_task.add_exception_type(asyncpg.exceptions.PostgresConnectionError)
+
+    async def setup_hook(self):
         self._dispatch_task.start()
+        await super().setup_hook()  # type: ignore
 
     async def schedule_event(self, time: datetime.datetime, type: str, /, *args: Any, **kwargs: Any) -> ScheduledEvent:
         assert isinstance(self, BotBase)
