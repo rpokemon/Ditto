@@ -3,7 +3,8 @@ from __future__ import annotations
 import asyncio
 from contextlib import suppress
 
-from typing import Any, Coroutine, TYPE_CHECKING
+from typing import Any, Coroutine, TYPE_CHECKING, get_args
+
 
 import discord
 
@@ -39,12 +40,12 @@ def delete_after(interaction: discord.Interaction, after: float) -> None:
 
 def error(interaction: discord.Interaction, message: str) -> Coroutine[Any, Any, Any]:
     if TYPE_CHECKING:
-        assert isinstance(interaction.data, ApplicationCommandInteractionDataPayload)
+        assert isinstance(interaction.data, get_args(ApplicationCommandInteractionDataPayload))
     return send_message(
         interaction,
         embed=discord.Embed(
             colour=discord.Colour.red(),
-            title=f"Error with command {interaction.data['name']}",
+            title=f"Error with command {interaction.data['name']}",  # type: ignore
             description=message,
         ),
         ephemeral=True,

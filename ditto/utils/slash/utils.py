@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from functools import wraps
-from typing import TYPE_CHECKING, Callable, Optional, TypeVar, Type, List, Union
+from typing import TYPE_CHECKING, Any, Callable, Optional, TypeVar, Type, List, Union
 
 import discord
 
@@ -68,7 +68,7 @@ def with_cog(cog: Type[Cog]) -> Callable[[T], T]:
 
 def available_commands(
     tree: CommandTree, guild: Optional[discord.Guild] = None
-) -> List[Union[discord.app_commands.Command, discord.app_commands.Group]]:
+) -> List[Union[discord.app_commands.Command[Any, ..., Any], discord.app_commands.Group]]:
 
     # Global commands
     commands = tree.get_commands(guild=None)

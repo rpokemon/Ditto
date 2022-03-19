@@ -5,10 +5,11 @@ import io
 import zoneinfo
 
 from collections.abc import Awaitable
-from typing import Any, Coroutine, Optional, TYPE_CHECKING, Union, TypeVar
+from typing import Any, Coroutine, Optional, TYPE_CHECKING, Union, TypeVar, overload
 
 import discord
 from discord.ext import commands
+from discord.utils import MISSING
 
 from donphan import MaybeAcquire
 
@@ -82,9 +83,9 @@ class Context(commands.Context[BotT]):
         return await fetch_audit_log_entry(
             guild,
             time=self.message.created_at,
-            user=user,
-            moderator=moderator,
-            action=action,
+            user=user or MISSING,
+            moderator=moderator or MISSING,
+            action=action or MISSING,
             delta=delta,
             retry=retry - 1,
         )
@@ -114,6 +115,35 @@ class Context(commands.Context[BotT]):
             **kwargs,
         )
 
+    @overload
+    async def prompt(
+        self,
+        *args,
+        channel: Optional[TextChannel] = ...,
+        user: Optional[User] = ...,
+        converter: type[T] = ...,
+        timeout: float = ...,
+        max_tries: int = ...,
+        confirm_after: bool = ...,
+        delete_after: bool = ...,
+        **kwargs,
+    ) -> T:
+        ...
+
+    @overload
+    async def prompt(
+        self,
+        *args,
+        channel: Optional[TextChannel] = ...,
+        user: Optional[User] = ...,
+        timeout: float = ...,
+        max_tries: int = ...,
+        confirm_after: bool = ...,
+        delete_after: bool = ...,
+        **kwargs,
+    ) -> str:
+        ...
+
     async def prompt(
         self,
         *args,
@@ -125,7 +155,7 @@ class Context(commands.Context[BotT]):
         confirm_after: bool = False,
         delete_after: bool = False,
         **kwargs,
-    ) -> T:
+    ) -> Union[T, str]:
         return await prompt(
             *args,
             context=self,

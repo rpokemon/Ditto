@@ -1,10 +1,13 @@
 import datetime
+from unittest.mock import NonCallableMagicMock
 import zoneinfo
 
 from typing import Any, cast, get_args, Optional, Union
 
 import discord
 from discord.ext import commands, menus
+
+from ditto.utils.slash.transformers import ZoneInfoTransformer
 
 from ... import BotBase, Cog, Context, CONFIG
 from ...types import User
@@ -13,6 +16,8 @@ from ...db import TimeZones
 from ...utils.paginator import EmbedPaginator
 from ...utils.strings import utc_offset
 from ...utils.time import MAIN_TIMEZONES, human_friendly_timestamp
+from ...utils.slash.utils import with_cog
+from ...utils.interactions import error
 
 
 class Timezone(Cog):
@@ -100,7 +105,43 @@ class Timezone(Cog):
         return await self.timezone_list(ctx)
 
 
-def setup(bot: BotBase):
+@with_cog(Timezone)
+@discord.app_commands.command()
+async def set_timezone(
+    interaction: discord.Interaction,
+    timezone: discord.app_commands.Transform[zoneinfo.ZoneInfo, ZoneInfoTransformer],
+) -> None:
+        async with interaction.client.db as connection:  # type: ignore
+            await TimeZones.insert(
+                connection,
+                update_on_conflict=(TimeZones.time_zone,),
+                returning=None,
+                user_id=interaction.user.id,
+                time_zone=str(timezone),
+            )
+
+        local_time = human_friendly_timestamp(datetime.datetime.now(tz=timezone))
+        embed = discord.Embed(title=f"Local Time: {local_time}")
+        embed.set_author(name=f"Timezone set to {timezone}")
+
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+
+
+@set_timezone.autocomplete("timezone")
+async def set_timezone_autocomplete(
+    interaction: discord.Interaction,
+    focused_value: str,
+) -> list[discord.app_commands.Choice[str]]:
+    """Autocomplete for the set_timezone command."""
+    choices = []
+    for name, tzinfo in MAIN_TIMEZONES.items():
+        if name.startswith(focused_value):
+            choices.append(discord.app_commands.Choice(name=name, value=tzinfo.key))
+
+    return choices
+
+
+async def setup(bot: BotBase):
     if CONFIG.DATABASE.DISABLED:
         return
-    bot.add_cog(Timezone(bot))
+    await bot.add_cog(Timezone(bot))

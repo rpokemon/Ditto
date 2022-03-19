@@ -66,10 +66,10 @@ class EmbedPaginator(discord.Embed, PaginatorSource[EmbT]):
             self.add_line(line)
 
     def clear(self) -> None:
-        self._current_page = EmbedPage([], [])
+        self._current_page: EmbedPage = EmbedPage([], [])
         self._description_count = 0
         self._count = 0
-        self._pages = []  # type: list[EmbedPage]
+        self._pages: list[EmbedPage] = []
 
     def add_line(self, line: str = "", *, empty: bool = False) -> None:
         line_len = len(line)

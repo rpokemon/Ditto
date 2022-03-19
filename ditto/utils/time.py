@@ -62,8 +62,8 @@ def human_friendly_timestamp(datetime: datetime.datetime, /) -> str:
     return datetime.strftime(f"%I:%M%p on %A the {ordinal(day)} of %B, %Y")
 
 
-def human_friendly_timedelta(timedelta: datetime.timedelta, /, relative_to: Optional[datetime.datetime]) -> str:
-    return humanize.naturaldelta(timedelta, when=relative_to)
+def human_friendly_timedelta(timedelta: datetime.timedelta) -> str:
+    return humanize.naturaldelta(timedelta)
 
 
 def normalise_timedelta(delta: Union[float, datetime.timedelta]) -> datetime.timedelta:

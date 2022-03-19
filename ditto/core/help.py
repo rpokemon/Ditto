@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Annotated, Any, DefaultDict, Dict, List, Optional, Union
+from collections.abc import Sequence
+from typing import TYPE_CHECKING, Any, DefaultDict, Optional, Union
 
 import discord
 from discord.ext import commands
@@ -26,8 +27,8 @@ __all__ = ("HelpView", "SlashHelpView", "ViewHelpCommand", "help")
 MISSING: Any = discord.utils.MISSING
 
 
-AppCommand = Union[discord.app_commands.Group, discord.app_commands.Command]
-Command = Union[commands.Command[Any, Any, Any], AppCommand]
+AppCommand = Union[discord.app_commands.Group, discord.app_commands.Command[Any, ..., Any]]
+Command = Union[commands.Command[Any, ..., Any], AppCommand]
 
 
 class HelpEmbed(discord.Embed):
@@ -72,13 +73,13 @@ You can use `{command_syntax}` to retrieve more information on a specific comman
 
 
 class CommandListSource(EmbedPaginator):
-    def __init__(self, bot: BotBase, command_prefix: str, commands: List[Command]) -> None:
+    def __init__(self, bot: BotBase, command_prefix: str, commands: Sequence[Command]) -> None:
         super().__init__(
             max_size=6000,
             max_description=4096,
             max_fields=8,
             colour=discord.Colour.blurple(),
-        )
+        )  # type: ignore
         HelpEmbed._set(self, bot, command_prefix)
 
         for command in commands:
@@ -93,9 +94,9 @@ class CommandListSource(EmbedPaginator):
 
 
 class HelpSelect(discord.ui.Select["HelpView"]):
-    def __init__(self, bot: BotBase, command_prefix: str, cogs: Dict[Optional[Cog], List[Command]]) -> None:
-        self.commands: Dict[Optional[Cog], List[Command]] = cogs
-        self.cogs: Dict[str, Optional[Cog]] = {}
+    def __init__(self, bot: BotBase, command_prefix: str, cogs: dict[Optional[Cog], list[Command]]) -> None:
+        self.commands: dict[Optional[Cog], list[Command]] = cogs
+        self.cogs: dict[str, Optional[Cog]] = {}
         self.bot: BotBase = bot
         self.command_prefix: str = command_prefix
 
@@ -139,7 +140,7 @@ class HelpView(EmbedPageView):
         user: User,
         source: PaginatorSource[discord.Embed],
         *,
-        cogs: Dict[Optional[Cog], List[Command]] = MISSING,
+        cogs: dict[Optional[Cog], list[Command]] = MISSING,
         timeout: Optional[float] = 180,
         ephemeral: bool = False,
     ) -> None:
@@ -159,7 +160,7 @@ class HelpView(EmbedPageView):
         ctx: Context,
         source: Optional[PaginatorSource[discord.Embed]] = None,
         *,
-        cogs: Dict[Optional[Cog], List[Command]] = MISSING,
+        cogs: dict[Optional[Cog], list[Command]] = MISSING,
         dm_help: bool = False,
     ) -> None:
         channel = ctx.channel if not dm_help else ctx.author
@@ -182,7 +183,7 @@ class SlashHelpView(HelpView):
         bot: BotBase,
         source: PaginatorSource[discord.Embed],
         *,
-        cogs: Dict[Optional[Cog], List[Command]] = MISSING,
+        cogs: dict[Optional[Cog], list[Command]] = MISSING,
         ephemeral: bool = True,
     ) -> None:
         assert interaction.user is not None
@@ -211,7 +212,7 @@ class ViewHelpCommand(commands.HelpCommand):
 
     async def send_bot_help(self, mapping):
 
-        cogs = DefaultDict[Optional[Cog], List[commands.Command]](list)
+        cogs = DefaultDict[Optional[Cog], list[commands.Command]](list)
 
         for command in await self.filter_commands(self.context.bot.commands, sort=True):
             cogs[command.cog].append(command)
@@ -261,7 +262,7 @@ def slash_command_help(bot: BotBase, command: AppCommand) -> discord.Embed:
     syntax = f"/{command.name}"
 
     options = ""
-    for option in command.to_dict()['options']:
+    for option in command.to_dict()["options"]:
         options += f"{option['name']}: {option['description']}\n"
 
     return HelpEmbed(
@@ -269,10 +270,8 @@ def slash_command_help(bot: BotBase, command: AppCommand) -> discord.Embed:
     )
 
 
-def _get_commands(
-    bot: BotBase, guild: Optional[discord.Guild]
-) -> Dict[Optional[Cog], List[AppCommand]]:
-    cogs = DefaultDict[Optional[Cog], List[AppCommand]](list)
+def _get_commands(bot: BotBase, guild: Optional[discord.Guild]) -> dict[Optional[Cog], list[AppCommand]]:
+    cogs = DefaultDict[Optional[Cog], list[AppCommand]](list)
 
     application_commands = available_commands(bot.tree, guild)
     for application_command in application_commands:
@@ -326,8 +325,7 @@ async def help(
 async def help_autocomplete_command(
     interaction: discord.Interaction,
     focused_value: str,
-    namespace: discord.app_commands.Namespace,
-) -> List[discord.app_commands.Choice[str]]:
+) -> list[discord.app_commands.Choice[str]]:
     bot: BotBase = interaction._state._get_client()  # type: ignore
 
     cogs = _get_commands(bot, interaction.guild)

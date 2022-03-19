@@ -121,5 +121,5 @@ class Admin(Cog, hidden=True):
             await ctx.invoke(jsk_shutdown)  # type: ignore
 
 
-def setup(bot: BotBase):
-    bot.add_cog(Admin(bot))
+async def setup(bot: BotBase):
+    await bot.add_cog(Admin(bot))

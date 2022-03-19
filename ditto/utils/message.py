@@ -4,7 +4,7 @@ import asyncio
 import inspect
 import io
 
-from typing import Any, Literal, Optional, TYPE_CHECKING, TypeVar, overload
+from typing import Any, Literal, Optional, TYPE_CHECKING, TypeVar, overload, Union
 
 import discord
 from discord.ext import commands
@@ -168,13 +168,12 @@ async def prompt(
     bot: Optional[BotBase] = ...,
     channel: Optional[TextChannel] = ...,
     user: Optional[User] = ...,
-    converter: type[T] = ...,
     timeout: float = ...,
     max_tries: int = ...,
     confirm_after: bool = ...,
     delete_after: bool = ...,
     **kwargs: Any,
-) -> T:
+) -> str:
     ...
 
 
@@ -190,7 +189,7 @@ async def prompt(
     confirm_after: bool = False,
     delete_after: bool = False,
     **kwargs,
-) -> T:
+) -> Union[T, str]:
     if context is None:
         if None in (bot, channel, user):
             raise ValueError("Values; bot, channel and user cannot be None if no context passed.")
@@ -200,8 +199,8 @@ async def prompt(
         user = user or context.author
 
     assert isinstance(bot, BotBase)
-    assert isinstance(channel, TextChannel)
-    assert isinstance(user, User)
+    assert isinstance(channel, TextChannel)  # type: ignore
+    assert isinstance(user, User)  # type: ignore
 
     message = await channel.send(*args, **kwargs)
 

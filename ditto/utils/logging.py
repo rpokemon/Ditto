@@ -33,7 +33,7 @@ class WebhookHandler(logging.Handler):
 
         self._webhook_logger.log(
             discord.Embed(
-                colour=self._colours.get(record.levelno, discord.Embed.Empty),
+                colour=self._colours.get(record.levelno),
                 title=record.name,
                 description=codeblock(message, language="py"),
                 timestamp=datetime.datetime.fromtimestamp(record.created),

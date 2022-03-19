@@ -9,7 +9,7 @@ import traceback
 from contextlib import suppress
 
 from collections.abc import Callable
-from typing import Any, Optional, Union
+from typing import TYPE_CHECKING, Any, Optional, Union
 
 import asyncpg
 import discord
@@ -43,6 +43,7 @@ ONE_MEGABYTE = ONE_KILOBYTE * 1024
 class BotBase(commands.bot.BotBase, WebServerMixin, EmojiCacheMixin, EventSchedulerMixin, discord.Client):
     converters: dict[type, Callable[..., Any]]
     pool: asyncpg.pool.Pool
+    tree: CommandTree
 
     owner: Optional[discord.User]
     owners: Optional[list[discord.User]]
@@ -105,22 +106,26 @@ class BotBase(commands.bot.BotBase, WebServerMixin, EmojiCacheMixin, EventSchedu
             sync_guild_commands_at_startup=CONFIG.BOT.SYNC_GUILD_COMMANDS,
             **kwargs,
         )
-
-        # setup command tree
-        self.tree: CommandTree = CommandTree(self)
+        self._BotBase__tree = CommandTree(self)  # todo: remove this
 
         # Add extra converters
         self.converters |= CONVERTERS
 
-        # Add extensions
-        for extension in CONFIG.EXTENSIONS.keys():
-            try:
-                self.load_extension(extension)
-            except (commands.ExtensionError, ImportError, SyntaxError):
-                self.log.exception(f"Failed to load extension {extension}")
+    async def setup_hook(self) -> None:
+
+        await self.is_owner(discord.Object(id=0))  # type: ignore
 
         # Add help command
         self.tree.add_command(help)
+
+        # Add extensions
+        for extension in CONFIG.EXTENSIONS.keys():
+            try:
+                await self.load_extension(extension)
+            except (commands.ExtensionError, ImportError, SyntaxError):
+                self.log.exception(f"Failed to load extension {extension}")
+
+        await self.tree.global_sync()
 
     @property
     def uptime(self) -> datetime.timedelta:
@@ -128,12 +133,6 @@ class BotBase(commands.bot.BotBase, WebServerMixin, EmojiCacheMixin, EventSchedu
 
     async def on_ready(self) -> None:
         self.log.info(f"Succesfully logged in as {self.user} ({getattr(self.user, 'id')})")
-
-        if self._sync:
-            await self.tree.global_sync()
-            self._sync = False
-
-        await self.is_owner(self.user)  # type: ignore
 
         if self.owner_id:
             self.owner = await self.fetch_user(self.owner_id)

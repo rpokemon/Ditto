@@ -230,10 +230,10 @@ class Info(Cog):
         embed = cls._server_object_info(channel)
 
         if not isinstance(channel, (discord.Thread, get_args(AppCommandChannel))):
-            embed.add_field(name="Position", value=str(channel.position))
+            embed.add_field(name="Position", value=str(channel.position))  # type: ignore
 
         if not isinstance(channel, (discord.CategoryChannel, get_args(AppCommandChannel))):
-            embed.add_field(name="Category", value=str(channel.category))
+            embed.add_field(name="Category", value=str(channel.category))  # type: ignore
 
         if is_not_voice_channel(channel) and not isinstance(channel, get_args(AppCommandChannel)):
             embed.add_field(name="Is NSFW:", value=str(channel.is_nsfw()))
@@ -426,7 +426,7 @@ class Info(Cog):
     @classmethod
     def _member_info(cls, member: discord.Member) -> discord.Embed:
         embed = cls._user_info(member)
-        embed.colour = member.colour if bool(member.colour.value) else discord.Embed.Empty
+        embed.colour = member.colour if bool(member.colour.value) else None
 
         embed.add_field(
             name="Joined Server:",
@@ -550,9 +550,7 @@ class Info(Cog):
         embed.set_author(name=f"Information on invite to {invite.guild}:")
 
         if isinstance(invite.guild, (discord.Guild, discord.PartialInviteGuild)) and invite.guild.icon is not None:
-            embed.set_thumbnail(
-                url=invite.guild.icon.url if isinstance(invite.guild, discord.guild.Guild) else discord.Embed.Empty
-            )
+            embed.set_thumbnail(url=invite.guild.icon.url if isinstance(invite.guild, discord.guild.Guild) else None)
 
         embed.add_field(name="Created By:", value=str(invite.inviter))
 
@@ -781,10 +779,10 @@ class Get(discord.app_commands.Group):
         await interaction.response.send_message(embed=embed, file=discord.File(image, filename), ephemeral=private)
 
 
-def setup(bot: BotBase):
-    bot.add_cog(Info(bot))
+async def setup(bot: BotBase):
+    await bot.add_cog(Info(bot))
     bot.tree.add_command(Get(bot))
 
 
-def teardown(bot: BotBase):
+async def teardown(bot: BotBase):
     bot.tree.remove_command("get")

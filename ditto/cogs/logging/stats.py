@@ -141,7 +141,7 @@ class Stats(Cog, hidden=True):
                 self._batch_data.clear()
 
 
-def setup(bot: BotBase):
+async def setup(bot: BotBase):
     if CONFIG.DATABASE.DISABLED:
         return
-    bot.add_cog(Stats(bot))
+    await bot.add_cog(Stats(bot))

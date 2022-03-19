@@ -25,11 +25,11 @@ class PostgresStorage(AbstractStorage):
         cookie_name: str = "AIOHTTP_SESSION",
         domain: Optional[str] = None,
         max_age: Optional[int] = None,
-        path: Optional[str] = "/",
+        path: str = "/",
         secure: Optional[bool] = True,
-        httponly: Optional[bool] = None,
-        encoder: Callable[[str], Any] = _from_json,
-        decoder: Callable[[Any], str] = _to_json,
+        httponly: bool = True,
+        encoder: Callable[[Any], str] = _to_json,
+        decoder: Callable[[str], Any] = _from_json,
     ):
         self.bot: BotBase = bot
         super().__init__(
@@ -70,7 +70,7 @@ class PostgresStorage(AbstractStorage):
         key = session.identity
         if key is None:
             key = uuid.uuid4()
-            self.save_cookie(response, key, max_age=session.max_age)
+            self.save_cookie(response, str(key), max_age=session.max_age)
         else:
             if session.empty:
                 self.save_cookie(response, "", max_age=session.max_age)

@@ -60,6 +60,12 @@ addopts = "--capture=no --assert=plain --strict-markers --tb native"
 testpaths = "tests"
 filterwarnings = "default"
 
+[tool.pyright]
+strictParameterNoneValue = false
+reportUnnecessaryTypeIgnoreComment = "warning"
+pythonVersion = "3.9"
+typeCheckingMode = "basic"
+
 [build-system]
 requires = ["poetry-core>=1.0.0", "poetry-git-version-changer>=1.0.4a"]
 build-backend = "poetry.core.masonry.api"
