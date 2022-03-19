@@ -7,7 +7,7 @@ from typing import Any, cast, get_args, Optional, Union
 import discord
 from discord.ext import commands, menus
 
-from ditto.utils.slash.transformers import ZoneInfoTransformer
+from donphan import MaybeAcquire
 
 from ... import BotBase, Cog, Context, CONFIG
 from ...types import User
@@ -17,6 +17,7 @@ from ...utils.paginator import EmbedPaginator
 from ...utils.strings import utc_offset
 from ...utils.time import MAIN_TIMEZONES, human_friendly_timestamp
 from ...utils.slash.utils import with_cog
+from ...utils.slash.transformers import ZoneInfoTransformer
 from ...utils.interactions import error
 
 
@@ -106,42 +107,96 @@ class Timezone(Cog):
 
 
 @with_cog(Timezone)
-@discord.app_commands.command()
-async def set_timezone(
-    interaction: discord.Interaction,
-    timezone: discord.app_commands.Transform[zoneinfo.ZoneInfo, ZoneInfoTransformer],
-) -> None:
-    async with interaction.client.db as connection:  # type: ignore
-        await TimeZones.insert(
-            connection,
-            update_on_conflict=(TimeZones.time_zone,),
-            returning=None,
-            user_id=interaction.user.id,
-            time_zone=str(timezone),
-        )
+class _Timezone(discord.app_commands.Group, name='timezone'):
+    """User Timezone Management Commands."""
 
-    local_time = human_friendly_timestamp(datetime.datetime.now(tz=timezone))
-    embed = discord.Embed(title=f"Local Time: {local_time}")
-    embed.set_author(name=f"Timezone set to {timezone}")
+    def __init__(self, client: BotBase, *args: Any, **kwargs: Any) -> None:
+        self.client: BotBase = client
+        super().__init__(*args, **kwargs)
 
-    await interaction.response.send_message(embed=embed, ephemeral=True)
+    @discord.app_commands.command()
+    @discord.app_commands.describe(
+        timezone="The timezone to get the current time for.",
+        user="The user to get the current time for.",
+        private="Whether to invoke this command privately.",
+    )
+    async def get(
+        self,
+        interaction: discord.Interaction,
+        timezone: Optional[discord.app_commands.Transform[zoneinfo.ZoneInfo, ZoneInfoTransformer]],
+        user: Optional[User],
+        private: bool = True,
+    ) -> None:
+        """Get the current time for a user or time zone."""
+        if timezone is not None:
+            if user is not None:
+                return await error(interaction, "You can't specify both a timezone and a user.")
 
+            embed = discord.Embed(title=human_friendly_timestamp(datetime.datetime.now(tz=timezone)))
+            embed.set_author(name=f"Time in {timezone}")
 
-@set_timezone.autocomplete("timezone")
-async def set_timezone_autocomplete(
-    interaction: discord.Interaction,
-    focused_value: str,
-) -> list[discord.app_commands.Choice[str]]:
-    """Autocomplete for the set_timezone command."""
-    choices = []
-    for name, tzinfo in MAIN_TIMEZONES.items():
-        if name.startswith(focused_value):
-            choices.append(discord.app_commands.Choice(name=name, value=tzinfo.key))
+        else:
+            if user is None:
+                user = interaction.user
 
-    return choices
+            async with MaybeAcquire(pool=self.client.pool) as connection:
+                timezone = await TimeZones.get_timezone(connection, user)
 
+            if timezone is None:
+                return await error(interaction, f"{user.mention} does not have a time zone set.")
+
+            embed = discord.Embed(title=human_friendly_timestamp(datetime.datetime.now(tz=timezone)))
+            embed.set_author(name=f"Time for {user.display_name}", icon_url=user.display_avatar.url)
+            embed.set_footer(text=f"{timezone} ({utc_offset(timezone)})")
+
+        await interaction.response.send_message(embed=embed, ephemeral=private)
+        
+
+    @discord.app_commands.command()
+    @discord.app_commands.describe(
+        timezone="The timezone to set.",
+    )
+    async def set(
+        self,
+        interaction: discord.Interaction,
+        timezone: discord.app_commands.Transform[zoneinfo.ZoneInfo, ZoneInfoTransformer],
+    ) -> None:
+        """Set your timezone."""
+        async with MaybeAcquire(pool=self.client.pool) as connection:
+            await TimeZones.insert(
+                connection,
+                update_on_conflict=(TimeZones.time_zone,),
+                returning=None,
+                user_id=interaction.user.id,
+                time_zone=str(timezone),
+            )
+
+        local_time = human_friendly_timestamp(datetime.datetime.now(tz=timezone))
+        embed = discord.Embed(title=f"Local Time: {local_time}")
+        embed.set_author(name=f"Timezone set to {timezone}")
+
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+
+    @get.autocomplete("timezone")
+    @set.autocomplete("timezone")
+    async def set_timezone_autocomplete(
+        self,
+        interaction: discord.Interaction,
+        focused_value: str,
+    ) -> list[discord.app_commands.Choice[str]]:
+        """Autocomplete for the set_timezone command."""
+        choices = []
+        for name, tzinfo in MAIN_TIMEZONES.items():
+            if name.startswith(focused_value):
+                choices.append(discord.app_commands.Choice(name=name, value=tzinfo.key))
+
+        return choices
 
 async def setup(bot: BotBase):
     if CONFIG.DATABASE.DISABLED:
         return
     await bot.add_cog(Timezone(bot))
+    bot.tree.add_command(_Timezone(bot))
+
+async def teardown(bot: BotBase):
+    bot.tree.remove_command("timezone")
