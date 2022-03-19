@@ -92,6 +92,9 @@ class BotBase(commands.bot.BotBase, WebServerMixin, EmojiCacheMixin, EventSchedu
         else:
             prefix = commands.when_mentioned_or(self.prefix) if allow_mentions_as_prefix else self.prefix
 
+        if CONFIG.APPLICATION.ID is not None:
+            kwargs['application_id'] = CONFIG.APPLICATION.ID
+
         super().__init__(
             *args,
             command_prefix=prefix,

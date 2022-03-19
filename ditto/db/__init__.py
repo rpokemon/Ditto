@@ -39,5 +39,5 @@ async def setup_database() -> asyncpg.pool.Pool:
     # Connect to the DB
     pool = await create_pool(dsn, OPTIONAL_CODECS, server_settings={"application_name": CONFIG.APP_NAME})
     async with MaybeAcquire(pool=pool) as connection:
-        await create_db(connection, if_not_exists=True)
+        await create_db(connection, if_not_exists=True, with_transaction=False)
     return pool
