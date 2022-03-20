@@ -15,7 +15,7 @@ from ...db import TimeZones
 
 from ...utils.paginator import EmbedPaginator
 from ...utils.strings import utc_offset
-from ...utils.time import MAIN_TIMEZONES, human_friendly_timestamp
+from ...utils.time import ALL_TIMEZONES, human_friendly_timestamp
 from ...utils.slash.utils import with_cog
 from ...utils.slash.transformers import ZoneInfoTransformer
 from ...utils.interactions import error
@@ -95,7 +95,7 @@ class Timezone(Cog):
                 return offset.total_seconds()
             return 0
 
-        for name, tzinfo in sorted(MAIN_TIMEZONES.items(), key=get_offset):
+        for name, tzinfo in sorted(ALL_TIMEZONES.items(), key=get_offset):
             embed.add_line(f"`{name}` ({utc_offset(tzinfo)})")
 
         await menus.MenuPages(embed).start(ctx)
@@ -186,11 +186,11 @@ class _Timezone(discord.app_commands.Group, name='timezone'):
     ) -> list[discord.app_commands.Choice[str]]:
         """Autocomplete for the set_timezone command."""
         choices = []
-        for name, tzinfo in MAIN_TIMEZONES.items():
-            if name.startswith(focused_value):
+        for name, tzinfo in ALL_TIMEZONES.items():
+            if name.lower().startswith(focused_value.lower()):
                 choices.append(discord.app_commands.Choice(name=name, value=tzinfo.key))
 
-        return choices
+        return choices[:25]
 
 async def setup(bot: BotBase):
     if CONFIG.DATABASE.DISABLED:

@@ -16,7 +16,7 @@ from jishaku.codeblocks import codeblock_converter, Codeblock
 from jishaku.modules import ExtensionConverter
 
 from ..config import CONFIG
-from ..utils.time import TIMEZONE_ALIASES, update_time
+from ..utils.time import update_time
 
 if TYPE_CHECKING:
     from ..core.context import Context
@@ -204,9 +204,6 @@ class ZoneInfoConverter(commands.Converter[zoneinfo.ZoneInfo]):
     @classmethod
     async def convert(cls, ctx: Context, argument: str) -> zoneinfo.ZoneInfo:
         argument = argument.replace(" ", "_").strip()
-
-        if argument in TIMEZONE_ALIASES:
-            argument = TIMEZONE_ALIASES[argument]
 
         try:
             return zoneinfo.ZoneInfo(argument)
