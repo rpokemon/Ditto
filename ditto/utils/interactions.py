@@ -7,6 +7,7 @@ from typing import Any, Coroutine, TYPE_CHECKING, get_args
 
 
 import discord
+from discord.utils import MISSING
 
 if TYPE_CHECKING:
     from discord.types.interactions import (
@@ -38,14 +39,18 @@ def delete_after(interaction: discord.Interaction, after: float) -> None:
     asyncio.create_task(_delete_after(interaction, after))
 
 
-def error(interaction: discord.Interaction, message: str) -> Coroutine[Any, Any, Any]:
-    if TYPE_CHECKING:
-        assert isinstance(interaction.data, get_args(ApplicationCommandInteractionDataPayload))
+def error(
+    interaction:discord.Interaction,
+    message: str,
+    *,
+    title: str = MISSING,
+    colour: discord.Colour = MISSING,
+) -> Coroutine[Any, Any, Any]:
     return send_message(
         interaction,
         embed=discord.Embed(
-            colour=discord.Colour.red(),
-            title=f"Error with command {interaction.data['name']}",  # type: ignore
+            colour=colour or discord.Colour.red(),
+            title=title or f"Error with command {interaction.data['name']}",  # type: ignore
             description=message,
         ),
         ephemeral=True,

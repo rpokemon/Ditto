@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from functools import wraps
-from typing import TYPE_CHECKING, Any, Callable, Optional, TypeVar, Type, List, Union
+from typing import TYPE_CHECKING, Any, Callable, NoReturn, Optional, TypeVar, Type, List, Union
 
 import discord
 
@@ -28,6 +28,7 @@ __all__ = (
     "confirm",
     "with_cog",
     "available_commands",
+    "transformer_error",
 )
 
 
@@ -78,3 +79,11 @@ def available_commands(
         commands.extend(tree.get_commands(guild=guild))
 
     return commands
+
+
+def transformer_error(
+    transformer: Type[discord.app_commands.Transformer],
+    value: Any,
+    exc: BaseException
+) -> NoReturn:
+    raise discord.app_commands.TransformerError(value, transformer.type(), transformer) from exc

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import datetime
+from dis import disco
 
 import logging
 import logging.handlers
@@ -25,7 +26,7 @@ from ..web import WebServerMixin
 from ..types import CONVERTERS
 from ..utils.logging import WebhookHandler
 from ..utils.strings import codeblock
-from ..utils.interactions import send_message
+from ..utils.interactions import error
 
 
 __all__ = (
@@ -93,7 +94,7 @@ class BotBase(commands.bot.BotBase, WebServerMixin, EmojiCacheMixin, EventSchedu
             prefix = commands.when_mentioned_or(self.prefix) if allow_mentions_as_prefix else self.prefix
 
         if CONFIG.APPLICATION.ID is not None:
-            kwargs['application_id'] = CONFIG.APPLICATION.ID
+            kwargs["application_id"] = CONFIG.APPLICATION.ID
 
         super().__init__(
             *args,
@@ -218,28 +219,36 @@ class CommandTree(discord.app_commands.CommandTree):
         self,
         interaction: discord.Interaction,
         command: Optional[Union[discord.app_commands.commands.ContextMenu, discord.app_commands.Command]],
-        error: discord.app_commands.AppCommandError,
+        exception: BaseException,
     ) -> None:
 
+        colour = discord.Colour.dark_red()
         with suppress(Exception):
             if command is None:
-                message = "Unexpected error"
+                title = "Unexpected error"
             else:
-                message = f"Unexpected error with command {command.name}"
+                if isinstance(exception, discord.app_commands.CheckFailure):
+                    title = "You don't have permission to use this command."
+                    colour = discord.Colour.red()
+                elif isinstance(exception, discord.app_commands.TransformerError):
+                    title = "Invalid value for argument."
+                    colour = discord.Colour.orange()
+                    exception = exception.__cause__ or Exception("Unknown error")
+                else:
+                    title = f"Unexpected error with command {command.name}"
 
-            await send_message(
+            await error(
                 interaction,
-                embed=discord.Embed(
-                    colour=discord.Colour.dark_red(),
-                    title=message,
-                    description=codeblock(f"{type(error).__name__}: {error}", language="py"),
-                ),
+                message=codeblock(f"{type(exception).__name__}: {exception}", language="py"),
+                title=title,
+                colour=colour,
             )
 
-        tb = "".join(traceback.format_exception(type(error), error, error.__traceback__))
-        self.client.log.error(
-            f"Unhandled exception in command: {command.name if command is not None else 'UNKNOWN'}\n\n{type(error).__name__}: {error}\n\n{tb}"
-        )
+        if colour == discord.Colour.dark_red():
+            tb = "".join(traceback.format_exception(type(exception), exception, exception.__traceback__))
+            self.client.log.error(
+                f"Unhandled exception in command: {command.name if command is not None else 'UNKNOWN'}\n\n{type(error).__name__}: {error}\n\n{tb}"
+            )
 
     async def global_sync(self) -> None:
         await self.sync(guild=None)

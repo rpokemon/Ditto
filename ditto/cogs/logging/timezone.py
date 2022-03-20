@@ -17,7 +17,7 @@ from ...utils.paginator import EmbedPaginator
 from ...utils.strings import utc_offset
 from ...utils.time import ALL_TIMEZONES, human_friendly_timestamp
 from ...utils.slash.utils import with_cog
-from ...utils.slash.transformers import ZoneInfoTransformer
+from ...types.transformers import ZoneInfoTransformer
 from ...utils.interactions import error
 
 
@@ -107,7 +107,7 @@ class Timezone(Cog):
 
 
 @with_cog(Timezone)
-class _Timezone(discord.app_commands.Group, name='timezone'):
+class _Timezone(discord.app_commands.Group, name="timezone"):
     """User Timezone Management Commands."""
 
     def __init__(self, client: BotBase, *args: Any, **kwargs: Any) -> None:
@@ -150,7 +150,6 @@ class _Timezone(discord.app_commands.Group, name='timezone'):
             embed.set_footer(text=f"{timezone} ({utc_offset(timezone)})")
 
         await interaction.response.send_message(embed=embed, ephemeral=private)
-        
 
     @discord.app_commands.command()
     @discord.app_commands.describe(
@@ -192,11 +191,13 @@ class _Timezone(discord.app_commands.Group, name='timezone'):
 
         return choices[:25]
 
+
 async def setup(bot: BotBase):
     if CONFIG.DATABASE.DISABLED:
         return
     await bot.add_cog(Timezone(bot))
     bot.tree.add_command(_Timezone(bot))
+
 
 async def teardown(bot: BotBase):
     bot.tree.remove_command("timezone")
