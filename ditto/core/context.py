@@ -3,26 +3,24 @@ from __future__ import annotations
 import datetime
 import io
 import zoneinfo
-
 from collections.abc import Awaitable
-from typing import Any, Coroutine, Optional, TYPE_CHECKING, Union, TypeVar, overload
+from typing import TYPE_CHECKING, Any, Coroutine, Optional, TypeVar, Union, overload
 
 import discord
 from discord.ext import commands
 from discord.utils import MISSING
-
 from donphan import MaybeAcquire
 
-from ..db import TimeZones, NoDatabase
+from ..db import NoDatabase, TimeZones
 from ..types import Emoji, Message, TextChannel, User
 from ..utils.guild import fetch_audit_log_entry, user_in_guild
 from ..utils.message import bulk_add_reactions, confirm, download_attachment, fetch_previous_message, prompt
 from ..utils.users import download_avatar
 
-
 if TYPE_CHECKING:
     from discord.asset import ValidAssetFormatTypes
-    from .bot import BotBase, Bot, AutoShardedBot
+
+    from .bot import AutoShardedBot, Bot
 
 __all__ = ("Context",)
 

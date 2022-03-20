@@ -1,36 +1,30 @@
 from __future__ import annotations
 
 import datetime
-from dis import disco
-
 import logging
 import logging.handlers
 import traceback
-
-from contextlib import suppress
-
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any, Optional, Union
+from contextlib import suppress
+from typing import Any, Optional, Union
 
 import asyncpg
 import discord
-
 from discord.ext import commands
 from discord.ext.alternatives import converter_dict as converter_dict
 
-from .context import Context
-from .help import ViewHelpCommand, help
 from ..config import CONFIG, load_global_config
-from ..db import setup_database, EmojiCacheMixin, EventSchedulerMixin
-from ..web import WebServerMixin
+from ..db import EmojiCacheMixin, EventSchedulerMixin, setup_database
 from ..types import CONVERTERS
+from ..utils.interactions import error
 from ..utils.logging import WebhookHandler
 from ..utils.strings import codeblock
-from ..utils.interactions import error
-
+from ..web import WebServerMixin
+from .cog import Cog
+from .context import Context
+from .help import ViewHelpCommand, help
 
 __all__ = (
-    "CommandTree",
     "BotBase",
     "Bot",
     "AutoShardedBot",
@@ -44,8 +38,8 @@ ONE_MEGABYTE = ONE_KILOBYTE * 1024
 class BotBase(commands.bot.BotBase, WebServerMixin, EmojiCacheMixin, EventSchedulerMixin, discord.Client):
     converters: dict[type, Callable[..., Any]]
     pool: asyncpg.pool.Pool
-    tree: CommandTree
 
+    cogs: dict[str, Cog]
     owner: Optional[discord.User]
     owners: Optional[list[discord.User]]
 
@@ -67,9 +61,7 @@ class BotBase(commands.bot.BotBase, WebServerMixin, EmojiCacheMixin, EventSchedu
         handler: logging.Handler
 
         if CONFIG.LOGGING.LOG_TO_FILE:
-            handler = logging.handlers.RotatingFileHandler(
-                f"{CONFIG.APP_NAME}.log", maxBytes=ONE_MEGABYTE, encoding="utf-8"
-            )
+            handler = logging.handlers.RotatingFileHandler(f"{CONFIG.APP_NAME}.log", maxBytes=ONE_MEGABYTE, encoding="utf-8")
             handler.setFormatter(logging.Formatter("{asctime} - {module}:{levelname} - {message}", style="{"))
             global_log.addHandler(handler)
 
@@ -106,7 +98,7 @@ class BotBase(commands.bot.BotBase, WebServerMixin, EmojiCacheMixin, EventSchedu
             sync_guild_commands_at_startup=CONFIG.BOT.SYNC_GUILD_COMMANDS,
             **kwargs,
         )
-        self._BotBase__tree = CommandTree(self)  # todo: remove this
+        self.tree.error(self.on_application_command_error)
 
         # Add extra converters
         self.converters |= CONVERTERS
@@ -132,7 +124,14 @@ class BotBase(commands.bot.BotBase, WebServerMixin, EmojiCacheMixin, EventSchedu
                 self.log.exception(f"Failed to load extension {extension}")
 
         self.pool = await setup_database()
-        await self.tree.global_sync()
+
+        # sync slash commands
+        await self.tree.sync(guild=None)
+        for guild_id in set(self.tree._guild_commands.keys()):
+            try:
+                await self.tree.sync(guild=discord.Object(id=guild_id))
+            except (discord.NotFound, discord.Forbidden):
+                pass
 
         await super().setup_hook()
 
@@ -149,6 +148,41 @@ class BotBase(commands.bot.BotBase, WebServerMixin, EmojiCacheMixin, EventSchedu
         if self.owner_ids:
             self.owner = None
             self.owners = [await self.fetch_user(id) for id in self.owner_ids]
+
+    async def on_application_command_error(
+        self: BotBase,
+        interaction: discord.Interaction,
+        command: Optional[Union[discord.app_commands.commands.ContextMenu, discord.app_commands.Command]],
+        exception: BaseException,
+    ) -> None:
+
+        colour = discord.Colour.dark_red()
+        with suppress(Exception):
+            if command is None:
+                title = "Unexpected error"
+            else:
+                if isinstance(exception, discord.app_commands.CheckFailure):
+                    title = "You don't have permission to use this command."
+                    colour = discord.Colour.red()
+                elif isinstance(exception, discord.app_commands.TransformerError):
+                    title = "Invalid value for argument."
+                    colour = discord.Colour.orange()
+                    exception = exception.__cause__ or Exception("Unknown error")
+                else:
+                    title = f"Unexpected error with command {command.name}"
+
+            await error(
+                interaction,
+                message=codeblock(f"{type(exception).__name__}: {exception}", language="py"),
+                title=title,
+                colour=colour,
+            )
+
+        if colour == discord.Colour.dark_red():
+            tb = "".join(traceback.format_exception(type(exception), exception, exception.__traceback__))
+            self.log.error(
+                f"Unhandled exception in command: {command.name if command is not None else 'UNKNOWN'}\n\n{type(error).__name__}: {error}\n\n{tb}"
+            )
 
     async def on_command_error(self, ctx: Context, error: BaseException) -> Optional[discord.Message]:
         if isinstance(error, commands.CommandNotFound) or ctx.command is None:
@@ -210,53 +244,6 @@ class BotBase(commands.bot.BotBase, WebServerMixin, EmojiCacheMixin, EventSchedu
         if not CONFIG.DATABASE.DISABLED:
             await self.pool.close()
         await super().close()
-
-
-class CommandTree(discord.app_commands.CommandTree):
-    client: BotBase
-
-    async def on_error(
-        self,
-        interaction: discord.Interaction,
-        command: Optional[Union[discord.app_commands.commands.ContextMenu, discord.app_commands.Command]],
-        exception: BaseException,
-    ) -> None:
-
-        colour = discord.Colour.dark_red()
-        with suppress(Exception):
-            if command is None:
-                title = "Unexpected error"
-            else:
-                if isinstance(exception, discord.app_commands.CheckFailure):
-                    title = "You don't have permission to use this command."
-                    colour = discord.Colour.red()
-                elif isinstance(exception, discord.app_commands.TransformerError):
-                    title = "Invalid value for argument."
-                    colour = discord.Colour.orange()
-                    exception = exception.__cause__ or Exception("Unknown error")
-                else:
-                    title = f"Unexpected error with command {command.name}"
-
-            await error(
-                interaction,
-                message=codeblock(f"{type(exception).__name__}: {exception}", language="py"),
-                title=title,
-                colour=colour,
-            )
-
-        if colour == discord.Colour.dark_red():
-            tb = "".join(traceback.format_exception(type(exception), exception, exception.__traceback__))
-            self.client.log.error(
-                f"Unhandled exception in command: {command.name if command is not None else 'UNKNOWN'}\n\n{type(error).__name__}: {error}\n\n{tb}"
-            )
-
-    async def global_sync(self) -> None:
-        await self.sync(guild=None)
-        for guild_id in set(self._guild_commands.keys()):
-            try:
-                await self.sync(guild=discord.Object(id=guild_id))
-            except (discord.NotFound, discord.Forbidden):
-                pass
 
 
 class Bot(BotBase, commands.Bot):

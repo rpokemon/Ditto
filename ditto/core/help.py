@@ -6,14 +6,13 @@ from typing import TYPE_CHECKING, Any, DefaultDict, Optional, Union
 import discord
 from discord.ext import commands
 
-from .context import Context
-from ..utils.paginator import PaginatorSource, EmbedPaginator
-from ..utils.views import EmbedPageView
-from ..utils.interactions import error
-from ..utils.slash.utils import available_commands
-
 from ..types import User
+from ..utils.interactions import error
+from ..utils.paginator import EmbedPaginator, PaginatorSource
+from ..utils.slash.utils import available_commands
+from ..utils.views import EmbedPageView
 from .cog import Cog
+from .context import Context
 
 if TYPE_CHECKING:
     from .bot import BotBase
@@ -265,9 +264,7 @@ def slash_command_help(bot: BotBase, command: AppCommand) -> discord.Embed:
     for option in command.to_dict()["options"]:
         options += f"{option['name']}: {option['description']}\n"
 
-    return HelpEmbed(
-        bot, "/", title=command.name, description=f"Syntax: `{syntax}`\n\n{command.description}\n{options}"
-    )
+    return HelpEmbed(bot, "/", title=command.name, description=f"Syntax: `{syntax}`\n\n{command.description}\n{options}")
 
 
 def _get_commands(bot: BotBase, guild: Optional[discord.Guild]) -> dict[Optional[Cog], list[AppCommand]]:
@@ -278,7 +275,7 @@ def _get_commands(bot: BotBase, guild: Optional[discord.Guild]) -> dict[Optional
         cog = getattr(application_command, "__ditto_cog__", None)
         if cog is not None:
             cog = bot.cogs.get(cog.__cog_name__, None)
-        cogs[cog].append(application_command)  # type: ignore
+        cogs[cog].append(application_command)
 
     return cogs
 
@@ -294,7 +291,7 @@ async def help(
     private: bool = True,
 ) -> None:
     """Displays help about the bot, a command, or a category"""
-    bot: BotBase = interaction._state._get_client()  # type: ignore
+    bot: BotBase = interaction.client # type: ignore
 
     cogs = _get_commands(bot, interaction.guild)
 
@@ -313,10 +310,10 @@ async def help(
 
     # Send Cog Help
     if command in bot.cogs:
-        commands = cogs[bot.cogs[command]]  # type: ignore
+        commands = cogs[bot.cogs[command]]
         if commands:
-            source = CommandListSource(bot, "/", commands)  # type: ignore
-            await SlashHelpView.send(interaction, bot, source, ephemeral=private)  # type: ignore
+            source = CommandListSource(bot, "/", commands)
+            await SlashHelpView.send(interaction, bot, source, ephemeral=private)
 
     return await error(interaction, f'Could not find command or category with name "{command}"')
 
@@ -326,7 +323,7 @@ async def help_autocomplete_command(
     interaction: discord.Interaction,
     focused_value: str,
 ) -> list[discord.app_commands.Choice[str]]:
-    bot: BotBase = interaction._state._get_client()  # type: ignore
+    bot: BotBase = interaction.client  # type: ignore
 
     cogs = _get_commands(bot, interaction.guild)
 

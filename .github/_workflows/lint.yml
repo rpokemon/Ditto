@@ -4,12 +4,10 @@ on:
     paths:
       - '.github/workflows/lint.yml'
       - 'pyproject.toml'
-      - 'mypy.ini'
       - '**.py'
   pull_request:
     branches:
       - rewrite
-
 
 jobs:
   lint:
@@ -17,6 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
+      - uses: actions/setup-node@v2
       - uses: snok/install-poetry@v1.1.4
         with:
           virtualenvs-create: true
@@ -31,7 +30,10 @@ jobs:
       - name: Install dependencies
         if: steps.cached-dependecies.outputs.cache-hit != 'true'
         run: poetry install
+      - name: Install pyright
+        run: |
+          npm install -g pyright
       - name: Lint py files
-        run: poetry run black --check .
+        run: poetry run black --check --verbose .
       - name: Type check files
-        run: poetry run mypy .
+        run: pyright .

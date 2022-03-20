@@ -1,7 +1,8 @@
 from typing import TypeVar
-from discord.ext import commands
-from .. import Context
 
+from discord.ext import commands
+
+from .. import Context
 
 __all__ = ("auto_help",)
 

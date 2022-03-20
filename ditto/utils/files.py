@@ -1,6 +1,5 @@
 import pathlib
 import types
-
 from typing import Optional
 
 

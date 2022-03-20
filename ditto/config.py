@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import os
 import pathlib
-
 from collections.abc import Callable
 from typing import Any, Optional, Union
 
@@ -10,7 +9,6 @@ import discord
 import yaml
 
 from .utils.files import get_base_dir
-
 
 __all__ = (
     "CONFIG",
@@ -79,9 +77,7 @@ class Config(yaml.YAMLObject):
     def update(self, other: Config) -> None:
         for key in other.__dict__:
             if (
-                key == "EXTENSIONS"
-                and isinstance(other.__dict__[key], dict)
-                and isinstance(self.__dict__.get(key), dict)
+                key == "EXTENSIONS" and isinstance(other.__dict__[key], dict) and isinstance(self.__dict__.get(key), dict)
             ) or (isinstance(other.__dict__[key], Config) and isinstance(self.__dict__.get(key), Config)):
                 other.__dict__[key] = self.__dict__[key] | other.__dict__[key]
 

@@ -2,17 +2,13 @@ from __future__ import annotations
 
 import asyncio
 from contextlib import suppress
-
-from typing import Any, Coroutine, TYPE_CHECKING, get_args
-
+from typing import TYPE_CHECKING, Any, Coroutine, get_args
 
 import discord
 from discord.utils import MISSING
 
 if TYPE_CHECKING:
-    from discord.types.interactions import (
-        ApplicationCommandInteractionData as ApplicationCommandInteractionDataPayload,
-    )
+    from discord.types.interactions import ApplicationCommandInteractionData as ApplicationCommandInteractionDataPayload
 
 
 __all___ = (
@@ -40,7 +36,7 @@ def delete_after(interaction: discord.Interaction, after: float) -> None:
 
 
 def error(
-    interaction:discord.Interaction,
+    interaction: discord.Interaction,
     message: str,
     *,
     title: str = MISSING,

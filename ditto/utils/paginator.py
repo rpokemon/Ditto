@@ -1,8 +1,7 @@
-from typing import Any, Generic, NamedTuple, TypeVar, TypedDict
+from typing import Any, Generic, NamedTuple, TypedDict, TypeVar
 
 import discord
 from discord.ext import commands, menus
-
 
 __all__ = (
     "EmbedPaginator",

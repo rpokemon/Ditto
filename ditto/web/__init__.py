@@ -2,19 +2,17 @@ from __future__ import annotations
 
 import sys
 from functools import cached_property
+from typing import TYPE_CHECKING, Any, Callable, Coroutine, Dict, Protocol, TypeVar, runtime_checkable
 from urllib.parse import quote
-from typing import TYPE_CHECKING, Any, Callable, Coroutine, Protocol, TypeVar, runtime_checkable, Dict
 
 import aiohttp
 import aiohttp_jinja2
 import aiohttp_security
 import aiohttp_session
-from aiohttp.web import Application, AppRunner, normalize_path_middleware, Request, Response, HTTPFound, get, static
-from aiohttp.web_runner import TCPSite
-
 import discord
 import jinja2
-
+from aiohttp.web import Application, AppRunner, HTTPFound, Request, Response, get, normalize_path_middleware, static
+from aiohttp.web_runner import TCPSite
 
 from ..config import CONFIG
 from .auth import AUTH_URI, USER_AGENT, DiscordAuthorizationPolicy, validate_login
@@ -51,9 +49,7 @@ class WebServerMixin:
         self.storage: PostgresStorage = PostgresStorage(self, cookie_name="session")
         aiohttp_session.setup(self.app, self.storage)
 
-        self.user_agent: str = USER_AGENT.format(
-            CONFIG.APP_NAME, CONFIG.VERSION, sys.version_info, aiohttp.__version__
-        )
+        self.user_agent: str = USER_AGENT.format(CONFIG.APP_NAME, CONFIG.VERSION, sys.version_info, aiohttp.__version__)
 
         self.policy: DiscordAuthorizationPolicy = DiscordAuthorizationPolicy(self)
         aiohttp_security.setup(self.app, aiohttp_security.SessionIdentityPolicy(), self.policy)
@@ -108,9 +104,7 @@ class WebServerMixin:
     def permission_check(
         self, permission: str
     ) -> Callable[[Callable[[BotBase, discord.User], Coro[bool]]], Callable[[BotBase, discord.User], Coro[bool]]]:
-        def decorator(
-            func: Callable[[BotBase, discord.User], Coro[bool]]
-        ) -> Callable[[BotBase, discord.User], Coro[bool]]:
+        def decorator(func: Callable[[BotBase, discord.User], Coro[bool]]) -> Callable[[BotBase, discord.User], Coro[bool]]:
             self.add_permission_check(permission, func)
             return func
 

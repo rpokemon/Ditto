@@ -1,9 +1,7 @@
 import datetime
 from collections import defaultdict
-
 from collections.abc import Callable
-from typing import Any, TypeVar
-
+from typing import Any, TypeVar, Optional
 
 __all__ = (
     "summarise_list",
@@ -36,9 +34,7 @@ def summarise_list(
     return info
 
 
-def format_list(
-    string: str, *list: Any, singular: str = "has", plural: str = "have", oxford_comma: bool = True
-) -> str:
+def format_list(string: str, *list: Any, singular: str = "has", plural: str = "have", oxford_comma: bool = True) -> str:
     if len(list) == 0:
         return string.format("no-one", singular)
     elif len(list) == 1:
@@ -107,14 +103,12 @@ class TimedLRUDict(LRUDict, TimedDict):
 
 
 class LRUDefaultDict(LRUDict, defaultdict):
-    def __init__(self, default_factory: Callable = None, max_size: int = 1024, *args, **kwargs):
+    def __init__(self, default_factory: Optional[Callable] = None, max_size: int = 1024, *args, **kwargs):
         super().__init__(max_size, *args, **kwargs)
         self.default_factory = default_factory
 
 
 class TimedLRUDefaultDict(LRUDict, TimedDict, defaultdict):
-    def __init__(
-        self, default_factory: Callable, expires_after: datetime.timedelta, max_size: int = 1024, *args, **kwargs
-    ):
+    def __init__(self, default_factory: Callable, expires_after: datetime.timedelta, max_size: int = 1024, *args, **kwargs):
         super().__init__(max_size, expires_after, *args, **kwargs)
         self.default_factory = default_factory

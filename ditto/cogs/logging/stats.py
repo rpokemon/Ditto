@@ -1,6 +1,5 @@
 import asyncio
 import datetime
-
 from collections import Counter
 from typing import Any, NamedTuple, Optional
 
@@ -9,9 +8,8 @@ import discord
 from discord.ext import commands, menus, tasks
 from donphan import MaybeAcquire
 
-from ... import BotBase, Cog, Context, CONFIG
+from ... import CONFIG, BotBase, Cog, Context
 from ...db.tables import Commands
-
 from ...utils.paginator import EmbedPaginator
 from ...utils.time import human_friendly_timestamp
 
@@ -108,7 +106,7 @@ class Stats(Cog, hidden=True):
 
     @commands.Cog.listener("on_command_completion")
     @commands.Cog.listener("on_command_error")
-    async def on_command(self, ctx: Context, error: BaseException = None) -> None:
+    async def on_command(self, ctx: Context, error: Optional[BaseException] = None) -> None:
         assert ctx.prefix is not None
 
         if ctx.command is None:

@@ -1,13 +1,12 @@
-import asyncpg
-
 from typing import Any, NoReturn
 
+import asyncpg
 from discord.utils import MISSING
-from donphan import create_pool, create_db, MaybeAcquire, OPTIONAL_CODECS
+from donphan import OPTIONAL_CODECS, MaybeAcquire, create_db, create_pool
 
-from .tables import *
 from .emoji import *
 from .scheduler import *
+from .tables import *
 
 
 class NoDatabase(MaybeAcquire):

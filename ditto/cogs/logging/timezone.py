@@ -1,24 +1,21 @@
 import datetime
-from unittest.mock import NonCallableMagicMock
 import zoneinfo
-
-from typing import Any, cast, get_args, Optional, Union
+from typing import Any, Optional, Union, cast, get_args
+from unittest.mock import NonCallableMagicMock
 
 import discord
 from discord.ext import commands, menus
-
 from donphan import MaybeAcquire
 
-from ... import BotBase, Cog, Context, CONFIG
-from ...types import User
+from ... import CONFIG, BotBase, Cog, Context
 from ...db import TimeZones
-
-from ...utils.paginator import EmbedPaginator
-from ...utils.strings import utc_offset
-from ...utils.time import ALL_TIMEZONES, human_friendly_timestamp
-from ...utils.slash.utils import with_cog
+from ...types import User
 from ...types.transformers import ZoneInfoTransformer
 from ...utils.interactions import error
+from ...utils.paginator import EmbedPaginator
+from ...utils.slash.utils import with_cog
+from ...utils.strings import utc_offset
+from ...utils.time import ALL_TIMEZONES, human_friendly_timestamp
 
 
 class Timezone(Cog):

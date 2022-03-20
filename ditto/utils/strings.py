@@ -1,10 +1,8 @@
 import datetime
 from itertools import cycle
-
 from typing import Any, Literal, TypeVar, Union
 
 import discord
-
 
 __all__ = (
     "ZWSP",

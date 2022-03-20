@@ -33,7 +33,7 @@ async def fetch_audit_log_entry(
     time = time or datetime.datetime.now(datetime.timezone.utc)
     delta = normalise_timedelta(delta)
 
-    async for entry in guild.audit_logs(action=action, user=moderator):  # type: ignore
+    async for entry in guild.audit_logs(action=action, user=moderator):
         if (time - entry.created_at) < delta and (user is MISSING or entry.target == user):
             return entry
 

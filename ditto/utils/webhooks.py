@@ -1,6 +1,6 @@
 import asyncio
-import aiohttp
 
+import aiohttp
 import discord
 from discord.ext import tasks
 
@@ -10,8 +10,8 @@ __all__ = ("EmbedWebhookLogger",)
 class EmbedWebhookLogger:
     _to_log: list[discord.Embed]
 
-    def __init__(self, webhool_url: str, *, loop: asyncio.BaseEventLoop = None) -> None:
-        self.loop = loop or asyncio.get_event_loop()
+    def __init__(self, webhool_url: str) -> None:
+        self.loop = asyncio.get_event_loop()
         self._webhook_url = webhool_url
         self._to_log = []
 

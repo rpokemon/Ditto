@@ -1,6 +1,5 @@
 import datetime
 import zoneinfo
-
 from typing import Union
 
 import humanize

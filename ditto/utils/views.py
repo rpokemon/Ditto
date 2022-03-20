@@ -4,7 +4,6 @@ import discord
 
 from ..types import User
 from ..utils.strings import ZWSP
-
 from .interactions import error
 from .paginator import PaginatorSource
 
@@ -78,7 +77,7 @@ class PageView(Private):
         if not self.ephemeral:
             items += (self.quit,)
         for item in items:
-            self.add_item(item)  # type: ignore
+            self.add_item(item)
 
     async def change_source(self, interaction: discord.Interaction, source: PaginatorSource[str]) -> None:
         self.source = source

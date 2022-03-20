@@ -5,7 +5,6 @@ from discord.ext import menus
 
 from .. import Context
 
-
 T = TypeVar("T")
 
 

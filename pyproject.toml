@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "Ditto"
-version = "2.0.0a"
+version = "2.0.1a"
 description = "A Discord bot template for Discord.py version 2+"
 authors = ["bijij <josh@josh-is.gay>"]
 license = "MIT"
@@ -30,8 +30,8 @@ aiohttp-jinja2 = "^1.5"
 
 [tool.poetry.dev-dependencies]
 black = ">=20.8b1"
-mypy = ">=0.800"
 pytest = ">=6.2.3"
+isort = ">=5.10.1"
 
 [tool.poetry-git-version-changer]
 enabled = true
@@ -42,8 +42,7 @@ start = "start:main"
 test = "test:main"
 
 [tool.black]
-line-length = 119
-target-version = ["py38"]
+line-length = 125
 include = '\.pyi?$'
 exclude = '''
 /(
@@ -55,13 +54,18 @@ exclude = '''
 )/
 '''
 
+[tool.isort]
+profile = "black"
+combine_as_imports = true
+combine_star = true
+line_length = 125
+
 [tool.pytest.ini_options]
 addopts = "--capture=no --assert=plain --strict-markers --tb native"
 testpaths = "tests"
 filterwarnings = "default"
 
 [tool.pyright]
-strictParameterNoneValue = false
 reportUnnecessaryTypeIgnoreComment = "warning"
 pythonVersion = "3.9"
 typeCheckingMode = "basic"

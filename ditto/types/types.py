@@ -1,6 +1,6 @@
 from __future__ import annotations
-from re import A
 
+from re import A
 from typing import TYPE_CHECKING, Any, Callable, Coroutine, TypeVar, Union
 
 import discord

@@ -2,19 +2,17 @@ import datetime
 import io
 import random
 import re
-
 from typing import TYPE_CHECKING, Any, Optional, Protocol, cast, runtime_checkable
 
 import asyncpg
 import discord
 from donphan import MaybeAcquire
-
 from PIL import Image, ImageChops, ImageDraw
 
-from .tables import Emoji, UserEmoji
-from ..types import User
 from ..config import CONFIG
+from ..types import User
 from ..utils.users import download_avatar
+from .tables import Emoji, UserEmoji
 
 if TYPE_CHECKING:
     from ..core.bot import BotBase

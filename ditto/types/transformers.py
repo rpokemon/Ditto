@@ -13,7 +13,6 @@ from ..db.tables import TimeZones
 from ..utils.interactions import error
 from .converters import DatetimeConverter
 
-
 __all__ = (
     "WhenAndWhatTransformer",
     "ZoneInfoTransformer",
@@ -21,7 +20,6 @@ __all__ = (
 
 
 class WhenAndWhatTransformer(discord.app_commands.Transformer):
-
     @classmethod
     async def transform(cls, interaction: discord.Interaction, value: str) -> tuple[datetime.datetime, str]:
         assert isinstance(interaction.client, BotBase)
@@ -69,7 +67,6 @@ class WhenAndWhatTransformer(discord.app_commands.Transformer):
 
 
 class ZoneInfoTransformer(discord.app_commands.Transformer):
-    
     @classmethod
     async def transform(cls, interaction: discord.Interaction, value: str) -> zoneinfo.ZoneInfo:
         try:

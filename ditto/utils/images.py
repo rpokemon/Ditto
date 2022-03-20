@@ -2,7 +2,6 @@ import io
 
 from PIL import Image
 
-
 __all__ = ("to_bytes",)
 
 

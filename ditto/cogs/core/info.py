@@ -3,35 +3,35 @@ from __future__ import annotations
 import datetime
 import inspect
 import pathlib
-
 from collections import namedtuple
-from typing import TYPE_CHECKING, cast, get_args, Any, Annotated, Optional, Union
+from typing import TYPE_CHECKING, Annotated, Any, Optional, Union, cast, get_args
 
 import discord
-import ditto
 import jishaku
 from discord.ext import commands
 from PIL import Image
 
-from ... import BotBase, CommandTree, Cog, Context, CONFIG as BOT_CONFIG
+import ditto
+
+from ... import CONFIG as BOT_CONFIG, BotBase, Cog, Context
 from ...types import (
-    DiscordObject,
-    VocalGuildChannel,
-    NonVocalGuildChannel,
-    GuildChannel,
-    User,
-    DiscordEmoji,
-    Message,
     AppCommandChannel,
+    DiscordEmoji,
+    DiscordObject,
+    GuildChannel,
+    Message,
+    NonVocalGuildChannel,
+    User,
+    VocalGuildChannel,
 )
 from ...utils.collections import summarise_list
 from ...utils.files import get_base_dir
 from ...utils.images import to_bytes
-from ...utils.strings import codeblock, yes_no, as_columns
-from ...utils.time import readable_timestamp
-from ...utils.slash.utils import with_cog
-from ...utils.slash.checks import guild_only
 from ...utils.interactions import error
+from ...utils.slash.checks import guild_only
+from ...utils.slash.utils import with_cog
+from ...utils.strings import as_columns, codeblock, yes_no
+from ...utils.time import readable_timestamp
 
 if TYPE_CHECKING:
     from typing_extensions import TypeGuard
@@ -92,9 +92,7 @@ class Info(Cog):
 
     @classmethod
     def summarise_channels(cls, *channels: GuildChannel, max_items: int = 4, skip_first: bool = False) -> str:
-        return summarise_list(
-            *channels, func=lambda channel: channel.mention, max_items=max_items, skip_first=skip_first
-        )
+        return summarise_list(*channels, func=lambda channel: channel.mention, max_items=max_items, skip_first=skip_first)
 
     @classmethod
     def summarise_emoji(cls, emojis: list[discord.Emoji], *, max_items: int = 4, skip_first: bool = False) -> str:
@@ -172,9 +170,7 @@ class Info(Cog):
 
         embed.add_field(
             name="Features:",
-            value=codeblock(
-                as_columns([feature.replace("_", " ").title() for feature in server.features], transpose=True)
-            ),
+            value=codeblock(as_columns([feature.replace("_", " ").title() for feature in server.features], transpose=True)),
             inline=False,
         )
 
@@ -713,9 +709,7 @@ class Get(discord.app_commands.Group):
         channel="The channel to get information on.",
         private="Whether to invoke this command privately.",
     )
-    async def channel(
-        self, interaction: discord.Interaction, channel: AppCommandChannel, private: bool = False
-    ) -> None:
+    async def channel(self, interaction: discord.Interaction, channel: AppCommandChannel, private: bool = False) -> None:
         """Get information on a channel."""
         channel_ = channel.resolve() or channel
 

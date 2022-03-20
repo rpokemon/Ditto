@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, ClassVar, TypeVar, Type, List
+from typing import TYPE_CHECKING, Any, ClassVar, List, Type, TypeVar
 
 import discord
 from discord.ext import commands

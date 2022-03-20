@@ -3,9 +3,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 
 import aiohttp
-from aiohttp.web import Request, HTTPUnauthorized
+from aiohttp.web import HTTPUnauthorized, Request
 from aiohttp_security import AbstractAuthorizationPolicy
-
 from discord import User
 from discord.http import Route
 

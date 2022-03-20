@@ -41,5 +41,5 @@ async def download_avatar(
         try:
             await user.display_avatar.replace(size=size, format=format).save(avatar)
         except discord.NotFound:
-            await user.default_avatar.replace(size=size, format=format).save(avatar)  # type: ignore
+            await user.default_avatar.replace(size=size, format=format).save(avatar)
     return avatar

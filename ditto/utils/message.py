@@ -3,8 +3,7 @@ from __future__ import annotations
 import asyncio
 import inspect
 import io
-
-from typing import Any, Literal, Optional, TYPE_CHECKING, TypeVar, overload, Union
+from typing import TYPE_CHECKING, Any, Literal, Optional, TypeVar, Union, overload
 
 import discord
 from discord.ext import commands
@@ -97,7 +96,7 @@ async def _prompt(
                 delete_after,
             )
 
-    return result  # type: ignore
+    return result
 
 
 async def bulk_add_reactions(message: discord.Message, *reactions: Emoji) -> None:
@@ -118,9 +117,7 @@ async def confirm(
     await bulk_add_reactions(message, *CONFIRM_REACTIONS)
 
     def check(payload: discord.RawReactionActionEvent) -> bool:
-        return (
-            payload.message_id == message.id and payload.user_id == user.id and str(payload.emoji) in CONFIRM_REACTIONS
-        )
+        return payload.message_id == message.id and payload.user_id == user.id and str(payload.emoji) in CONFIRM_REACTIONS
 
     try:
         payload = await bot.wait_for("raw_reaction_add", check=check, timeout=timeout)

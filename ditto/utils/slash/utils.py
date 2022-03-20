@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from functools import wraps
-from typing import TYPE_CHECKING, Any, Callable, NoReturn, Optional, TypeVar, Type, List, Union
+from typing import TYPE_CHECKING, Any, Callable, List, NoReturn, Optional, Type, TypeVar, Union
 
 import discord
 
@@ -10,7 +10,6 @@ from ..interactions import error
 from ..views import Prompt
 
 if TYPE_CHECKING:
-    from ...core.bot import CommandTree
     from typing_extensions import ParamSpec
 
 
@@ -68,7 +67,7 @@ def with_cog(cog: Type[Cog]) -> Callable[[T], T]:
 
 
 def available_commands(
-    tree: CommandTree, guild: Optional[discord.Guild] = None
+    tree: discord.app_commands.CommandTree, guild: Optional[discord.Guild] = None
 ) -> List[Union[discord.app_commands.Command[Any, ..., Any], discord.app_commands.Group]]:
 
     # Global commands
@@ -81,9 +80,5 @@ def available_commands(
     return commands
 
 
-def transformer_error(
-    transformer: Type[discord.app_commands.Transformer],
-    value: Any,
-    exc: BaseException
-) -> NoReturn:
+def transformer_error(transformer: Type[discord.app_commands.Transformer], value: Any, exc: BaseException) -> NoReturn:
     raise discord.app_commands.TransformerError(value, transformer.type(), transformer) from exc
