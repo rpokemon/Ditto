@@ -19,7 +19,7 @@ __all__ = (
 
 ALL_TIMEZONES: dict[str, zoneinfo.ZoneInfo] = {
     name.replace("_", " "): zoneinfo.ZoneInfo(zone)
-    for zone, in zoneinfo.available_timezones()
+    for zone in zoneinfo.available_timezones()
     for _, _, name in [zone.partition("/")]
 }
 
