@@ -33,7 +33,7 @@ class GuildTransformer(discord.app_commands.Transformer):
         return guild
 
     @staticmethod
-    async def autocomplete(interaction: discord.Interaction, value: str) -> list[discord.app_commands.Choice[int]]:
+    async def autocomplete(_, interaction: discord.Interaction, value: str) -> list[discord.app_commands.Choice[int]]:
         suggestions = []
 
         for guild in interaction.client.guilds:
@@ -99,7 +99,7 @@ class ZoneInfoTransformer(discord.app_commands.Transformer):
             raise ValueError(f'Time Zone "{value}" not found.')
 
     @staticmethod
-    async def autocomplete(interaction: discord.Interaction, value: str) -> list[discord.app_commands.Choice[str]]:
+    async def autocomplete(_, interaction: discord.Interaction, value: str) -> list[discord.app_commands.Choice[str]]:
         choices = []
         for name, tzinfo in ALL_TIMEZONES.items():
             if name.lower().startswith(value.lower()):
