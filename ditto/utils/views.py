@@ -45,12 +45,12 @@ class Prompt(Private):
         self.stop()
 
     @discord.ui.button(label="Yes", style=discord.ButtonStyle.red)
-    async def yes(self, button: discord.ui.Button, interaction: discord.Interaction) -> None:
+    async def yes(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         self.response = True
         await self.disable(interaction)
 
     @discord.ui.button(label="No", style=discord.ButtonStyle.blurple)
-    async def no(self, button: discord.ui.Button, interaction: discord.Interaction) -> None:
+    async def no(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         self.response = False
         await self.disable(interaction)
 
@@ -117,32 +117,32 @@ class PageView(Private):
         await self.show_page(interaction, page)
 
     @discord.ui.button(label="First", style=discord.ButtonStyle.gray)
-    async def first(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def first(self, interaction: discord.Interaction, button: discord.ui.Button):
         """Go to the first page."""
         await self.go_to_page(interaction, 0)
 
     @discord.ui.button(label="Previous", style=discord.ButtonStyle.gray)
-    async def previous(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def previous(self, interaction: discord.Interaction, button: discord.ui.Button):
         """Go to the previous page."""
         await self.go_to_page(interaction, max(0, self.current_page - 1))
 
     @discord.ui.button(label="Current", style=discord.ButtonStyle.gray, disabled=True)
-    async def current(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def current(self, interaction: discord.Interaction, button: discord.ui.Button):
         """The current page."""
         await interaction.response.send_message("How'd you do that?", ephemeral=True)
 
     @discord.ui.button(label="Next", style=discord.ButtonStyle.gray)
-    async def next(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def next(self, interaction: discord.Interaction, button: discord.ui.Button):
         """Go to the next page"""
         await self.go_to_page(interaction, min(self.source.get_max_pages() - 1, self.current_page + 1))
 
     @discord.ui.button(label="Last", style=discord.ButtonStyle.gray)
-    async def last(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def last(self, interaction: discord.Interaction, button: discord.ui.Button):
         """Go to the last page"""
         await self.go_to_page(interaction, self.source.get_max_pages() - 1)
 
     @discord.ui.button(label="Quit", style=discord.ButtonStyle.red)
-    async def quit(self, button: discord.ui.Button, interaction: discord.Interaction) -> None:
+    async def quit(self, interaction: discord.Interaction, button: discord.ui.Button):
         """Quits this menu."""
         await interaction.response.defer()
         await interaction.delete_original_message()

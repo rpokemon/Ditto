@@ -4,7 +4,7 @@ import datetime
 import inspect
 import pathlib
 from collections import namedtuple
-from typing import TYPE_CHECKING, Annotated, Any, Optional, Union, cast, get_args
+from typing import TYPE_CHECKING, Any, Optional, Union, cast, get_args
 
 import discord
 import jishaku
@@ -28,7 +28,6 @@ from ...utils.collections import summarise_list
 from ...utils.files import get_base_dir
 from ...utils.images import to_bytes
 from ...utils.interactions import error
-from ...utils.slash.checks import guild_only
 from ...utils.slash.utils import with_cog
 from ...utils.strings import as_columns, codeblock, yes_no
 from ...utils.time import readable_timestamp
@@ -46,7 +45,6 @@ ListGuildChannel = Union[
     list[discord.CategoryChannel],
     list[discord.VoiceChannel],
     list[discord.StageChannel],
-    list[discord.StoreChannel],
 ]
 
 
@@ -143,14 +141,12 @@ class Info(Cog):
         embed.add_field(name="Members:", value=str(server.member_count))
 
         vocal_channels = [channel for channel in server.channels if isinstance(channel, get_args(VocalGuildChannel))]
-        store_channels = [channel for channel in server.channels if isinstance(channel, discord.StoreChannel)]
         channels = f"""{len(server.channels)}
     - Categories: {cls.summarise_channels(*server.categories)}
     - Text: {cls.summarise_channels(*server.text_channels)}
     - Vocal: {len(vocal_channels)}
     --- Voice: {cls.summarise_channels(*server.voice_channels)}
-    --- Stage: {cls.summarise_channels(*server.stage_channels)}
-    - Store: {cls.summarise_channels(*store_channels)}"""
+    --- Stage: {cls.summarise_channels(*server.stage_channels)}"""
         embed.add_field(name="Channels:", value=channels, inline=False)
 
         embed.add_field(name="Roles:", value=cls.summarise_roles(*server.roles), inline=False)
@@ -345,13 +341,11 @@ class Info(Cog):
         embed = cls._channel_info(channel)
 
         vocal_channels = [channel for channel in channel.channels if isinstance(channel, get_args(VocalGuildChannel))]
-        store_channels = [channel for channel in channel.channels if isinstance(channel, discord.StoreChannel)]
         channels = f"""{len(channel.channels)}
     - Text: {cls.summarise_channels(*channel.text_channels)}
     - Vocal: {len(vocal_channels)}
     --- Voice: {cls.summarise_channels(*channel.voice_channels)}
-    --- Stage: {cls.summarise_channels(*channel.stage_channels)}
-    - Store: {cls.summarise_channels(*store_channels)}"""
+    --- Stage: {cls.summarise_channels(*channel.stage_channels)}"""
         embed.add_field(name="Channels:", value=channels, inline=False)
 
         return embed
@@ -375,21 +369,6 @@ class Info(Cog):
         embed = self._category_channel_info(channel)
         await ctx.send(embed=embed)
 
-    @commands.command(hidden=True)
-    @commands.guild_only()
-    async def store_channel_info(self, ctx: Context, *, channel: discord.StoreChannel) -> None:
-        """Get information on a store channel.
-
-        `channel`: The store channel to get information on by name, ID, or mention.
-        """
-
-        if channel.guild != ctx.guild and not await ctx.user_in_guild(channel.guild):
-            raise commands.BadArgument("You cannot retrieve information on a server you are not in.")
-
-        embed = self._channel_info(channel)
-
-        await ctx.send(embed=embed)
-
     @commands.command()
     @commands.guild_only()
     async def channel_info(self, ctx: Context, *, channel: Optional[GuildChannel] = None) -> None:
@@ -406,9 +385,6 @@ class Info(Cog):
 
         if isinstance(channel, discord.CategoryChannel):
             return await ctx.invoke(self.category_channel_info, channel=channel)
-
-        if isinstance(channel, discord.StoreChannel):
-            return await ctx.invoke(self.store_channel_info, channel=channel)
 
         raise commands.BadArgument(f"Could not find information on: {channel}")
 
