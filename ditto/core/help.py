@@ -291,7 +291,7 @@ async def help(
     private: bool = True,
 ) -> None:
     """Displays help about the bot, a command, or a category"""
-    bot: BotBase = interaction.client # type: ignore
+    bot: BotBase = interaction.client  # type: ignore
 
     cogs = _get_commands(bot, interaction.guild)
 

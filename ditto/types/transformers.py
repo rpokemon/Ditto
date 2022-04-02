@@ -6,17 +6,41 @@ import zoneinfo
 import discord
 from donphan import MaybeAcquire
 
-from ditto.utils.slash.utils import transformer_error
-
 from ..core.bot import BotBase
 from ..db.tables import TimeZones
-from ..utils.interactions import error
+from ..utils.time import ALL_TIMEZONES
 from .converters import DatetimeConverter
 
 __all__ = (
+    "GuildTransformer",
     "WhenAndWhatTransformer",
     "ZoneInfoTransformer",
 )
+
+
+class GuildTransformer(discord.app_commands.Transformer):
+    @classmethod
+    def type(cls) -> discord.AppCommandOptionType:
+        return discord.AppCommandOptionType.integer
+
+    @classmethod
+    async def transform(cls, interaction: discord.Interaction, value: int) -> discord.Guild:
+        guild = interaction.client.get_guild(value)
+
+        if guild is None:
+            raise ValueError(f"Could not find guild with id '{value}'.")
+
+        return guild
+
+    @staticmethod
+    async def autocomplete(interaction: discord.Interaction, value: str) -> list[discord.app_commands.Choice[int]]:
+        suggestions = []
+
+        for guild in interaction.client.guilds:
+            if guild.get_member(interaction.user.id) is not None:
+                suggestions.append(discord.app_commands.Choice(name=guild.name, value=guild.id))
+
+        return suggestions[:25]
 
 
 class WhenAndWhatTransformer(discord.app_commands.Transformer):
@@ -45,14 +69,14 @@ class WhenAndWhatTransformer(discord.app_commands.Transformer):
         parsed_times = await DatetimeConverter.parse(argument, timezone=timezone, now=now)
 
         if len(parsed_times) == 0:
-            transformer_error(cls, value, ValueError("Could not parse time."))
+            raise ValueError("Could not parse time.")
         elif len(parsed_times) > 1:
             ...  # TODO: Raise on too many?
 
         when, begin, end = parsed_times[0]
 
         if begin != 0 and end != len(argument):
-            transformer_error(cls, value, ValueError("Could not distinguish time from argument."))
+            raise ValueError("Could not distinguish time from argument.")
 
         if begin == 0:
             what = argument[end + 1 :].lstrip(" ,.!:;")
@@ -72,4 +96,13 @@ class ZoneInfoTransformer(discord.app_commands.Transformer):
         try:
             return zoneinfo.ZoneInfo(value)
         except Exception:  # catch all due to BPO: 41530
-            transformer_error(cls, value, ValueError(f'Time Zone "{value}" not found.'))
+            raise ValueError(f'Time Zone "{value}" not found.')
+
+    @staticmethod
+    async def autocomplete(interaction: discord.Interaction, value: str) -> list[discord.app_commands.Choice[str]]:
+        choices = []
+        for name, tzinfo in ALL_TIMEZONES.items():
+            if name.lower().startswith(value.lower()):
+                choices.append(discord.app_commands.Choice(name=name, value=tzinfo.key))
+
+        return choices[:25]

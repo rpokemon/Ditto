@@ -117,6 +117,9 @@ class _Timezone(discord.app_commands.Group, name="timezone"):
         user="The user to get the current time for.",
         private="Whether to invoke this command privately.",
     )
+    @discord.app_commands.autocomplete(
+        timezone=ZoneInfoTransformer.autocomplete
+    )
     async def get(
         self,
         interaction: discord.Interaction,
@@ -152,6 +155,9 @@ class _Timezone(discord.app_commands.Group, name="timezone"):
     @discord.app_commands.describe(
         timezone="The timezone to set.",
     )
+    @discord.app_commands.autocomplete(
+        timezone=ZoneInfoTransformer.autocomplete
+    )
     async def set(
         self,
         interaction: discord.Interaction,
@@ -172,22 +178,6 @@ class _Timezone(discord.app_commands.Group, name="timezone"):
         embed.set_author(name=f"Timezone set to {timezone}")
 
         await interaction.response.send_message(embed=embed, ephemeral=True)
-
-    @get.autocomplete("timezone")
-    @set.autocomplete("timezone")
-    async def set_timezone_autocomplete(
-        self,
-        interaction: discord.Interaction,
-        focused_value: str,
-    ) -> list[discord.app_commands.Choice[str]]:
-        """Autocomplete for the set_timezone command."""
-        choices = []
-        for name, tzinfo in ALL_TIMEZONES.items():
-            if name.lower().startswith(focused_value.lower()):
-                choices.append(discord.app_commands.Choice(name=name, value=tzinfo.key))
-
-        return choices[:25]
-
 
 async def setup(bot: BotBase):
     if CONFIG.DATABASE.DISABLED:
