@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import datetime
+import json
 import logging
 import logging.handlers
 import traceback
@@ -126,12 +127,19 @@ class BotBase(commands.bot.BotBase, WebServerMixin, EmojiCacheMixin, EventSchedu
         self.pool = await setup_database()
 
         # sync slash commands
-        await self.tree.sync(guild=None)
+        
+        guilds: set[Optional[discord.Object]] = {None}
+
         for guild_id in set(self.tree._guild_commands.keys()):
+            guilds.add(discord.Object(id=guild_id))
+
+        for guild in guilds:
             try:
-                await self.tree.sync(guild=discord.Object(id=guild_id))
-            except (discord.NotFound, discord.Forbidden):
-                pass
+                await self.tree.sync(guild=guild)
+            except (discord.HTTPException):
+                payload = [cmd.to_dict() for cmd in self.tree.get_commands(guild=guild)]
+                self.log.exception(f"Failed syncing for guild {guild}: ")
+                self.log.error(f"Payload: {json.dumps(payload, indent=4)}")
 
         await super().setup_hook()
 
