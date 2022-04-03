@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import datetime
+from os import stat
 import zoneinfo
 
 import discord
@@ -98,8 +99,8 @@ class ZoneInfoTransformer(discord.app_commands.Transformer):
         except Exception:  # catch all due to BPO: 41530
             raise ValueError(f'Time Zone "{value}" not found.')
 
-    @staticmethod
-    async def autocomplete(_, interaction: discord.Interaction, value: str) -> list[discord.app_commands.Choice[str]]:
+    @classmethod
+    async def autocomplete(cls, interaction: discord.Interaction, value: str) -> list[discord.app_commands.Choice[str]]:
         choices = []
         for name, tzinfo in ALL_TIMEZONES.items():
             if name.lower().startswith(value.lower()):

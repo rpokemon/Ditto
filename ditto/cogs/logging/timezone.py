@@ -117,9 +117,6 @@ class _Timezone(discord.app_commands.Group, name="timezone"):
         user="The user to get the current time for.",
         private="Whether to invoke this command privately.",
     )
-    @discord.app_commands.autocomplete(
-        timezone=ZoneInfoTransformer.autocomplete
-    )
     async def get(
         self,
         interaction: discord.Interaction,
@@ -154,9 +151,6 @@ class _Timezone(discord.app_commands.Group, name="timezone"):
     @discord.app_commands.command()
     @discord.app_commands.describe(
         timezone="The timezone to set.",
-    )
-    @discord.app_commands.autocomplete(
-        timezone=ZoneInfoTransformer.autocomplete
     )
     async def set(
         self,

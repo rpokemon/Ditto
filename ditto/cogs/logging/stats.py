@@ -51,8 +51,7 @@ class Stats(Cog, hidden=True):
         embed = EmbedPaginator[discord.Embed](colour=ctx.me.colour, max_fields=10)
         embed.set_author(name="Command History:", icon_url=ctx.me.display_avatar.url)
 
-        async with ctx.db as connection:
-            commands = await Commands.fetch(connection, order_by=(Commands.invoked_at, "DESC"), limit=100)
+        commands = await Commands.fetch(order_by=(Commands.invoked_at, "DESC"), limit=100)
 
         if commands:
             for command in commands:
@@ -134,8 +133,7 @@ class Stats(Cog, hidden=True):
     async def bulk_insert(self) -> None:
         async with self._batch_lock:
             if self._batch_data:
-                async with MaybeAcquire(pool=self.bot.pool) as connection:
-                    await Commands.insert_many(connection, Commands._columns, *self._batch_data)
+                await Commands.insert_many(Commands._columns, *self._batch_data)
                 self._batch_data.clear()
 
 

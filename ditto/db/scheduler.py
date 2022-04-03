@@ -105,8 +105,7 @@ class EventSchedulerMixin:
     async def _wait_for_event(self) -> ScheduledEvent:
         assert isinstance(self, BotBase)
 
-        async with MaybeAcquire(pool=self.pool) as connection:
-            record = await Events.fetch_row(connection, order_by=(Events.scheduled_for, "ASC"))
+        record = await Events.fetch_row(order_by=(Events.scheduled_for, "ASC"))
 
         if record is not None:
             self.__event_scheduler__active.set()

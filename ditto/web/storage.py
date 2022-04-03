@@ -50,9 +50,8 @@ class PostgresStorage(AbstractStorage):
         key = uuid.UUID(str(cookie))
         now = datetime.datetime.now(datetime.timezone.utc)
 
-        async with MaybeAcquire(pool=self.bot.pool) as conn:
-            # WHERE (expires_at is NULL or expires_at > NOW()) AND key = key
-            session = await HTTPSessions.fetch_row(conn, expires_at=None, or_expires_at__gt=now, key=key)
+        # WHERE (expires_at is NULL or expires_at > NOW()) AND key = key
+        session = await HTTPSessions.fetch_row(expires_at=None, or_expires_at__gt=now, key=key)
 
         if session is None:
             return Session(None, data=None, new=True, max_age=self.max_age)

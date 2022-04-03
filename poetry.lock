@@ -225,7 +225,7 @@ resolved_reference = "fbb8803779373357e274e1540b368365fd9d8074"
 
 [[package]]
 name = "discord.py"
-version = "2.0.0a4027+g994660fa"
+version = "2.0.0a4036+g151948a0"
 description = "A Python wrapper for the Discord API"
 category = "main"
 optional = false
@@ -245,11 +245,11 @@ voice = ["PyNaCl (>=1.3.0,<1.6)"]
 type = "git"
 url = "https://github.com/rapptz/discord.py"
 reference = "master"
-resolved_reference = "994660faad2ccbecb3f8a7400c89d6f64b78e405"
+resolved_reference = "151948a09ac2ea7385c0ef1dfa29e32efb6d408e"
 
 [[package]]
 name = "donphan"
-version = "4.9.2"
+version = "4.10.0"
 description = "Asynchronous Database ORM for Postgres"
 category = "main"
 optional = false
@@ -356,7 +356,7 @@ i18n = ["Babel (>=2.7)"]
 
 [[package]]
 name = "jishaku"
-version = "2.4.0a402+g6fd093b.master"
+version = "2.4.0a403+g8bc4ed4.master"
 description = "A discord.py extension including useful tools for bot development and debugging."
 category = "main"
 optional = false
@@ -382,7 +382,7 @@ voice = ["yt-dlp (>=2022.3.8)"]
 type = "git"
 url = "https://github.com/Gorialis/jishaku"
 reference = "master"
-resolved_reference = "6fd093b1b77b07fde375592cd7806ac68ab79136"
+resolved_reference = "8bc4ed45dd810d3ac3c14b104d963c145a1a53a0"
 
 [[package]]
 name = "markupsafe"
@@ -771,8 +771,8 @@ discord-ext-alternatives = []
 discord-ext-menus = []
 "discord.py" = []
 donphan = [
-    {file = "Donphan-4.9.2-py3-none-any.whl", hash = "sha256:e43ea2900d4f3df46680656e8ffd07d423b6464d1da172939754fe66f099a18c"},
-    {file = "Donphan-4.9.2.tar.gz", hash = "sha256:9f07adaacc45fecc5a0b6a6e8360768e64565d6711a19afac5fe52e70a639b49"},
+    {file = "Donphan-4.10.0-py3-none-any.whl", hash = "sha256:5780f860463bce234ff0566164bd8cdaab3f3eb3cc3188a0fc9126655dc98bee"},
+    {file = "Donphan-4.10.0.tar.gz", hash = "sha256:034e48b7d248be6acb251876cc87bb0ea20babdfbecd4c52cbbf8b84841af9a4"},
 ]
 frozenlist = [
     {file = "frozenlist-1.3.0-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:d2257aaba9660f78c7b1d8fea963b68f3feffb1a9d5d05a18401ca9eb3e8d0a3"},
