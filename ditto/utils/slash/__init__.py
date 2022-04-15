@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any, Callable, Iterable, List, NoReturn, Optio
 import discord
 from discord.utils import MISSING
 
-from ...types import AppCommandFunc, ChatInputCommand
+from ...types import AppCommandFunc, ChatInputCommand, AppCommand
 from ..interactions import error
 from ..views import Prompt
 from . import checks as checks
@@ -88,7 +88,7 @@ def transformer_error(transformer: Type[discord.app_commands.Transformer], value
 
 def add_commands(
     bot: BotBase,
-    commands: Iterable[discord.app_commands.Command],
+    commands: Iterable[AppCommand],
     *,
     guild: Optional[discord.abc.Snowflake] = MISSING,
     guilds: List[discord.abc.Snowflake] = MISSING,
@@ -99,7 +99,7 @@ def add_commands(
 
 def remove_commands(
     bot: BotBase,
-    commands: Iterable[discord.app_commands.Command],
+    commands: Iterable[AppCommand],
     *,
     guild: Optional[discord.abc.Snowflake] = None,
 ) -> None:
