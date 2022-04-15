@@ -59,7 +59,7 @@ async def _prompt(
                     context,
                     converter,
                     argument.content,
-                    inspect.Parameter("prompt", inspect.Parameter.POSITIONAL_OR_KEYWORD),
+                    commands.Parameter("prompt", inspect.Parameter.POSITIONAL_OR_KEYWORD),
                 )
                 break
             except commands.UserInputError as error:

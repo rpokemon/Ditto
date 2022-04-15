@@ -108,7 +108,7 @@ class Info(Cog):
         embed.set_author(name=f"Information on {item}:")
 
         embed.add_field(name="ID:", value=str(item.id), inline=False)
-        if not isinstance(item, discord.Thread):
+        if item.created_at is not None:
             embed.add_field(
                 name="Created At:",
                 value=readable_timestamp(item.created_at) if item.created_at else "Unknown",
@@ -354,7 +354,7 @@ class Info(Cog):
     async def category_channel_info(self, ctx: Context, *, channel: Optional[discord.CategoryChannel]) -> None:
         """Get information on a channel category.
 
-        `channel[Optional]`: The channel category to get information on by name, ID, or mention, If none specified it defaults to the category of the channel you're in, if one exists.
+        `channel[Optional]`: The channel category to get information on by name, ID, or mention. If none specified it defaults to the category of the channel you're in, if one exists.
         """
         channel = channel or cast(discord.TextChannel, ctx.channel).category
 
@@ -367,6 +367,33 @@ class Info(Cog):
             raise commands.BadArgument("You cannot retrieve information on a server you are not in.")
 
         embed = self._category_channel_info(channel)
+        await ctx.send(embed=embed)
+
+    @classmethod
+    def _forum_channel_info(cls, channel: discord.ForumChannel) -> discord.Embed:
+        embed = cls._channel_info(channel)
+
+        embed.add_field(name="Topic:", value=channel.topic or "None set")
+
+        return embed
+
+    @commands.command(hidden=True, aliases=["post_channel_info"])
+    async def forum_channel_info(self, ctx: Context, *, channel: Optional[discord.ForumChannel]) -> None:
+        """Get information on a post channel.
+
+        `channel[Optional]`: The post channel to get information on my name, ID, or mention. If none specified it defaults to the parent post channel.
+        """
+        if channel is None:
+            if not isinstance(ctx.channel, discord.Thread) or not isinstance(ctx.channel.parent, discord.ForumChannel):
+                raise commands.BadArgument(
+                    "You did not specify a post channel, or the channel you are in is not a post channel post."
+                )
+            channel = ctx.channel.parent
+
+        if channel.guild != ctx.guild and not await ctx.user_in_guild(channel.guild):
+            raise commands.BadArgument("You cannot retrieve information on a server you are not in.")
+
+        embed = self._forum_channel_info(channel)
         await ctx.send(embed=embed)
 
     @commands.command()

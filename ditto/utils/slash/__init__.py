@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any, Callable, Iterable, List, NoReturn, Optio
 import discord
 from discord.utils import MISSING
 
-from ...types import AppCommandFunc, ChatInputCommand, AppCommand
+from ...types import AppCommand, AppCommandFunc, ChatInputCommand
 from ..interactions import error
 from ..views import Prompt
 from . import checks as checks
@@ -73,11 +73,11 @@ def available_commands(
 ) -> List[ChatInputCommand]:
 
     # Global commands
-    commands = tree.get_commands(guild=None)
+    commands = tree.get_commands(guild=None, type=discord.AppCommandType.chat_input)
 
     # Guild specific commands
     if guild is not None:
-        commands.extend(tree.get_commands(guild=guild))
+        commands.extend(tree.get_commands(guild=guild, type=discord.AppCommandType.chat_input))
 
     return commands
 

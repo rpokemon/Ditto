@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any, DefaultDict, Optional, Union
 import discord
 from discord.ext import commands
 
-from ..types import User, ChatInputCommand
+from ..types import ChatInputCommand, User
 from ..utils.interactions import error
 from ..utils.paginator import EmbedPaginator, PaginatorSource
 from ..utils.slash import available_commands

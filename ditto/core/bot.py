@@ -160,13 +160,12 @@ class BotBase(commands.bot.BotBase, WebServerMixin, EmojiCacheMixin, EventSchedu
     async def on_application_command_error(
         self: BotBase,
         interaction: discord.Interaction,
-        command: Optional[Union[discord.app_commands.commands.ContextMenu, discord.app_commands.Command]],
         exception: BaseException,
     ) -> None:
 
         colour = discord.Colour.dark_red()
         with suppress(Exception):
-            if command is None:
+            if interaction.command is None:
                 title = "Unexpected error"
             else:
                 if isinstance(exception, discord.app_commands.CheckFailure):
@@ -177,7 +176,7 @@ class BotBase(commands.bot.BotBase, WebServerMixin, EmojiCacheMixin, EventSchedu
                     colour = discord.Colour.orange()
                     exception = exception.__cause__ or Exception("Unknown error")
                 else:
-                    title = f"Unexpected error with command {command.name}"
+                    title = f"Unexpected error with command {interaction.command.name}"
 
             await error(
                 interaction,
@@ -189,7 +188,7 @@ class BotBase(commands.bot.BotBase, WebServerMixin, EmojiCacheMixin, EventSchedu
         if colour == discord.Colour.dark_red():
             tb = "".join(traceback.format_exception(type(exception), exception, exception.__traceback__))
             self.log.error(
-                f"Unhandled exception in command: {command.name if command is not None else 'UNKNOWN'}\n\n{type(error).__name__}: {error}\n\n{tb}"
+                f"Unhandled exception in command: {interaction.command.name if interaction.command is not None else 'UNKNOWN'}\n\n{type(error).__name__}: {error}\n\n{tb}"
             )
 
     async def on_command_error(self, ctx: Context, error: BaseException) -> Optional[discord.Message]:

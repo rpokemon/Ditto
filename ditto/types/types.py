@@ -62,6 +62,7 @@ MessageableGuildChannel = Union[
 NonVocalGuildChannel = Union[
     MessageableGuildChannel,
     discord.CategoryChannel,
+    discord.ForumChannel,
 ]
 
 
