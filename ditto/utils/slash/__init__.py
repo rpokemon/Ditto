@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any, Callable, Iterable, List, NoReturn, Optio
 import discord
 from discord.utils import MISSING
 
-from ...types import AppCommand, AppCommandFunc, ChatInputCommand
+from ...types import AppCommand, ChatInputCommand
 from ..interactions import error
 from ..views import Prompt
 from . import checks as checks
@@ -33,31 +33,29 @@ __all__ = (
 )
 
 
-def confirm(message: str, ephemeral: bool = True) -> Callable[[AppCommandFunc[P, T]], AppCommandFunc[P, Optional[T]]]:
-    def inner(func: AppCommandFunc[P, T]) -> AppCommandFunc[P, Optional[T]]:
-        @wraps(func)
-        async def wrapper(interaction: discord.Interaction, *args: P.args, **kwargs: P.kwargs) -> Optional[T]:
-            assert interaction.user is not None
+def confirm(message: str, ephemeral: bool = True) -> Callable[[T], T]:
 
-            prompt = Prompt(interaction.user)
-            await interaction.response.send_message(message, view=prompt, ephemeral=ephemeral)
-            await prompt.wait()
+    @discord.app_commands.check
+    async def check(interaction: discord.Interaction) -> bool:
+        assert interaction.user is not None
 
-            try:
-                await interaction.delete_original_message()
-            except discord.HTTPException:
-                pass
+        prompt = Prompt(interaction.user)
+        await interaction.response.send_message(message, view=prompt, ephemeral=ephemeral)
+        await prompt.wait()
 
-            if prompt.response is None:
-                return await error(interaction, "Timed-out while waiting for a response.")
-            if prompt.response is False:
-                return await error(interaction, "Canceled.")
+        try:
+            await interaction.delete_original_message()
+        except discord.HTTPException:
+            pass
 
-            return await func(interaction, *args, **kwargs)
+        if prompt.response is None:
+            await error(interaction, "Timed-out while waiting for a response.")
+        if prompt.response is False:
+            await error(interaction, "Canceled.")
 
-        return wrapper
+        return prompt.response is True
 
-    return inner
+    return check
 
 
 def with_cog(cog: Type[Cog]) -> Callable[[T], T]:
