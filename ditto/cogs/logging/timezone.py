@@ -13,7 +13,7 @@ from ...types import User
 from ...types.transformers import ZoneInfoTransformer
 from ...utils.interactions import error
 from ...utils.paginator import EmbedPaginator
-from ...utils.slash.utils import with_cog
+from ...utils.slash import with_cog
 from ...utils.strings import utc_offset
 from ...utils.time import ALL_TIMEZONES, human_friendly_timestamp
 
@@ -172,6 +172,7 @@ class _Timezone(discord.app_commands.Group, name="timezone"):
         embed.set_author(name=f"Timezone set to {timezone}")
 
         await interaction.response.send_message(embed=embed, ephemeral=True)
+
 
 async def setup(bot: BotBase):
     if CONFIG.DATABASE.DISABLED:

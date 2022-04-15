@@ -7,6 +7,7 @@ from typing import Any, Optional, Union
 
 import discord
 import yaml
+from discord.utils import MISSING
 
 from .utils.files import get_base_dir
 
@@ -15,8 +16,6 @@ __all__ = (
     "load_config",
     "load_global_config",
 )
-
-MISSING: Any = discord.utils.MISSING
 
 
 BASE_DIR = get_base_dir()

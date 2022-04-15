@@ -1,7 +1,7 @@
 import datetime
 from collections import defaultdict
 from collections.abc import Callable
-from typing import Any, TypeVar, Optional
+from typing import Any, Optional, TypeVar
 
 __all__ = (
     "summarise_list",

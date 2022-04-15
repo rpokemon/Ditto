@@ -28,7 +28,7 @@ from ...utils.collections import summarise_list
 from ...utils.files import get_base_dir
 from ...utils.images import to_bytes
 from ...utils.interactions import error
-from ...utils.slash.utils import with_cog
+from ...utils.slash import with_cog
 from ...utils.strings import as_columns, codeblock, yes_no
 from ...utils.time import readable_timestamp
 

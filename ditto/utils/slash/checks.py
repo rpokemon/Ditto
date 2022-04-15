@@ -1,6 +1,6 @@
 import discord
 
-from .utils import error
+from . import error
 
 __all__ = (
     "guild_only",

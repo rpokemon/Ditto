@@ -6,10 +6,10 @@ from typing import TYPE_CHECKING, Any, DefaultDict, Optional, Union
 import discord
 from discord.ext import commands
 
-from ..types import User
+from ..types import User, ChatInputCommand
 from ..utils.interactions import error
 from ..utils.paginator import EmbedPaginator, PaginatorSource
-from ..utils.slash.utils import available_commands
+from ..utils.slash import available_commands
 from ..utils.views import EmbedPageView
 from .cog import Cog
 from .context import Context
@@ -26,8 +26,7 @@ __all__ = ("HelpView", "SlashHelpView", "ViewHelpCommand", "help")
 MISSING: Any = discord.utils.MISSING
 
 
-AppCommand = Union[discord.app_commands.Group, discord.app_commands.Command[Any, ... if TYPE_CHECKING else Any, Any]]
-Command = Union[commands.Command[Any, ... if TYPE_CHECKING else Any, Any], AppCommand]
+Command = Union[commands.Command[Any, ... if TYPE_CHECKING else Any, Any], ChatInputCommand]
 
 
 class HelpEmbed(discord.Embed):
@@ -255,7 +254,7 @@ class ViewHelpCommand(commands.HelpCommand):
         return f"Syntax: `{signature}`"
 
 
-def slash_command_help(bot: BotBase, command: AppCommand) -> discord.Embed:
+def slash_command_help(bot: BotBase, command: ChatInputCommand) -> discord.Embed:
     assert bot.user is not None
 
     syntax = f"/{command.name}"
@@ -267,8 +266,8 @@ def slash_command_help(bot: BotBase, command: AppCommand) -> discord.Embed:
     return HelpEmbed(bot, "/", title=command.name, description=f"Syntax: `{syntax}`\n\n{command.description}\n{options}")
 
 
-def _get_commands(bot: BotBase, guild: Optional[discord.Guild]) -> dict[Optional[Cog], list[AppCommand]]:
-    cogs = DefaultDict[Optional[Cog], list[AppCommand]](list)
+def _get_commands(bot: BotBase, guild: Optional[discord.Guild]) -> dict[Optional[Cog], list[ChatInputCommand]]:
+    cogs = DefaultDict[Optional[Cog], list[ChatInputCommand]](list)
 
     application_commands = available_commands(bot.tree, guild)
     for application_command in application_commands:

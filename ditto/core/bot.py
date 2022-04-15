@@ -127,7 +127,7 @@ class BotBase(commands.bot.BotBase, WebServerMixin, EmojiCacheMixin, EventSchedu
         self.pool = await setup_database()
 
         # sync slash commands
-        
+
         guilds: set[Optional[discord.Object]] = {None}
 
         for guild_id in set(self.tree._guild_commands.keys()):

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from re import A
 from typing import TYPE_CHECKING, Any, Callable, Coroutine, TypeVar, Union
 
 import discord
@@ -29,7 +28,9 @@ __all__ = (
     "Message",
     "Mentionable",
     "DiscordObject",
-    "SlashCommand",
+    "ChatInputCommand",
+    "AppCommand",
+    "AppCommandFunc",
     "AppCommandChannel",
 )
 
@@ -117,9 +118,19 @@ DiscordObject = Union[
     AppCommandChannel,
 ]
 
+
+ChatInputCommand = Union[discord.app_commands.Command[Any, ... if TYPE_CHECKING else Any, Any], discord.app_commands.Group]
+
+AppCommand = Union[
+    ChatInputCommand,
+    discord.app_commands.ContextMenu,
+]
+
+
 if TYPE_CHECKING:
-    SlashCommand = Callable[Concatenate[discord.Interaction, P], Coroutine[Any, Any, T]]
+    AppCommandFunc = Callable[Concatenate[discord.Interaction, P], Coroutine[Any, Any, T]]
 else:
-    SlashCommand = Union[P, T]
+    AppCommandFunc = Union[P, T]
+
 
 CheckFunc = Callable[[discord.Interaction], Coroutine[Any, Any, bool]]

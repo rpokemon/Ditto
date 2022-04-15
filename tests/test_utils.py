@@ -1,10 +1,7 @@
 import pathlib
 from unittest import TestCase
 
-
-from ditto.utils import collections
-from ditto.utils import files
-from ditto.utils import strings
+from ditto.utils import collections, files, strings
 
 
 class TestDittoCollectionsUtils(TestCase):

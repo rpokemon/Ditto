@@ -20,6 +20,6 @@ async def _call_help(ctx: Context):
 def auto_help(group: _GT, *, cls: type[_CT] = commands.Command) -> _GT:
     if not isinstance(group, commands.Group):
         raise TypeError("Auto help can only be applied to groups.")
-    command = cls(_call_help, name="help", hidden=True)
+    command = cls(_call_help, name="help", hidden=True)  # type: ignore
     group.add_command(command)
     return group

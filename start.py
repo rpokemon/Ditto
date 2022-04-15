@@ -3,7 +3,6 @@ import sys
 
 import ditto
 
-
 CI_TEST = "--ci" in sys.argv
 
 
