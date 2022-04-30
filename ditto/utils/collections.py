@@ -34,15 +34,23 @@ def summarise_list(
     return info
 
 
-def format_list(string: str, *list: Any, singular: str = "has", plural: str = "have", oxford_comma: bool = True) -> str:
+def format_list(
+    string: str,
+    *list: Any,
+    singular: str = "has",
+    plural: str = "have",
+    finaliser: str = "and",
+    empty: str = "no-one",
+    oxford_comma: bool = True,
+) -> str:
     if len(list) == 0:
-        return string.format("no-one", singular)
+        return string.format(empty, singular)
     elif len(list) == 1:
         return string.format(list[0], singular)
 
     *rest, last = list
     rest_str = ", ".join(str(item) for item in rest)
-    return string.format(rest_str + "," * oxford_comma + " and " + str(last), plural)
+    return string.format(rest_str + "," * oxford_comma + " " + finaliser + " " + str(last), plural)
 
 
 class TimedDict(dict):

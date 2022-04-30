@@ -169,6 +169,8 @@ class BotBase(commands.bot.BotBase, WebServerMixin, EmojiCacheMixin, EventSchedu
                 title = "Unexpected error"
             else:
                 if isinstance(exception, discord.app_commands.CheckFailure):
+                    if interaction.response.is_done():
+                        return
                     title = "You don't have permission to use this command."
                     colour = discord.Colour.red()
                 elif isinstance(exception, discord.app_commands.TransformerError):
