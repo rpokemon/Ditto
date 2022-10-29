@@ -1,4 +1,11 @@
+# Python compiled files
+__pycache__
 *.py[cod]
+
+# Dev env
+.venv
+.env
+venv
 
 # Config override files
 config.*.yml

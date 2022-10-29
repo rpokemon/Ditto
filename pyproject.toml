@@ -19,8 +19,8 @@ PyYAML = ">=5.4.1"
 discord-ext-menus = {git = "https://github.com/rapptz/discord-ext-menus"}
 discord-ext-alternatives = {git = "https://github.com/ext-creators/discord-ext-alternatives", branch = "discord.py@v2"}
 jishaku = {git = "https://github.com/Gorialis/jishaku"}
-tzdata = { version = ">=2021.1", markers = "sys_platform == 'win32'" }
-Pillow = ">=8.2.0"
+tzdata = { version = ">=2022.0", markers = "sys_platform == 'win32'" }
+Pillow = ">=9.2.0"
 parsedatetime = ">=2.6"
 psutil = "^5.8.0"
 humanize = ">=3.4.1"
