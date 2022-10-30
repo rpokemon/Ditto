@@ -30,7 +30,7 @@ class Object(discord.Object):
         super().__init__(id)
 
     def __getattribute__(self, name: str) -> Any:
-        if name in ("_func", "id", "created_at"):
+        if name in ("_func", "id", "created_at", "__class__"):
             return object.__getattribute__(self, name)
         return getattr(self._func(), name)
 
