@@ -118,7 +118,7 @@ python-versions = ">=3.5"
 dev = ["cloudpickle", "coverage[toml] (>=5.0.2)", "furo", "hypothesis", "mypy (>=0.900,!=0.940)", "pre-commit", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins", "sphinx", "sphinx-notfound-page", "zope.interface"]
 docs = ["furo", "sphinx", "sphinx-notfound-page", "zope.interface"]
 tests = ["cloudpickle", "coverage[toml] (>=5.0.2)", "hypothesis", "mypy (>=0.900,!=0.940)", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins", "zope.interface"]
-tests_no_zope = ["cloudpickle", "coverage[toml] (>=5.0.2)", "hypothesis", "mypy (>=0.900,!=0.940)", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins"]
+tests-no-zope = ["cloudpickle", "coverage[toml] (>=5.0.2)", "hypothesis", "mypy (>=0.900,!=0.940)", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins"]
 
 [[package]]
 name = "black"
@@ -159,7 +159,7 @@ optional = false
 python-versions = ">=3.6.0"
 
 [package.extras]
-unicode_backport = ["unicodedata2"]
+unicode-backport = ["unicodedata2"]
 
 [[package]]
 name = "click"
@@ -218,7 +218,7 @@ resolved_reference = "8686b5d1bbc1d3c862292eb436ab630d6e9c9b53"
 
 [[package]]
 name = "discord.py"
-version = "2.1.0a4630+ge92a6266"
+version = "2.2.0a4659+g7cf3cd51"
 description = "A Python wrapper for the Discord API"
 category = "main"
 optional = false
@@ -229,7 +229,7 @@ develop = false
 aiohttp = ">=3.7.4,<4"
 
 [package.extras]
-docs = ["sphinx (==4.4.0)", "sphinxcontrib-websupport", "sphinxcontrib_trio (==1.1.2)", "typing-extensions (>=4.3,<5)"]
+docs = ["sphinx (==4.4.0)", "sphinxcontrib-trio (==1.1.2)", "sphinxcontrib-websupport", "typing-extensions (>=4.3,<5)"]
 speed = ["Brotli", "aiodns (>=1.1)", "cchardet (==2.1.7)", "orjson (>=3.5.4)"]
 test = ["coverage[toml]", "pytest", "pytest-asyncio", "pytest-cov", "pytest-mock", "typing-extensions (>=4.3,<5)"]
 voice = ["PyNaCl (>=1.3.0,<1.6)"]
@@ -238,11 +238,11 @@ voice = ["PyNaCl (>=1.3.0,<1.6)"]
 type = "git"
 url = "https://github.com/rapptz/discord.py"
 reference = "HEAD"
-resolved_reference = "e92a6266628d0cc99727c8eb88c2432a931138a0"
+resolved_reference = "7cf3cd51a5d463ae5633ec2dd43d3e397b081876"
 
 [[package]]
 name = "donphan"
-version = "4.10.1"
+version = "4.10.3"
 description = "Asynchronous Database ORM for Postgres"
 category = "main"
 optional = false
@@ -340,9 +340,9 @@ python-versions = ">=3.6.1,<4.0"
 
 [package.extras]
 colors = ["colorama (>=0.4.3,<0.5.0)"]
-pipfile_deprecated_finder = ["pipreqs", "requirementslib"]
+pipfile-deprecated-finder = ["pipreqs", "requirementslib"]
 plugins = ["setuptools"]
-requirements_deprecated_finder = ["pip-api", "pipreqs"]
+requirements-deprecated-finder = ["pip-api", "pipreqs"]
 
 [[package]]
 name = "Jinja2"
@@ -360,7 +360,7 @@ i18n = ["Babel (>=2.7)"]
 
 [[package]]
 name = "jishaku"
-version = "2.5.1a460+g7777777.master"
+version = "2.5.1a462+gd5ee79d.master"
 description = "A discord.py extension including useful tools for bot development and debugging."
 category = "main"
 optional = false
@@ -370,8 +370,8 @@ develop = false
 [package.dependencies]
 braceexpand = ">=0.1.7"
 click = ">=8.0.1"
-import-expression = ">=1.0.0,<2.0.0"
-importlib-metadata = {version = ">=3.7.0", markers = "python_version < \"3.10\""}
+import_expression = ">=1.0.0,<2.0.0"
+importlib_metadata = {version = ">=3.7.0", markers = "python_version < \"3.10\""}
 tabulate = ">=0.8.10"
 typing-extensions = {version = ">=3.10.0", markers = "python_version < \"3.10\""}
 
@@ -388,7 +388,7 @@ voice = ["yt-dlp (>=2022.3.8)"]
 type = "git"
 url = "https://github.com/Gorialis/jishaku"
 reference = "HEAD"
-resolved_reference = "7777777945f6ce26c037c51e384ac6123eeeba06"
+resolved_reference = "d5ee79d01b2f95d52713cd189e72964050089d63"
 
 [[package]]
 name = "MarkupSafe"
@@ -809,8 +809,8 @@ discord-ext-alternatives = []
 discord-ext-menus = []
 "discord.py" = []
 donphan = [
-    {file = "Donphan-4.10.1-py3-none-any.whl", hash = "sha256:bec1a579346bddfc0903948c80ccd74f9e9030409f3ca4ad4468ffe2ce390e09"},
-    {file = "Donphan-4.10.1.tar.gz", hash = "sha256:e776c72e0887b8be7652012cd097e662379f2895fe6f8ffafad891a047e5e3fc"},
+    {file = "Donphan-4.10.3-py3-none-any.whl", hash = "sha256:2b36b1e9a80e54724a51cf3432701385c80a7dd845445dd24d3d5c06695b9d08"},
+    {file = "Donphan-4.10.3.tar.gz", hash = "sha256:5c977d7d65cae67b9fbb22dbec5e66456b27970e274aacbffb1d6f6136409c88"},
 ]
 exceptiongroup = [
     {file = "exceptiongroup-1.0.0-py3-none-any.whl", hash = "sha256:2ac84b496be68464a2da60da518af3785fff8b7ec0d090a581604bc870bdee41"},
