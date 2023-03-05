@@ -28,7 +28,7 @@ def send_message(interaction: discord.Interaction, *args: Any, **kwargs: Any) ->
 async def _delete_after(interaction: discord.Interaction, after: float) -> None:
     await asyncio.sleep(after)
     with suppress(discord.NotFound):
-        await interaction.delete_original_message()
+        await interaction.delete_original_response()
 
 
 def delete_after(interaction: discord.Interaction, after: float) -> None:
