@@ -145,7 +145,7 @@ class PageView(Private):
     async def quit(self, interaction: discord.Interaction, button: discord.ui.Button):
         """Quits this menu."""
         await interaction.response.defer()
-        await interaction.delete_original_message()
+        await interaction.delete_original_response()
         self.stop()
 
 
