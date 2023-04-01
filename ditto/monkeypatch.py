@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import inspect
 from collections.abc import Callable
-from typing import get_type_hints, Any
 from types import FunctionType
+from typing import Any
+import discord
 
 from discord.ext import commands
-from discord.ext.commands import converter, Context, Converter, IDConverter
+from discord.ext.commands import Context, Converter, IDConverter, converter
 
 __all__ = ()
 
@@ -22,7 +23,8 @@ _CONVERTERS: dict[type[Any], Callable[..., Any]] = {}
 for n in converter.__all__:
     c = getattr(converter, n)
     if inspect.isclass(c) and issubclass(c, Converter) and c not in (Converter, IDConverter):
-        _CONVERTERS[get_type_hints(c.convert)["return"]] = c
+        cache = {}
+        _CONVERTERS[discord.utils.resolve_annotation(c.__annotations__["return"], converter.__dict__, None, cache)] = c
 
 for b in _BUILTINS:
     _CONVERTERS[b] = b
