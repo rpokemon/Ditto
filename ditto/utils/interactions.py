@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from contextlib import suppress
-from typing import TYPE_CHECKING, Any, Coroutine, get_args
+from typing import TYPE_CHECKING, Any, Coroutine
 
 import discord
 from discord.utils import MISSING

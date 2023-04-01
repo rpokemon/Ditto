@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import asyncio
 import datetime
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Optional, Protocol, TypeVar, runtime_checkable
+from typing import TYPE_CHECKING, Any, Optional, TypeVar
 
 import asyncpg
 import discord
@@ -12,11 +14,6 @@ from .tables import Events
 
 if TYPE_CHECKING:
     from ..core.bot import BotBase
-else:
-
-    @runtime_checkable
-    class BotBase(Protocol):
-        ...
 
 
 __all__ = ("ScheduledEvent", "EventSchedulerMixin")
@@ -68,7 +65,8 @@ class EventSchedulerMixin:
         await super().setup_hook()  # type: ignore
 
     async def schedule_event(self, time: datetime.datetime, type: str, /, *args: Any, **kwargs: Any) -> ScheduledEvent:
-        assert isinstance(self, BotBase)
+        if TYPE_CHECKING:
+            assert isinstance(self, BotBase)
 
         now = datetime.datetime.now(tz=datetime.timezone.utc)
 
@@ -78,7 +76,6 @@ class EventSchedulerMixin:
         event = ScheduledEvent(None, now, time, type, list(args), dict(kwargs))
 
         async with MaybeAcquire(pool=self.pool) as connection:
-
             (event.id,) = await Events.insert(
                 connection,
                 returning=(Events.id,),
@@ -103,7 +100,8 @@ class EventSchedulerMixin:
         return self.__event_scheduler__current
 
     async def _wait_for_event(self) -> ScheduledEvent:
-        assert isinstance(self, BotBase)
+        if TYPE_CHECKING:
+            assert isinstance(self, BotBase)
 
         record = await Events.fetch_row(order_by=(Events.scheduled_for, "ASC"))
 
@@ -118,7 +116,8 @@ class EventSchedulerMixin:
 
     @tasks.loop(seconds=0)
     async def _dispatch_task(self) -> None:
-        assert isinstance(self, BotBase)
+        if TYPE_CHECKING:
+            assert isinstance(self, BotBase)
         while not self.is_closed():
             event = self.__event_scheduler__current = await self._wait_for_event()
 
@@ -136,5 +135,6 @@ class EventSchedulerMixin:
 
     @_dispatch_task.before_loop
     async def _before_dispatch_task(self):
-        assert isinstance(self, BotBase)
+        if TYPE_CHECKING:
+            assert isinstance(self, BotBase)
         await self.wait_until_ready()

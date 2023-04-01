@@ -29,12 +29,10 @@ __all__ = (
     "confirm",
     "with_cog",
     "available_commands",
-    "transformer_error",
 )
 
 
 def confirm(message: str, ephemeral: bool = True) -> Callable[[T], T]:
-
     @discord.app_commands.check
     async def check(interaction: discord.Interaction) -> bool:
         assert interaction.user is not None
@@ -44,7 +42,7 @@ def confirm(message: str, ephemeral: bool = True) -> Callable[[T], T]:
         await prompt.wait()
 
         try:
-            await interaction.delete_original_message()
+            await interaction.delete_original_response()
         except discord.HTTPException:
             pass
 
@@ -69,7 +67,6 @@ def with_cog(cog: Type[Cog]) -> Callable[[T], T]:
 def available_commands(
     tree: discord.app_commands.CommandTree, guild: Optional[discord.Guild] = None
 ) -> List[ChatInputCommand]:
-
     # Global commands
     commands = tree.get_commands(guild=None, type=discord.AppCommandType.chat_input)
 
@@ -78,10 +75,6 @@ def available_commands(
         commands.extend(tree.get_commands(guild=guild, type=discord.AppCommandType.chat_input))
 
     return commands
-
-
-def transformer_error(transformer: Type[discord.app_commands.Transformer], value: Any, exc: BaseException) -> NoReturn:
-    raise discord.app_commands.TransformerError(value, transformer.type(), transformer) from exc
 
 
 def add_commands(

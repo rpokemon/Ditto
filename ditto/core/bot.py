@@ -12,7 +12,6 @@ from typing import Any, Optional, Union
 import asyncpg
 import discord
 from discord.ext import commands
-from discord.ext.alternatives import converter_dict as converter_dict
 
 from ..config import CONFIG, load_global_config
 from ..db import EmojiCacheMixin, EventSchedulerMixin, setup_database
@@ -105,7 +104,6 @@ class BotBase(commands.bot.BotBase, WebServerMixin, EmojiCacheMixin, EventSchedu
         self.converters |= CONVERTERS
 
     async def setup_hook(self) -> None:
-
         # we need to do this later because asyncio.loop doesn't exist at before this point
         global_log = logging.getLogger()
         if CONFIG.LOGGING.WEBHOOK_URI is not None:
@@ -136,7 +134,7 @@ class BotBase(commands.bot.BotBase, WebServerMixin, EmojiCacheMixin, EventSchedu
         for guild in guilds:
             try:
                 await self.tree.sync(guild=guild)
-            except (discord.HTTPException):
+            except discord.HTTPException:
                 payload = [cmd.to_dict() for cmd in self.tree.get_commands(guild=guild)]
                 self.log.exception(f"Failed syncing for guild {guild}: ")
                 self.log.error(f"Payload: {json.dumps(payload, indent=4)}")
@@ -162,7 +160,6 @@ class BotBase(commands.bot.BotBase, WebServerMixin, EmojiCacheMixin, EventSchedu
         interaction: discord.Interaction,
         exception: BaseException,
     ) -> None:
-
         colour = discord.Colour.dark_red()
         with suppress(Exception):
             if interaction.command is None:

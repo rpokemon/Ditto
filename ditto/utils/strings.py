@@ -58,7 +58,6 @@ def _transpose(items: list[T], columns: int) -> list[T]:
 
 
 def as_columns(items: list[str], /, columns: int = 2, transpose: bool = False, fill: str = " ") -> str:
-
     if transpose:
         items = _transpose(items, columns)
 

@@ -1,8 +1,10 @@
+from __future__ import annotations
+
 import datetime
 import io
 import random
 import re
-from typing import TYPE_CHECKING, Any, Optional, Protocol, cast, runtime_checkable
+from typing import TYPE_CHECKING, Any, Optional
 
 import asyncpg
 import discord
@@ -16,18 +18,12 @@ from .tables import Emoji, UserEmoji
 
 if TYPE_CHECKING:
     from ..core.bot import BotBase
-else:
-
-    @runtime_checkable
-    class BotBase(Protocol):
-        ...
 
 
 __all__ = ("EmojiCacheMixin",)
 
 
 async def create_user_image(user: User) -> io.BytesIO:
-
     avatar = Image.open(await download_avatar(user, size=128, static=True))
 
     if avatar.mode != "RGBA":
@@ -39,7 +35,7 @@ async def create_user_image(user: User) -> io.BytesIO:
         alpha = alpha.convert("L")
 
     mask = Image.new("L", avatar.size)
-    draw = cast(ImageDraw.ImageDraw, ImageDraw.Draw(mask))
+    draw = ImageDraw.Draw(mask)
     draw.ellipse((0, 0) + avatar.size, fill=255)
 
     mask = ImageChops.darker(mask, alpha)
@@ -60,7 +56,8 @@ class EmojiCacheMixin:
         self._not_found_emoji: discord.Emoji = CONFIG.EMOJI.NOT_FOUND
 
     async def _find_guild(self, *, connection: Optional[asyncpg.Connection] = None) -> discord.Guild:
-        assert isinstance(self, BotBase)
+        if TYPE_CHECKING:
+            assert isinstance(self, BotBase)
         async with MaybeAcquire(connection, pool=self.pool) as connection:
             free_spaces = {}
             for guild in CONFIG.EMOJI.GUILDS:
@@ -83,7 +80,8 @@ class EmojiCacheMixin:
     async def create_emoji(
         self, name: str, image: io.BytesIO, *, connection: Optional[asyncpg.Connection] = None
     ) -> discord.Emoji:
-        assert isinstance(self, BotBase)
+        if TYPE_CHECKING:
+            assert isinstance(self, BotBase)
         async with MaybeAcquire(connection, pool=self.pool) as connection:
             guild = await self._find_guild(connection=connection)
             emoji = await guild.create_custom_emoji(name=name, image=image.read())
@@ -93,7 +91,8 @@ class EmojiCacheMixin:
         return emoji
 
     async def create_user_emoji(self, user: User, *, connection: Optional[asyncpg.Connection] = None) -> discord.Emoji:
-        assert isinstance(self, BotBase)
+        if TYPE_CHECKING:
+            assert isinstance(self, BotBase)
         name = re.sub(r"[^A-Za-z0-9_]", "", user.name[:28]) + str(user.discriminator)
         image = await create_user_image(user)
 
@@ -106,7 +105,8 @@ class EmojiCacheMixin:
     async def fetch_emoji(
         self, emoji_id: Optional[int], *, connection: Optional[asyncpg.Connection] = None
     ) -> discord.Emoji:
-        assert isinstance(self, BotBase)
+        if TYPE_CHECKING:
+            assert isinstance(self, BotBase)
         if emoji_id is None:
             return self._not_found_emoji
 
@@ -127,7 +127,8 @@ class EmojiCacheMixin:
     async def fetch_user_emoji(
         self, user: Optional[User], *, connection: Optional[asyncpg.Connection] = None
     ) -> discord.Emoji:
-        assert isinstance(self, BotBase)
+        if TYPE_CHECKING:
+            assert isinstance(self, BotBase)
         if user is None:
             return await self.fetch_emoji(None, connection=connection)
 
@@ -143,7 +144,8 @@ class EmojiCacheMixin:
             return await self.create_user_emoji(user, connection=connection)
 
     async def delete_emoji(self, emoji_id: int, *, connection: Optional[asyncpg.Connection] = None) -> None:
-        assert isinstance(self, BotBase)
+        if TYPE_CHECKING:
+            assert isinstance(self, BotBase)
         async with MaybeAcquire(connection, pool=self.pool) as connection:
             record = await Emoji.fetch_row(connection, emoji_id=emoji_id)
             if record is None:

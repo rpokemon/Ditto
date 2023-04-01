@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import sys
 from functools import cached_property
-from typing import TYPE_CHECKING, Any, Callable, Coroutine, Dict, Protocol, TypeVar, runtime_checkable
+from typing import TYPE_CHECKING, Any, Callable, Coroutine, Dict, TypeVar
 from urllib.parse import quote
 
 import aiohttp
@@ -20,11 +20,6 @@ from .storage import PostgresStorage
 
 if TYPE_CHECKING:
     from ..core.bot import BotBase
-else:
-
-    @runtime_checkable
-    class BotBase(Protocol):
-        ...
 
 
 __all__ = ("WebServerMixin",)
@@ -36,7 +31,8 @@ Coro = Coroutine[Any, Any, T]
 
 class WebServerMixin:
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        assert isinstance(self, BotBase)
+        if TYPE_CHECKING:
+            assert isinstance(self, BotBase)
 
         super().__init__(*args, **kwargs)
 
@@ -49,7 +45,9 @@ class WebServerMixin:
         self.storage: PostgresStorage = PostgresStorage(self, cookie_name="session")
         aiohttp_session.setup(self.app, self.storage)
 
-        self.user_agent: str = USER_AGENT.format(CONFIG.APP_NAME, CONFIG.VERSION, sys.version_info, aiohttp.__version__)
+        self.user_agent: str = USER_AGENT.format(
+            CONFIG.APP_NAME, CONFIG.URL, CONFIG.VERSION, sys.version_info, aiohttp.__version__
+        )
 
         self.policy: DiscordAuthorizationPolicy = DiscordAuthorizationPolicy(self)
         aiohttp_security.setup(self.app, aiohttp_security.SessionIdentityPolicy(), self.policy)
@@ -66,14 +64,15 @@ class WebServerMixin:
 
     @cached_property
     def auth_uri(self) -> str:
-        assert isinstance(self, BotBase)
+        if TYPE_CHECKING:
+            assert isinstance(self, BotBase)
         return AUTH_URI.format(self.application_id, quote(CONFIG.APPLICATION.REDIRECT_URI))
 
     async def connect(self, *args: Any, **kwargs: Any) -> None:
-        assert isinstance(self, BotBase)
+        if TYPE_CHECKING:
+            assert isinstance(self, BotBase)
 
         if not CONFIG.WEB.DISABLED:
-
             self._web_runner: AppRunner = AppRunner(self.app)
             await self._web_runner.setup()
 
@@ -83,7 +82,8 @@ class WebServerMixin:
         await super().connect(*args, **kwargs)  # type: ignore
 
     async def _web_login(self, request: Request) -> Response:
-        assert isinstance(self, BotBase)
+        if TYPE_CHECKING:
+            assert isinstance(self, BotBase)
         user_id = await validate_login(self, request)
 
         redirect = HTTPFound("/")

@@ -209,7 +209,6 @@ class ViewHelpCommand(commands.HelpCommand):
         )
 
     async def send_bot_help(self, mapping):
-
         cogs = DefaultDict[Optional[Cog], list[commands.Command]](list)
 
         for command in await self.filter_commands(self.context.bot.commands, sort=True):

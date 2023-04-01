@@ -3,12 +3,12 @@
 
 !Config
 
-  APP_NAME: 'Ditto'
+  APP_NAME: ~
   VERSION: '1.0.0'
   
   SOURCE: !Config
     DITTO: 'bijij/ditto'
-    CUSTOM: 'bijij/ditto'
+    CUSTOM: ~
 
   APPLICATION: !Config
     ID: !ENV APPLICATION_ID
@@ -16,9 +16,10 @@
     REDIRECT_URI: !ENV APPLICATION_REDIRECT_URI
 
   WEB: !Config
-    DISABLED: no
+    DISABLED: yes
     HOST: 'localhost'
     PORT: '8080'
+    URL: ~
     TEMPLATE_DIR: 'web/templates'
     STATIC_DIR: 'web/static'
 
@@ -44,8 +45,8 @@
   
   DATABASE: !Config
     # Database Settings: Set either a DSN or Hostname, Username, Password and Database
-    DISABLED: no
-    APPLICATION_NAME: 'Ditto'
+    DISABLED: yes
+    APPLICATION_NAME: ~
     DSN: !ENV POSTGRES_DSN
     HOSTNAME: ~
     USERNAME: ~

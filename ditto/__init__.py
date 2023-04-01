@@ -31,3 +31,5 @@ __version__ = "2.0.10a"
 from . import db as db, types as types, utils as utils
 from .config import *
 from .core import *
+
+from .monkeypatch import *

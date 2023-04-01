@@ -148,7 +148,7 @@ async def prompt(
     bot: BotBase = ...,
     channel: TextChannel = ...,
     user: User = ...,
-    converter: type[T] = ...,
+    converter: type[T] = ...,  # type: ignore
     timeout: float = ...,
     max_tries: int = ...,
     confirm_after: bool = ...,
@@ -195,9 +195,10 @@ async def prompt(
         channel = channel or context.channel
         user = user or context.author
 
-    assert isinstance(bot, BotBase)
-    assert isinstance(channel, TextChannel)  # type: ignore
-    assert isinstance(user, User)  # type: ignore
+    if TYPE_CHECKING:
+        assert isinstance(bot, BotBase)
+        assert isinstance(channel, TextChannel)
+        assert isinstance(user, User)
 
     message = await channel.send(*args, **kwargs)
 

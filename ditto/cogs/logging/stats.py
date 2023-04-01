@@ -5,8 +5,7 @@ from typing import Any, NamedTuple, Optional
 
 import asyncpg
 import discord
-from discord.ext import commands, menus, tasks
-from donphan import MaybeAcquire
+from discord.ext import commands, tasks, menus
 
 from ... import CONFIG, BotBase, Cog, Context
 from ...db.tables import Commands

@@ -14,16 +14,14 @@ if TYPE_CHECKING:
     from ..core.bot import BotBase
 
 AUTH_URI = Route.BASE + "/oauth2/authorize?client_id={0}&redirect_uri={1}&response_type=code&scope=identify"
-USER_AGENT = "{0} (https://rpkmn.center/silvally {1}) Python/{2[0]}.{2[1]} aiohttp/{3}"
+USER_AGENT = "{0} ({1} {2}) Python/{3[0]}.{3[1]} aiohttp/{4}"
 
 
 async def validate_login(bot: BotBase, request: Request) -> str:
-
     if "code" not in request.query:
         raise HTTPUnauthorized
 
     async with aiohttp.ClientSession(headers={"User-Agent": bot.user_agent}) as session:
-
         uri = Route.BASE + "/oauth2/token"
         payload = {
             "client_id": bot.application_id,

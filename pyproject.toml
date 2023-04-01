@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "Ditto"
-version = "2.0.10a"
+version = "3.0.0a"
 description = "A Discord bot template for Discord.py version 2+"
 authors = ["bijij <josh@josh-is.gay>"]
 license = "MIT"
@@ -12,15 +12,14 @@ packages = [
 include = ["ditto/res/*"]
 
 [tool.poetry.dependencies]
-python = "^3.9"
-donphan = ">=4.5.1"
-"discord.py" = {git = "https://github.com/rapptz/discord.py"}
-PyYAML = ">=5.4.1"
+python = "^3.10"
+donphan = ">=4.10.3"
 discord-ext-menus = {git = "https://github.com/rapptz/discord-ext-menus"}
-discord-ext-alternatives = {git = "https://github.com/ext-creators/discord-ext-alternatives", branch = "discord.py@v2"}
-jishaku = {git = "https://github.com/Gorialis/jishaku"}
-tzdata = { version = ">=2022.0", markers = "sys_platform == 'win32'" }
-Pillow = ">=9.2.0"
+"discord.py" = ">=2.2.0"
+PyYAML = ">=5.4.1"
+jishaku = ">=2.5.1"
+tzdata = { version = ">=2023.3", markers = "sys_platform == 'win32'" }
+Pillow = ">=9.4.0"
 parsedatetime = ">=2.6"
 psutil = "^5.8.0"
 humanize = ">=3.4.1"
@@ -67,7 +66,7 @@ filterwarnings = "default"
 
 [tool.pyright]
 reportUnnecessaryTypeIgnoreComment = "warning"
-pythonVersion = "3.9"
+pythonVersion = "3.10"
 typeCheckingMode = "basic"
 
 [build-system]

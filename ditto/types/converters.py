@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import datetime
+import json
 import zoneinfo
 from typing import TYPE_CHECKING, Any, Generic, Optional, TypeVar, cast
 
@@ -139,7 +140,6 @@ class DatetimeConverter(commands.Converter[datetime.datetime]):
 
     @classmethod
     async def convert(cls, ctx: Context, argument: str) -> datetime.datetime:
-
         timezone = await cls.get_timezone(ctx)
         now = ctx.message.created_at.astimezone(tz=timezone)
 
@@ -156,7 +156,6 @@ class DatetimeConverter(commands.Converter[datetime.datetime]):
 class WhenAndWhatConverter(commands.Converter[tuple[datetime.datetime, str]]):
     @classmethod
     async def convert(cls, ctx: Context, argument: str) -> tuple[datetime.datetime, str]:
-
         timezone = await DatetimeConverter.get_timezone(ctx)
         now = ctx.message.created_at.astimezone(tz=timezone)
 
@@ -217,7 +216,8 @@ class EmbedConverter(commands.Converter[discord.Embed]):
     async def convert(cls, ctx: Context, argument: str) -> discord.Embed:
         try:
             code = codeblock_converter(argument)
-            return discord.Embed.from_dict(code.content)
+            data = json.loads(code.content)
+            return discord.Embed.from_dict(data)
         except Exception:
             raise commands.BadArgument("Could not generate embed from supplied JSON.")
 

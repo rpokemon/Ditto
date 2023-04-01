@@ -29,7 +29,6 @@ async def fetch_audit_log_entry(
     delta: Union[float, datetime.timedelta] = 1,
     retry: int = 3,
 ) -> Optional[discord.AuditLogEntry]:
-
     time = time or datetime.datetime.now(datetime.timezone.utc)
     delta = normalise_timedelta(delta)
 
