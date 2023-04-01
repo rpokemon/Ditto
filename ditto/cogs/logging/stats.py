@@ -1,7 +1,7 @@
 import asyncio
 import datetime
 from collections import Counter
-from typing import Any, NamedTuple, Optional
+from typing import Any, Optional, TypedDict
 
 import asyncpg
 import discord
@@ -13,8 +13,8 @@ from ...utils.paginator import EmbedPaginator
 from ...utils.time import human_friendly_timestamp
 
 
-class CommandInvoke(NamedTuple):
-    mssage_id: int
+class CommandInvoke(TypedDict):
+    message_id: int
     guild_id: Optional[int]
     channel_id: int
     user_id: int
@@ -112,27 +112,27 @@ class Stats(Cog, hidden=True):
 
         guild_id = getattr(ctx.guild, "id", None)
 
-        invoke = CommandInvoke(
-            ctx.message.id,
-            guild_id,
-            ctx.channel.id,
-            ctx.author.id,
-            ctx.message.created_at,
-            ctx.prefix,
-            ctx.command.qualified_name,
-            ctx.command_failed,
-        )
-
         self._command_stats[ctx.command.qualified_name] += 1
 
         async with self._batch_lock:
-            self._batch_data.append(invoke)
+            self._batch_data.append(
+                {
+                    "message_id": ctx.message.id,
+                    "guild_id": guild_id,
+                    "channel_id": ctx.channel.id,
+                    "user_id": ctx.author.id,
+                    "invoked_at": ctx.message.created_at,
+                    "prefix": ctx.prefix,
+                    "command": ctx.command.qualified_name,
+                    "failed": ctx.command_failed,
+                }
+            )
 
     @tasks.loop(seconds=15)
     async def bulk_insert(self) -> None:
         async with self._batch_lock:
             if self._batch_data:
-                await Commands.insert_many(Commands._columns, *self._batch_data)
+                await Commands.insert_many(None, *self._batch_data)
                 self._batch_data.clear()
 
 
