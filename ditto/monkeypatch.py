@@ -24,7 +24,9 @@ for n in converter.__all__:
     c = getattr(converter, n)
     if inspect.isclass(c) and issubclass(c, Converter) and c not in (Converter, IDConverter):
         cache = {}
-        _CONVERTERS[discord.utils.resolve_annotation(c.convert.__annotations__["return"], converter.__dict__, None, cache)] = c
+        _CONVERTERS[
+            discord.utils.resolve_annotation(c.convert.__annotations__["return"], converter.__dict__, None, cache)
+        ] = c
 
 for b in _BUILTINS:
     _CONVERTERS[b] = b

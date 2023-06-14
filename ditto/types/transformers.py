@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import datetime
 import zoneinfo
-from os import stat
 
 import discord
 from donphan import MaybeAcquire
@@ -20,12 +19,11 @@ __all__ = (
 
 
 class GuildTransformer(discord.app_commands.Transformer):
-    @classmethod
-    def type(cls) -> discord.AppCommandOptionType:
+    @property
+    def type(self) -> discord.AppCommandOptionType:
         return discord.AppCommandOptionType.integer
 
-    @classmethod
-    async def transform(cls, interaction: discord.Interaction, value: int) -> discord.Guild:
+    async def transform(self, interaction: discord.Interaction, value: int) -> discord.Guild:
         guild = interaction.client.get_guild(value)
 
         if guild is None:
@@ -33,8 +31,7 @@ class GuildTransformer(discord.app_commands.Transformer):
 
         return guild
 
-    @classmethod
-    async def autocomplete(cls, interaction: discord.Interaction, value: str) -> list[discord.app_commands.Choice[int]]:
+    async def autocomplete(self, interaction: discord.Interaction, value: str) -> list[discord.app_commands.Choice[int]]:
         suggestions = []
 
         for guild in interaction.client.guilds:
@@ -45,8 +42,7 @@ class GuildTransformer(discord.app_commands.Transformer):
 
 
 class WhenAndWhatTransformer(discord.app_commands.Transformer):
-    @classmethod
-    async def transform(cls, interaction: discord.Interaction, value: str) -> tuple[datetime.datetime, str]:
+    async def transform(self, interaction: discord.Interaction, value: str) -> tuple[datetime.datetime, str]:
         assert isinstance(interaction.client, BotBase)
 
         async with MaybeAcquire(pool=interaction.client.pool) as connection:
@@ -92,15 +88,13 @@ class WhenAndWhatTransformer(discord.app_commands.Transformer):
 
 
 class ZoneInfoTransformer(discord.app_commands.Transformer):
-    @classmethod
-    async def transform(cls, interaction: discord.Interaction, value: str) -> zoneinfo.ZoneInfo:
+    async def transform(self, interaction: discord.Interaction, value: str) -> zoneinfo.ZoneInfo:
         try:
             return zoneinfo.ZoneInfo(value)
         except Exception:  # catch all due to BPO: 41530
             raise ValueError(f'Time Zone "{value}" not found.')
 
-    @classmethod
-    async def autocomplete(cls, interaction: discord.Interaction, value: str) -> list[discord.app_commands.Choice[str]]:
+    async def autocomplete(self, interaction: discord.Interaction, value: str) -> list[discord.app_commands.Choice[str]]:
         choices = []
         for name, tzinfo in ALL_TIMEZONES.items():
             if name.lower().startswith(value.lower()):
