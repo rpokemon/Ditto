@@ -33,8 +33,8 @@ class GuildTransformer(discord.app_commands.Transformer):
 
         return guild
 
-    @staticmethod
-    async def autocomplete(_, interaction: discord.Interaction, value: str) -> list[discord.app_commands.Choice[int]]:
+    @classmethod
+    async def autocomplete(cls, interaction: discord.Interaction, value: str) -> list[discord.app_commands.Choice[int]]:
         suggestions = []
 
         for guild in interaction.client.guilds:

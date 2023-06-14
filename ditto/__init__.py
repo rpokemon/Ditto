@@ -26,7 +26,7 @@ __title__ = "ditto"
 __author__ = "Bijij"
 __license__ = "MIT"
 __copyright__ = "Copyright 2018-present Bijij"
-__version__ = "3.0.2a"
+__version__ = "3.0.3a"
 
 from . import db as db, types as types, utils as utils
 from .config import *

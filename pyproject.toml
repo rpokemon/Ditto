@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "Ditto"
-version = "3.0.2a"
+version = "3.0.3a"
 description = "A Discord bot template for Discord.py version 2+"
 authors = ["bijij <josh@josh-is.gay>"]
 license = "MIT"
