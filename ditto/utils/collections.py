@@ -15,6 +15,7 @@ __all__ = (
 
 
 T = TypeVar("T")
+V = TypeVar("V")
 
 
 def summarise_list(
@@ -53,15 +54,20 @@ def format_list(
     return string.format(rest_str + "," * oxford_comma + " " + finaliser + " " + str(last), plural)
 
 
-class TimedDict(dict):
+class _TimedCollectionMixin:
     def __init__(self, expires_after: datetime.timedelta, *args, **kwargs):
         self.expires_after = expires_after
         self._state: dict[Any, datetime.datetime] = {}
         super().__init__(*args, **kwargs)
 
     def __cleanup(self):
+        raise NotImplementedError
+
+
+class TimedDict(dict[T, V], _TimedCollectionMixin):
+    def __cleanup(self):
         now = datetime.datetime.now(tz=datetime.timezone.utc)
-        for key in list(super().keys()):
+        for key in super().keys():
             try:
                 delta = now - self._state[key]
                 if delta > self.expires_after:
@@ -70,20 +76,45 @@ class TimedDict(dict):
             except KeyError:
                 pass
 
+        def __contains__(self, key: Any) -> bool:
+            self.__cleanup()
+            return super().__contains__(key)
+
+        def __setitem__(self, key: T, value: V):
+            super().__setitem__(key, value)
+            self._state[key] = datetime.datetime.now(tz=datetime.timezone.utc)
+
+        def __getitem__(self, key: T) -> V:
+            self.__cleanup()
+            return super().__getitem__(key)
+
+        def get(self, key: T, default: Optional[V] = None) -> Optional[V]:
+            self.__cleanup()
+            return super().get(key, default)
+
+
+class TimedSet(set[T], _TimedCollectionMixin):
+    def __cleanup(self):
+        now = datetime.datetime.now(tz=datetime.timezone.utc)
+        for key in super():
+            try:
+                delta = now - self._state[key]
+                if delta > self.expires_after:
+                    self.remove(key)
+                    del self._state[key]
+            except KeyError:
+                pass
+
     def __contains__(self, key: Any) -> bool:
         self.__cleanup()
         return super().__contains__(key)
 
-    def __setitem__(self, key: Any, value: Any):
-        super().__setitem__(key, value)
+    def add(self, key: T):
+        super().add(key)
         self._state[key] = datetime.datetime.now(tz=datetime.timezone.utc)
 
-    def __getitem__(self, key: Any) -> Any:
-        self.__cleanup()
-        return super().__getitem__(key)
 
-
-class LRUDict(dict):
+class LRUDict(dict[T, V]):
     def __init__(self, max_size: int = 1024, *args, **kwargs):
         if max_size <= 0:
             raise ValueError("Maximum cache size must be greater than 0.")
@@ -105,18 +136,18 @@ class LRUDict(dict):
         self.__cleanup()
 
 
-class TimedLRUDict(LRUDict, TimedDict):
+class TimedLRUDict(LRUDict[T, V], TimedDict[T, V]):
     def __init__(self, expires_after: datetime.timedelta, max_size: int = 1024, *args, **kwargs):
         super().__init__(max_size, expires_after, *args, **kwargs)
 
 
-class LRUDefaultDict(LRUDict, defaultdict):
+class LRUDefaultDict(LRUDict[T, V], defaultdict[T, V]):
     def __init__(self, default_factory: Optional[Callable] = None, max_size: int = 1024, *args, **kwargs):
         super().__init__(max_size, *args, **kwargs)
         self.default_factory = default_factory
 
 
-class TimedLRUDefaultDict(LRUDict, TimedDict, defaultdict):
+class TimedLRUDefaultDict(LRUDict[T, V], TimedDict[T, V], defaultdict[T, V]):
     def __init__(self, default_factory: Callable, expires_after: datetime.timedelta, max_size: int = 1024, *args, **kwargs):
         super().__init__(max_size, expires_after, *args, **kwargs)
         self.default_factory = default_factory

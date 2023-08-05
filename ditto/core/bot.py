@@ -126,18 +126,31 @@ class BotBase(commands.bot.BotBase, WebServerMixin, EmojiCacheMixin, EventSchedu
 
         # sync slash commands
 
+        try:
+            with open(CONFIG.APPLICATION.COMMANDS_CACHE_PATH, "r") as f:
+                command_cache = json.load(f)
+        except FileNotFoundError:
+            command_cache = {}
+
         guilds: set[Optional[discord.Object]] = {None}
 
         for guild_id in set(self.tree._guild_commands.keys()):
             guilds.add(discord.Object(id=guild_id))
 
         for guild in guilds:
-            try:
-                await self.tree.sync(guild=guild)
-            except discord.HTTPException:
-                payload = [cmd.to_dict() for cmd in self.tree.get_commands(guild=guild)]
-                self.log.exception(f"Failed syncing for guild {guild}: ")
-                self.log.error(f"Payload: {json.dumps(payload, indent=4)}")
+            payload = [cmd.to_dict() for cmd in self.tree.get_commands(guild=guild)]
+            guild_id = str(guild.id) if guild is not None else "-1"
+
+            if command_cache.get(guild_id) != payload:
+                try:
+                    await self.tree.sync(guild=guild)
+                    command_cache[guild_id] = payload
+                except discord.HTTPException:
+                    self.log.exception(f"Failed syncing for guild {guild}: ")
+                    self.log.error(f"Payload: {json.dumps(payload, indent=4)}")
+
+        with open(CONFIG.APPLICATION.COMMANDS_CACHE_PATH, "w") as f:
+            json.dump(command_cache, f, indent=4)
 
         await super().setup_hook()
 

@@ -77,7 +77,7 @@ class CommandListSource(EmbedPaginator):
             max_description=4096,
             max_fields=8,
             colour=discord.Colour.blurple(),
-        )  # type: ignore
+        )
         HelpEmbed._set(self, bot, command_prefix)
 
         for command in commands:
@@ -260,9 +260,9 @@ def slash_command_help(bot: BotBase, command: ChatInputCommand) -> discord.Embed
 
     options = ""
     for option in command.to_dict()["options"]:
-        options += f"{option['name']}: {option['description']}\n"
+        options += f"`{option['name']}`: {option['description']}\n"
 
-    return HelpEmbed(bot, "/", title=command.name, description=f"Syntax: `{syntax}`\n\n{command.description}\n{options}")
+    return HelpEmbed(bot, "/", title=command.name, description=f"Syntax: `{syntax}`\n\n{command.description}\n\n{options}")
 
 
 def _get_commands(bot: BotBase, guild: Optional[discord.Guild]) -> dict[Optional[Cog], list[ChatInputCommand]]:

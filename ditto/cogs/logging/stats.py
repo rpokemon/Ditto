@@ -5,7 +5,7 @@ from typing import Any, Optional, TypedDict
 
 import asyncpg
 import discord
-from discord.ext import commands, tasks, menus
+from discord.ext import commands, menus, tasks
 
 from ... import CONFIG, BotBase, Cog, Context
 from ...db.tables import Commands

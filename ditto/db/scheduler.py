@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import datetime
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Optional, TypeVar
+from typing import TYPE_CHECKING, Any
 
 import asyncpg
 import discord
@@ -13,18 +13,17 @@ from donphan import MaybeAcquire
 from .tables import Events
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
+
     from ..core.bot import BotBase
 
 
 __all__ = ("ScheduledEvent", "EventSchedulerMixin")
 
 
-T = TypeVar("T", bound="ScheduledEvent")
-
-
 @dataclass
 class ScheduledEvent:
-    id: Optional[int]
+    id: int | None
     created_at: datetime.datetime
     scheduled_for: datetime.datetime
     event_type: str
@@ -32,7 +31,7 @@ class ScheduledEvent:
     kwargs: dict[str, Any]
 
     @classmethod
-    def from_record(cls: type[T], record: asyncpg.Record) -> T:
+    def from_record(cls, record: asyncpg.Record) -> Self:
         return cls(
             record["id"],
             record["created_at"],
@@ -57,7 +56,7 @@ class EventSchedulerMixin:
             return
 
         self.__event_scheduler__active: asyncio.Event = asyncio.Event()
-        self.__event_scheduler__current: Optional[ScheduledEvent] = None
+        self.__event_scheduler__current: ScheduledEvent | None = None
         self._dispatch_task.add_exception_type(asyncpg.exceptions.PostgresConnectionError)
 
     async def setup_hook(self):
@@ -96,7 +95,7 @@ class EventSchedulerMixin:
         self._dispatch_task.restart()
 
     @property
-    def next_scheduled_event(self) -> Optional[ScheduledEvent]:
+    def next_scheduled_event(self) -> ScheduledEvent | None:
         return self.__event_scheduler__current
 
     async def _wait_for_event(self) -> ScheduledEvent:

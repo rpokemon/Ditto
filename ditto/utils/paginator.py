@@ -50,7 +50,7 @@ class EmbedPaginator(discord.Embed, PaginatorSource[EmbT]):
         description = kwargs.pop("description", "")  # type: str
 
         self.cls = cls
-        cls.__init__(self, **kwargs)
+        cls.__init__(self, **kwargs)  # type: ignore
 
         self.prefix = None
         self.suffix = None

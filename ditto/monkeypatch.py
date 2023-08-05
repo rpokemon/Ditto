@@ -4,8 +4,8 @@ import inspect
 from collections.abc import Callable
 from types import FunctionType
 from typing import Any
-import discord
 
+import discord
 from discord.ext import commands
 from discord.ext.commands import Context, Converter, IDConverter, converter
 

@@ -69,7 +69,8 @@ class Info(Cog):
         if self.bot.owner is not None:
             owner = str(self.bot.owner)
         else:
-            owner = ", ".join(str(owner) for owner in self.bot.owners)  # type: ignore
+            assert self.bot.owners is not None
+            owner = ", ".join(str(owner) for owner in self.bot.owners)
 
         await ctx.send(
             embed=discord.Embed(
