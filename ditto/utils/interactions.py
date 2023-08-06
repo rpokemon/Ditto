@@ -20,8 +20,6 @@ __all___ = (
 
 def send_message(interaction: discord.Interaction, *args: Any, **kwargs: Any) -> Coroutine[Any, Any, Any]:
     send_func = interaction.followup.send if interaction.response.is_done() else interaction.response.send_message
-    if send_func is interaction.followup.send:
-        kwargs.pop("ephemeral")
     return send_func(*args, **kwargs)
 
 
