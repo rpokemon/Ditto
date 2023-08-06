@@ -103,29 +103,7 @@ class BotBase(commands.bot.BotBase, WebServerMixin, EmojiCacheMixin, EventSchedu
         # Add extra converters
         self.converters |= CONVERTERS
 
-    async def setup_hook(self) -> None:
-        # we need to do this later because asyncio.loop doesn't exist at before this point
-        global_log = logging.getLogger()
-        if CONFIG.LOGGING.WEBHOOK_URI is not None:
-            handler = WebhookHandler(CONFIG.LOGGING.WEBHOOK_URI)
-            global_log.addHandler(handler)
-
-        await self.is_owner(discord.Object(id=0))  # type: ignore
-
-        # Add help command
-        self.tree.add_command(help)
-
-        # Add extensions
-        for extension in CONFIG.EXTENSIONS.keys():
-            try:
-                await self.load_extension(extension)
-            except (commands.ExtensionError, ImportError, SyntaxError):
-                self.log.exception(f"Failed to load extension {extension}")
-
-        self.pool = await setup_database()
-
-        # sync slash commands
-
+    async def sync_commands(self) -> None:
         try:
             with open(CONFIG.APPLICATION.COMMANDS_CACHE_PATH, "r") as f:
                 command_cache = json.load(f)
@@ -151,6 +129,31 @@ class BotBase(commands.bot.BotBase, WebServerMixin, EmojiCacheMixin, EventSchedu
 
         with open(CONFIG.APPLICATION.COMMANDS_CACHE_PATH, "w") as f:
             json.dump(command_cache, f, indent=4)
+
+    async def setup_hook(self) -> None:
+        # we need to do this later because asyncio.loop doesn't exist at before this point
+        global_log = logging.getLogger()
+        if CONFIG.LOGGING.WEBHOOK_URI is not None:
+            handler = WebhookHandler(CONFIG.LOGGING.WEBHOOK_URI)
+            global_log.addHandler(handler)
+
+        await self.is_owner(discord.Object(id=0))  # type: ignore
+
+        # Add help command
+        self.tree.add_command(help)
+
+        # Add extensions
+        for extension in CONFIG.EXTENSIONS.keys():
+            try:
+                await self.load_extension(extension)
+            except (commands.ExtensionError, ImportError, SyntaxError):
+                self.log.exception(f"Failed to load extension {extension}")
+
+        self.pool = await setup_database()
+
+        # sync slash commands
+        if CONFIG.APPLICATION.AUTO_SYNC_COMMANDS:
+            await self.sync_commands()
 
         await super().setup_hook()
 
