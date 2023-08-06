@@ -97,7 +97,7 @@ class TimedSet(set[T]):
 
     def __cleanup(self):
         now = datetime.datetime.now(tz=datetime.timezone.utc)
-        for key in super():
+        for key in super().__iter__():
             try:
                 delta = now - self._state[key]
                 if delta > self.expires_after:
