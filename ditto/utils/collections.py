@@ -54,17 +54,13 @@ def format_list(
     return string.format(rest_str + "," * oxford_comma + " " + finaliser + " " + str(last), plural)
 
 
-class _TimedCollectionMixin:
+
+class TimedDict(dict[T, V]):
     def __init__(self, expires_after: datetime.timedelta, *args, **kwargs):
         self.expires_after = expires_after
         self._state: dict[Any, datetime.datetime] = {}
         super().__init__(*args, **kwargs)
 
-    def __cleanup(self):
-        raise NotImplementedError
-
-
-class TimedDict(dict[T, V], _TimedCollectionMixin):
     def __cleanup(self):
         now = datetime.datetime.now(tz=datetime.timezone.utc)
         for key in super().keys():
@@ -93,7 +89,12 @@ class TimedDict(dict[T, V], _TimedCollectionMixin):
             return super().get(key, default)
 
 
-class TimedSet(set[T], _TimedCollectionMixin):
+class TimedSet(set[T]):
+    def __init__(self, expires_after: datetime.timedelta, *args, **kwargs):
+        self.expires_after = expires_after
+        self._state: dict[Any, datetime.datetime] = {}
+        super().__init__(*args, **kwargs)
+
     def __cleanup(self):
         now = datetime.datetime.now(tz=datetime.timezone.utc)
         for key in super():
