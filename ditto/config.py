@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 import pathlib
 from collections.abc import Callable
-from typing import Any, Optional, Union
+from typing import Any, Generic, Optional, TypeVar, Union
 
 import discord
 import yaml
@@ -17,6 +17,8 @@ __all__ = (
     "load_global_config",
 )
 
+S = TypeVar("S", bound=discord.abc.Snowflake)
+
 
 BASE_DIR = get_base_dir()
 
@@ -24,26 +26,37 @@ BASE_DIR = get_base_dir()
 _bot: discord.Client = MISSING
 
 
-class Object(discord.Object):
-    def __init__(self, id: int, func: Callable[..., Any]) -> None:
-        self._func = func
-        super().__init__(id)
+class Object(Generic[S]):
+    def __init__(self, id: int, type: type[S], func: Callable[[], S | None]) -> None:
+        self._inner: discord.Object = discord.Object(id=id, type=type)
+        self._func: Callable[[], S | None] = func
 
-    def __getattribute__(self, name: str) -> Any:
-        if name in ("_func", "id", "created_at", "__class__"):
-            return object.__getattribute__(self, name)
-        return getattr(self._func(), name)
+    def __getattr__(self, name: str) -> Any:
+        res = self._func()
+        if res is not None:
+            return getattr(res, name)
+        return getattr(self._inner, name)
+
+    @property
+    def __class__(self):
+        return self._inner.type
+
+    def __hash__(self) -> int:
+        return self._inner.__hash__()
 
     def __repr__(self) -> str:
-        return getattr(self._func(), "__repr__", super().__repr__)()
+        return self.__getattr__("__repr__")()
+
+    def __eq__(self, other: object) -> bool:
+        return self.__getattr__("__eq__")(other)
 
 
-def _get_object(*getters: tuple[Callable[[Any, int], Any], int]) -> Any:
+def _get_object(type_: type[S], *getters: tuple[Callable[[Any, int], S | None], int]) -> Any:
     obj = _bot
     for func, id in getters:
         obj = func(obj, id)
         if obj is None:
-            return discord.Object(id=id)
+            return discord.Object(id=id, type=type_)
     return obj
 
 
@@ -57,10 +70,10 @@ def env_var_constructor(loader: yaml.Loader, node: yaml.ScalarNode) -> Optional[
     return os.getenv(key)
 
 
-def generate_constructor(func: Callable[..., Any]) -> Callable[[yaml.Loader, yaml.ScalarNode], discord.abc.Snowflake]:
+def generate_constructor(type_: type[S], func: Callable[..., S]) -> Callable[[yaml.Loader, yaml.ScalarNode], Object[S]]:
     def constructor(loader: yaml.Loader, node: yaml.ScalarNode) -> Object:
         ids = [int(x) for x in loader.construct_scalar(node).split()]  # type: ignore
-        return Object(ids[-1], lambda: func(*ids))
+        return Object(ids[-1], type_, lambda: func(*ids))
 
     return constructor
 
@@ -123,17 +136,41 @@ yaml.FullLoader.add_constructor("!Config", Config.from_yaml)
 yaml.FullLoader.add_constructor("!ENV", env_var_constructor)
 
 # Add discord specific constructors
-DISCORD_CONSTRUCTORS: dict[str, Callable[..., Any]] = {
-    "Emoji": lambda e: _get_object((discord.Client.get_emoji, e)),
-    "Guild": lambda g: _get_object((discord.Client.get_guild, g)),
-    "User": lambda u: _get_object((discord.Client.get_user, u)),
-    "Channel": lambda g, c: _get_object((discord.Client.get_guild, g), (discord.Guild.get_channel, c)),
-    "Member": lambda g, m: _get_object((discord.Client.get_guild, g), (discord.Guild.get_member, m)),
-    "Role": lambda g, r: _get_object((discord.Client.get_guild, g), (discord.Guild.get_role, r)),
-    "Message": lambda g, c, m: discord.PartialMessage(
-        channel=_get_object((discord.Client.get_guild, g), (discord.Guild.get_channel, c)), id=m
+DISCORD_CONSTRUCTORS: dict[
+    str, tuple[type[discord.abc.Snowflake], Callable[..., Object[discord.abc.Snowflake] | discord.PartialMessage]]
+] = {
+    "Emoji": (
+        discord.Emoji,
+        lambda e: _get_object(discord.Emoji, (discord.Client.get_emoji, e)),
+    ),
+    "Guild": (
+        discord.Guild,
+        lambda g: _get_object(discord.Guild, (discord.Client.get_guild, g)),
+    ),
+    "User": (
+        discord.User,
+        lambda u: _get_object(discord.User, (discord.Client.get_user, u)),
+    ),
+    "Channel": (
+        discord.abc.GuildChannel,
+        lambda g, c: _get_object(discord.abc.GuildChannel, (discord.Client.get_guild, g), (discord.Guild.get_channel, c)),
+    ),
+    "Member": (
+        discord.Member,
+        lambda g, m: _get_object(discord.Member, (discord.Client.get_guild, g), (discord.Guild.get_member, m)),
+    ),
+    "Role": (
+        discord.Role,
+        lambda g, r: _get_object(discord.Role, (discord.Client.get_guild, g), (discord.Guild.get_role, r)),
+    ),
+    "Message": (
+        discord.Message,
+        lambda g, c, m: discord.PartialMessage(
+            channel=_get_object(discord.abc.GuildChannel, (discord.Client.get_guild, g), (discord.Guild.get_channel, c)),
+            id=m,
+        ),
     ),
 }
 
-for key, func in DISCORD_CONSTRUCTORS.items():
-    yaml.FullLoader.add_constructor(f"!{key}", generate_constructor(func))
+for key, (type_, func) in DISCORD_CONSTRUCTORS.items():
+    yaml.FullLoader.add_constructor(f"!{key}", generate_constructor(type_, func))

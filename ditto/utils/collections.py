@@ -54,7 +54,6 @@ def format_list(
     return string.format(rest_str + "," * oxford_comma + " " + finaliser + " " + str(last), plural)
 
 
-
 class TimedDict(dict[T, V]):
     def __init__(self, expires_after: datetime.timedelta, *args, **kwargs):
         self.expires_after = expires_after
@@ -97,7 +96,7 @@ class TimedSet(set[T]):
 
     def __cleanup(self):
         now = datetime.datetime.now(tz=datetime.timezone.utc)
-        for key in super().__iter__():
+        for key in list(super().__iter__()):
             try:
                 delta = now - self._state[key]
                 if delta > self.expires_after:
