@@ -29,7 +29,7 @@ class Private(discord.ui.View):
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user != self.user:
-            await error(interaction, "You are not the user who initiated this interaction.")
+            await error(interaction, "You are not the user who initiated this interaction.", title="Error with interaction")
             return False
         return True
 

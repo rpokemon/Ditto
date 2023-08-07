@@ -132,8 +132,9 @@ class Stats(Cog, hidden=True):
     async def bulk_insert(self) -> None:
         async with self._batch_lock:
             if self._batch_data:
-                await Commands.insert_many(None, *self._batch_data)
-                self._batch_data.clear()
+                async with self.bot.pool.acquire() as connection:
+                    await Commands.insert_many(connection, None, *self._batch_data)  # type: ignore
+                    self._batch_data.clear()
 
 
 async def setup(bot: BotBase):
