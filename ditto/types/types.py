@@ -45,7 +45,7 @@ NonVocalGuildChannel: TypeAlias = MessageableGuildChannel | discord.CategoryChan
 GuildChannel: TypeAlias = VocalGuildChannel | NonVocalGuildChannel
 AppCommandChannel: TypeAlias = discord.app_commands.AppCommandChannel | discord.app_commands.AppCommandThread
 TextChannel: TypeAlias = PrivateChannel | MessageableGuildChannel | discord.abc.Messageable
-User: TypeAlias = discord.Member | discord.User | discord.ClientUser
+User: TypeAlias = discord.Member | discord.User
 Mentionable: TypeAlias = User | discord.Role
 Message: TypeAlias = discord.Message | discord.PartialMessage
 
