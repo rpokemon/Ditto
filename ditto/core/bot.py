@@ -105,7 +105,7 @@ class BotBase(commands.bot.BotBase, WebServerMixin, EmojiCacheMixin, EventSchedu
         try:
             with open(CONFIG.APPLICATION.COMMANDS_CACHE_PATH, "r") as f:
                 command_cache = json.load(f)
-        except FileNotFoundError:
+        except (FileNotFoundError, json.JSONDecodeError):
             command_cache = {}
 
         guilds: set[discord.Object | None] = {None}
