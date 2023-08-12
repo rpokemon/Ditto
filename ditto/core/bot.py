@@ -7,7 +7,7 @@ import logging.handlers
 import traceback
 from collections.abc import Callable
 from contextlib import suppress
-from typing import Any, Optional, Union
+from typing import Any
 
 import asyncpg
 import discord
@@ -36,12 +36,12 @@ ONE_MEGABYTE = ONE_KILOBYTE * 1024
 
 
 class BotBase(commands.bot.BotBase, WebServerMixin, EmojiCacheMixin, EventSchedulerMixin, discord.Client):
-    converters: dict[type, Callable[..., Any]]
+    converters: dict[type[Any], Callable[..., Any]]
     pool: asyncpg.pool.Pool
 
     cogs: dict[str, Cog]
-    owner: Optional[discord.User]
-    owners: Optional[list[discord.User]]
+    owner: discord.User | None
+    owners: list[discord.User] | None
 
     def __init__(self, *args, **kwargs) -> None:
         CONFIG = load_global_config(self)
@@ -94,8 +94,6 @@ class BotBase(commands.bot.BotBase, WebServerMixin, EmojiCacheMixin, EventSchedu
             help_command=ViewHelpCommand(),
             allowed_mentions=allowed_mentions,
             intents=intents,
-            sync_global_commands_at_startup=CONFIG.BOT.SYNC_GLOBAL_COMMANDS,
-            sync_guild_commands_at_startup=CONFIG.BOT.SYNC_GUILD_COMMANDS,
             **kwargs,
         )
         self.tree.error(self.on_application_command_error)
@@ -110,7 +108,7 @@ class BotBase(commands.bot.BotBase, WebServerMixin, EmojiCacheMixin, EventSchedu
         except FileNotFoundError:
             command_cache = {}
 
-        guilds: set[Optional[discord.Object]] = {None}
+        guilds: set[discord.Object | None] = {None}
 
         for guild_id in set(self.tree._guild_commands.keys()):
             guilds.add(discord.Object(id=guild_id))
@@ -206,7 +204,7 @@ class BotBase(commands.bot.BotBase, WebServerMixin, EmojiCacheMixin, EventSchedu
                 f"Unhandled exception in command: {interaction.command.name if interaction.command is not None else 'UNKNOWN'}\n\n{type(error).__name__}: {error}\n\n{tb}"
             )
 
-    async def on_command_error(self, ctx: Context, error: BaseException) -> Optional[discord.Message]:
+    async def on_command_error(self, ctx: Context, error: BaseException) -> None:
         if isinstance(error, commands.CommandNotFound) or ctx.command is None:
             return
 
@@ -220,13 +218,14 @@ class BotBase(commands.bot.BotBase, WebServerMixin, EmojiCacheMixin, EventSchedu
                 commands.DisabledCommand,
             ),
         ):
-            return await ctx.send(
+            await ctx.send(
                 embed=discord.Embed(
                     color=discord.Colour.red(),
                     title=f"Error with command {ctx.command.qualified_name}",
                     description=str(error),
                 )
             )
+            return
 
         if error.__cause__ is None:
             return

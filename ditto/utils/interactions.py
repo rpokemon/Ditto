@@ -1,15 +1,12 @@
 from __future__ import annotations
 
 import asyncio
+from collections.abc import Coroutine
 from contextlib import suppress
-from typing import TYPE_CHECKING, Any, Coroutine
+from typing import Any
 
 import discord
 from discord.utils import MISSING
-
-if TYPE_CHECKING:
-    from discord.types.interactions import ApplicationCommandInteractionData as ApplicationCommandInteractionDataPayload
-
 
 __all___ = (
     "delete_after",

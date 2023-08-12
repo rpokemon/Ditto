@@ -1,7 +1,7 @@
 import datetime
 from collections import defaultdict
 from collections.abc import Callable
-from typing import Any, Optional, TypeVar
+from typing import Any, TypeVar
 
 __all__ = (
     "summarise_list",
@@ -83,7 +83,7 @@ class TimedDict(dict[T, V]):
             self.__cleanup()
             return super().__getitem__(key)
 
-        def get(self, key: T, default: Optional[V] = None) -> Optional[V]:
+        def get(self, key: T, default: V | None = None) -> V | None:
             self.__cleanup()
             return super().get(key, default)
 
@@ -142,12 +142,14 @@ class TimedLRUDict(LRUDict[T, V], TimedDict[T, V]):
 
 
 class LRUDefaultDict(LRUDict[T, V], defaultdict[T, V]):
-    def __init__(self, default_factory: Optional[Callable] = None, max_size: int = 1024, *args, **kwargs):
+    def __init__(self, default_factory: Callable[[], V] | None = None, max_size: int = 1024, *args, **kwargs):
         super().__init__(max_size, *args, **kwargs)
         self.default_factory = default_factory
 
 
 class TimedLRUDefaultDict(LRUDict[T, V], TimedDict[T, V], defaultdict[T, V]):
-    def __init__(self, default_factory: Callable, expires_after: datetime.timedelta, max_size: int = 1024, *args, **kwargs):
+    def __init__(
+        self, default_factory: Callable[[], V], expires_after: datetime.timedelta, max_size: int = 1024, *args, **kwargs
+    ):
         super().__init__(max_size, expires_after, *args, **kwargs)
         self.default_factory = default_factory

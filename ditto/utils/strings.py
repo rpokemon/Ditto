@@ -1,6 +1,6 @@
 import datetime
 from itertools import cycle
-from typing import Any, Literal, TypeVar, Union
+from typing import Any, Literal, TypeVar
 
 import discord
 
@@ -89,7 +89,7 @@ def as_columns(items: list[str], /, columns: int = 2, transpose: bool = False, f
     return result
 
 
-def utc_offset(offset: Union[float, datetime.timedelta, datetime.tzinfo], /) -> str:
+def utc_offset(offset: float | datetime.timedelta | datetime.tzinfo, /) -> str:
     if isinstance(offset, (int, float)):
         offset = datetime.timedelta(seconds=offset)
     elif isinstance(offset, datetime.tzinfo):
@@ -108,7 +108,7 @@ def regional_indicator(c: str) -> str:
     return chr(0x1F1E6 - ord("A") + ord(c.upper()))
 
 
-def keycap_digit(c: Union[int, str]) -> str:
+def keycap_digit(c: int | str) -> str:
     """Returns a keycap digit emoji given a character."""
     c = int(c)
     if 0 < c < 10:

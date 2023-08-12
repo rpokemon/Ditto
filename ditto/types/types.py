@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Coroutine, TypeVar, Union
+from collections.abc import Callable, Coroutine
+from typing import TYPE_CHECKING, Any, TypeAlias, TypeVar
 
 import discord
 
@@ -16,6 +17,7 @@ else:
     P = TypeVar("P")
 
 __all__ = (
+    "DiscordEmoji",
     "Emoji",
     "TextChannel",
     "VocalGuildChannel",
@@ -24,7 +26,6 @@ __all__ = (
     "NonVocalGuildChannel",
     "GuildChannel",
     "User",
-    "DiscordEmoji",
     "Message",
     "Mentionable",
     "DiscordObject",
@@ -35,103 +36,29 @@ __all__ = (
 )
 
 
-Emoji = Union[
-    discord.Emoji,
-    str,
-]
+DiscordEmoji: TypeAlias = discord.Emoji | discord.PartialEmoji
+Emoji: TypeAlias = DiscordEmoji | str
+PrivateChannel: TypeAlias = discord.DMChannel | discord.GroupChannel
+VocalGuildChannel: TypeAlias = discord.VoiceChannel | discord.StageChannel
+MessageableGuildChannel: TypeAlias = discord.TextChannel | discord.Thread
+NonVocalGuildChannel: TypeAlias = MessageableGuildChannel | discord.CategoryChannel | discord.ForumChannel
+GuildChannel: TypeAlias = VocalGuildChannel | NonVocalGuildChannel
+AppCommandChannel: TypeAlias = discord.app_commands.AppCommandChannel | discord.app_commands.AppCommandThread
+TextChannel: TypeAlias = PrivateChannel | MessageableGuildChannel | discord.abc.Messageable
+User: TypeAlias = discord.Member | discord.User | discord.ClientUser
+Mentionable: TypeAlias = User | discord.Role
+Message: TypeAlias = discord.Message | discord.PartialMessage
 
+DiscordObject: TypeAlias = (
+    discord.Guild | GuildChannel | Mentionable | DiscordEmoji | Message | discord.Invite | AppCommandChannel
+)
 
-PrivateChannel = Union[
-    discord.DMChannel,
-    discord.GroupChannel,
-]
-
-
-VocalGuildChannel = Union[
-    discord.VoiceChannel,
-    discord.StageChannel,
-]
-
-
-MessageableGuildChannel = Union[
-    discord.TextChannel,
-    discord.Thread,
-]
-
-
-NonVocalGuildChannel = Union[
-    MessageableGuildChannel,
-    discord.CategoryChannel,
-    discord.ForumChannel,
-]
-
-
-GuildChannel = Union[
-    VocalGuildChannel,
-    NonVocalGuildChannel,
-]
-
-
-AppCommandChannel = Union[
-    discord.app_commands.AppCommandChannel,
-    discord.app_commands.AppCommandThread,
-]
-
-
-TextChannel = Union[
-    PrivateChannel,
-    MessageableGuildChannel,
-    discord.abc.Messageable,
-]
-
-
-User = Union[
-    discord.Member,
-    discord.User,
-]
-
-
-Mentionable = Union[
-    User,
-    discord.Role,
-]
-
-
-DiscordEmoji = Union[
-    discord.Emoji,
-    discord.PartialEmoji,
-]
-
-
-Message = Union[
-    discord.Message,
-    discord.PartialMessage,
-]
-
-
-DiscordObject = Union[
-    discord.Guild,
-    GuildChannel,
-    Mentionable,
-    DiscordEmoji,
-    Message,
-    discord.Invite,
-    AppCommandChannel,
-]
-
-
-ChatInputCommand = Union[discord.app_commands.Command[Any, ... if TYPE_CHECKING else Any, Any], discord.app_commands.Group]
-
-AppCommand = Union[
-    ChatInputCommand,
-    discord.app_commands.ContextMenu,
-]
-
+ChatInputCommand: TypeAlias = discord.app_commands.Command[Any, ..., Any] | discord.app_commands.Group
+AppCommand: TypeAlias = ChatInputCommand | discord.app_commands.ContextMenu
 
 if TYPE_CHECKING:
-    AppCommandFunc = Callable[Concatenate[discord.Interaction, P], Coroutine[Any, Any, T]]
+    AppCommandFunc: TypeAlias = Callable[Concatenate[discord.Interaction, P], Coroutine[Any, Any, T]]
 else:
-    AppCommandFunc = Union[P, T]
+    AppCommandFunc = P | T
 
-
-CheckFunc = Callable[[discord.Interaction], Coroutine[Any, Any, bool]]
+CheckFunc: TypeAlias = Callable[[discord.Interaction], Coroutine[Any, Any, bool]]

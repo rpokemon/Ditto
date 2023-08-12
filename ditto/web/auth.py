@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 import aiohttp
 from aiohttp.web import HTTPUnauthorized, Request
@@ -56,7 +56,7 @@ class DiscordAuthorizationPolicy(AbstractAuthorizationPolicy):
         user_id = int(identity)
         return self.bot.get_user(user_id) or await self.bot.fetch_user(user_id)
 
-    async def permits(self, identity: str, permission: str, context: Optional[Request]) -> bool:
+    async def permits(self, identity: str, permission: str, context: Request | None) -> bool:
         user = await self.authorized_userid(identity)
 
         if permission in self.bot._permission_checks:

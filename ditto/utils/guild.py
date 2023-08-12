@@ -1,7 +1,6 @@
 import asyncio
 import datetime
-from io import DEFAULT_BUFFER_SIZE
-from typing import Any, Optional, Union
+from typing import Any
 
 import discord
 
@@ -22,13 +21,13 @@ SLEEP_FOR = 5
 async def fetch_audit_log_entry(
     guild: discord.Guild,
     *,
-    time: Optional[datetime.datetime] = None,
+    time: datetime.datetime | None = None,
     user: User = MISSING,
     moderator: User = MISSING,
     action: discord.AuditLogAction = MISSING,
-    delta: Union[float, datetime.timedelta] = 1,
+    delta: float | datetime.timedelta = 1,
     retry: int = 3,
-) -> Optional[discord.AuditLogEntry]:
+) -> discord.AuditLogEntry | None:
     time = time or datetime.datetime.now(datetime.timezone.utc)
     delta = normalise_timedelta(delta)
 

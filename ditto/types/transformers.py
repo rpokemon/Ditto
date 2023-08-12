@@ -41,10 +41,25 @@ class GuildTransformer(discord.app_commands.Transformer):
         return suggestions[:25]
 
 
-class WhenAndWhatTransformer(discord.app_commands.Transformer):
-    async def transform(self, interaction: discord.Interaction, value: str) -> tuple[datetime.datetime, str]:
-        assert isinstance(interaction.client, BotBase)
+class DatetimeTransformer(discord.app_commands.Transformer):
+    async def transform(self, interaction: discord.Interaction[BotBase], value: str) -> datetime.datetime:
+        async with MaybeAcquire(pool=interaction.client.pool) as connection:
+            timezone = await TimeZones.get_timezone(connection, interaction.user) or datetime.timezone.utc
 
+        now = interaction.created_at.astimezone(tz=timezone)
+
+        parsed_times = await DatetimeConverter.parse(value, timezone=timezone, now=now)
+
+        if len(parsed_times) == 0:
+            raise ValueError("Could not parse time.")
+        elif len(parsed_times) > 1:
+            ...  # TODO: Raise on too many?
+
+        return parsed_times[0][0]
+
+
+class WhenAndWhatTransformer(discord.app_commands.Transformer):
+    async def transform(self, interaction: discord.Interaction[BotBase], value: str) -> tuple[datetime.datetime, str]:
         async with MaybeAcquire(pool=interaction.client.pool) as connection:
             timezone = await TimeZones.get_timezone(connection, interaction.user) or datetime.timezone.utc
 

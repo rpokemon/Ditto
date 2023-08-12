@@ -3,8 +3,7 @@ from __future__ import annotations
 import datetime
 import inspect
 import pathlib
-from collections import namedtuple
-from typing import TYPE_CHECKING, Any, Optional, Union, cast, get_args
+from typing import Any
 
 import discord
 import jishaku
@@ -32,28 +31,13 @@ from ...utils.slash import with_cog
 from ...utils.strings import as_columns, codeblock, yes_no
 from ...utils.time import readable_timestamp
 
-if TYPE_CHECKING:
-    from typing_extensions import TypeGuard
-
-
 COLOUR_INFO_IMAGE_SIZE = 128
 
 GITHUB_URL = "https://github.com/"
 
-ListGuildChannel = Union[
-    list[discord.TextChannel],
-    list[discord.CategoryChannel],
-    list[discord.VoiceChannel],
-    list[discord.StageChannel],
-]
-
-
-def is_voice_channel(channel: Union[GuildChannel, AppCommandChannel]) -> TypeGuard[VocalGuildChannel]:
-    return isinstance(channel, get_args(VocalGuildChannel))
-
-
-def is_not_voice_channel(channel: Union[GuildChannel, AppCommandChannel]) -> TypeGuard[NonVocalGuildChannel]:
-    return not is_voice_channel(channel)
+ListGuildChannel = (
+    list[discord.TextChannel] | list[discord.CategoryChannel] | list[discord.VoiceChannel] | list[discord.StageChannel]
+)
 
 
 class Info(Cog):
@@ -119,7 +103,7 @@ class Info(Cog):
         return embed
 
     @classmethod
-    def _server_object_info(cls, item: Union[discord.Role, GuildChannel, AppCommandChannel]) -> discord.Embed:
+    def _server_object_info(cls, item: discord.Role | GuildChannel | AppCommandChannel) -> discord.Embed:
         embed = cls._object_info(item)
         embed.add_field(name="Server:", value=str(item.guild))
 
@@ -141,7 +125,7 @@ class Info(Cog):
 
         embed.add_field(name="Members:", value=str(server.member_count))
 
-        vocal_channels = [channel for channel in server.channels if isinstance(channel, get_args(VocalGuildChannel))]
+        vocal_channels = [channel for channel in server.channels if isinstance(channel, VocalGuildChannel)]
         channels = f"""{len(server.channels)}
     - Categories: {cls.summarise_channels(*server.categories)}
     - Text: {cls.summarise_channels(*server.text_channels)}
@@ -174,7 +158,7 @@ class Info(Cog):
         return embed
 
     @commands.command()
-    async def server_info(self, ctx: Context, *, server: Optional[discord.Guild] = None) -> None:
+    async def server_info(self, ctx: Context, *, server: discord.Guild | None = None) -> None:
         """Get information on a server.
 
         `server[Optional]`: The server to get information on by name, or ID. If none specified it defaults to the server you're in.
@@ -219,16 +203,16 @@ class Info(Cog):
         await ctx.send(embed=embed)
 
     @classmethod
-    def _channel_info(cls, channel: Union[GuildChannel, AppCommandChannel]) -> discord.Embed:
+    def _channel_info(cls, channel: GuildChannel | AppCommandChannel) -> discord.Embed:
         embed = cls._server_object_info(channel)
 
-        if not isinstance(channel, (discord.Thread, get_args(AppCommandChannel))):
+        if not isinstance(channel, (discord.Thread, AppCommandChannel)):
             embed.add_field(name="Position", value=str(channel.position))  # type: ignore
 
-        if not isinstance(channel, (discord.CategoryChannel, get_args(AppCommandChannel))):
+        if not isinstance(channel, (discord.CategoryChannel, AppCommandChannel)):
             embed.add_field(name="Category", value=str(channel.category))  # type: ignore
 
-        if is_not_voice_channel(channel) and not isinstance(channel, get_args(AppCommandChannel)):
+        if isinstance(channel, NonVocalGuildChannel):
             embed.add_field(name="Is NSFW:", value=str(channel.is_nsfw()))
 
         return embed
@@ -245,12 +229,17 @@ class Info(Cog):
         return embed
 
     @commands.command(hidden=True)
-    async def text_channel_info(self, ctx: Context, *, channel: Optional[discord.TextChannel] = None) -> None:
+    async def text_channel_info(self, ctx: Context, *, channel: discord.TextChannel | None = None) -> None:
         """Get information on a text channel.
 
         `channel[Optional]`: The text channel to get information on by name, ID, or mention. If none specified it defaults to the channel you're in.
         """
-        channel = channel or cast(discord.TextChannel, ctx.channel)
+        if channel is None:
+            if not isinstance(ctx.channel, discord.TextChannel):
+                raise commands.BadArgument(
+                    "You did not specify a text channel, or the channel you are in is not a text channel."
+                )
+            channel = ctx.channel
 
         if channel.guild != ctx.guild and not await ctx.user_in_guild(channel.guild):
             raise commands.BadArgument("You cannot retrieve information on a server you are not in.")
@@ -274,18 +263,21 @@ class Info(Cog):
         return embed
 
     @commands.command(hidden=True)
-    async def voice_channel_info(self, ctx: Context, *, channel: Optional[discord.VoiceChannel]) -> None:
+    async def voice_channel_info(self, ctx: Context, *, channel: discord.VoiceChannel) -> None:
         """Get information on a voice channel.
 
         `channel[Optional]`: The voice channel to get information on by name, ID, or mention. If none specified it defaults to the channel you're in.
         """
         if channel is None:
-            user = cast(discord.Member, ctx.author)
-            if user.voice is not None:
-                channel = cast(Optional[discord.VoiceChannel], user.voice.channel)
+            if ctx.guild is None:
+                raise commands.BadArgument("You did not specify a voice channel.")
 
-        if not isinstance(channel, discord.VoiceChannel):
-            raise commands.BadArgument("You are currently not in a voice channel.")
+            assert isinstance(ctx.author, discord.Member)
+
+            if ctx.author.voice is None or not isinstance(ctx.author.voice.channel, discord.VoiceChannel):
+                raise commands.BadArgument("You are currently not in a voice channel.")
+
+            channel = ctx.author.voice.channel
 
         if channel.guild != ctx.guild and not await ctx.user_in_guild(channel.guild):
             raise commands.BadArgument("You cannot retrieve information on a server you are not in.")
@@ -295,18 +287,21 @@ class Info(Cog):
         await ctx.send(embed=embed)
 
     @commands.command(hidden=True)
-    async def stage_channel_info(self, ctx: Context, *, channel: Optional[discord.StageChannel]) -> None:
+    async def stage_channel_info(self, ctx: Context, *, channel: discord.StageChannel | None) -> None:
         """Get information on a stage channel.
 
         `channel[Optional]`: The stage channel to get information on by name, ID, or mention. If none specified it defaults to the channel you're in.
         """
         if channel is None:
-            user = cast(discord.Member, ctx.author)
-            if user.voice is not None:
-                channel = cast(Optional[discord.StageChannel], user.voice.channel)
+            if ctx.guild is None:
+                raise commands.BadArgument("You did not specify a stage channel.")
 
-        if not isinstance(channel, discord.StageChannel):
-            raise commands.BadArgument("You are currently not in a stage channel.")
+            assert isinstance(ctx.author, discord.Member)
+
+            if ctx.author.voice is None or not isinstance(ctx.author.voice.channel, discord.StageChannel):
+                raise commands.BadArgument("You are currently not in a stage channel.")
+
+            channel = ctx.author.voice.channel
 
         if channel.guild != ctx.guild and not await ctx.user_in_guild(channel.guild):
             raise commands.BadArgument("You cannot retrieve information on a server you are not in.")
@@ -316,15 +311,21 @@ class Info(Cog):
         await ctx.send(embed=embed)
 
     @commands.command(hidden=True)
-    async def vocal_channel_info(self, ctx: Context, *, channel: Optional[VocalGuildChannel]) -> None:
+    async def vocal_channel_info(self, ctx: Context, *, channel: VocalGuildChannel | None) -> None:
         """Get information on a vocal channel.
 
         `channel[Optional]`: The vocal channel to get information on by name, ID, or mention. If none specified it defaults to the channel you're in.
         """
         if channel is None:
-            user = cast(discord.Member, ctx.author)
-            if user.voice is not None:
-                channel = cast(Optional[Union[discord.VoiceChannel, discord.StageChannel]], user.voice.channel)
+            if ctx.guild is None:
+                raise commands.BadArgument("You did not specify a channel.")
+
+            assert isinstance(ctx.author, discord.Member)
+
+            if ctx.author.voice is None or ctx.author.voice.channel is None:
+                raise commands.BadArgument("You are currently not in a vocal channel.")
+
+            channel = ctx.author.voice.channel
 
         if channel is None:
             raise commands.BadArgument("You are currently not in a vocal channel.")
@@ -341,7 +342,7 @@ class Info(Cog):
     def _category_channel_info(cls, channel: discord.CategoryChannel) -> discord.Embed:
         embed = cls._channel_info(channel)
 
-        vocal_channels = [channel for channel in channel.channels if isinstance(channel, get_args(VocalGuildChannel))]
+        vocal_channels = [channel for channel in channel.channels if isinstance(channel, VocalGuildChannel)]
         channels = f"""{len(channel.channels)}
     - Text: {cls.summarise_channels(*channel.text_channels)}
     - Vocal: {len(vocal_channels)}
@@ -352,17 +353,18 @@ class Info(Cog):
         return embed
 
     @commands.command(hidden=True)
-    async def category_channel_info(self, ctx: Context, *, channel: Optional[discord.CategoryChannel]) -> None:
+    async def category_channel_info(self, ctx: Context, *, channel: discord.CategoryChannel | None) -> None:
         """Get information on a channel category.
 
         `channel[Optional]`: The channel category to get information on by name, ID, or mention. If none specified it defaults to the category of the channel you're in, if one exists.
         """
-        channel = channel or cast(discord.TextChannel, ctx.channel).category
-
         if channel is None:
-            raise commands.BadArgument(
-                "You did not specify a channel category, or the text channel you are in is not part of a category."
-            )
+            if not isinstance(ctx.channel, GuildChannel) or ctx.channel.category is None:
+                raise commands.BadArgument(
+                    "You did not specify a channel category, or the text channel you are in is not part of a category."
+                )
+
+            channel = ctx.channel.category
 
         if channel.guild != ctx.guild and not await ctx.user_in_guild(channel.guild):
             raise commands.BadArgument("You cannot retrieve information on a server you are not in.")
@@ -379,7 +381,7 @@ class Info(Cog):
         return embed
 
     @commands.command(hidden=True, aliases=["post_channel_info"])
-    async def forum_channel_info(self, ctx: Context, *, channel: Optional[discord.ForumChannel]) -> None:
+    async def forum_channel_info(self, ctx: Context, *, channel: discord.ForumChannel | None) -> None:
         """Get information on a post channel.
 
         `channel[Optional]`: The post channel to get information on my name, ID, or mention. If none specified it defaults to the parent post channel.
@@ -399,7 +401,7 @@ class Info(Cog):
 
     @commands.command()
     @commands.guild_only()
-    async def channel_info(self, ctx: Context, *, channel: Optional[GuildChannel] = None) -> None:
+    async def channel_info(self, ctx: Context, *, channel: GuildChannel | None = None) -> None:
         """Get information on a channel.
 
         `channel[Optional]`: The channel to get information on by name, ID, or mention. If none specified it defaults to the text channel you're in.
@@ -408,8 +410,8 @@ class Info(Cog):
         if isinstance(channel, discord.TextChannel):
             return await ctx.invoke(self.text_channel_info, channel=channel)
 
-        if isinstance(channel, get_args(VocalGuildChannel)):
-            return await ctx.invoke(self.vocal_channel_info, channel=channel)  # type: ignore
+        if isinstance(channel, VocalGuildChannel):
+            return await ctx.invoke(self.vocal_channel_info, channel=channel)
 
         if isinstance(channel, discord.CategoryChannel):
             return await ctx.invoke(self.category_channel_info, channel=channel)
@@ -446,12 +448,18 @@ class Info(Cog):
 
     @commands.command(hidden=True)
     @commands.guild_only()
-    async def member_info(self, ctx: Context, *, member: Optional[discord.Member] = None) -> None:
+    async def member_info(self, ctx: Context, *, member: discord.Member | None = None) -> None:
         """Get information on a member.
 
         `member[Optional]`: The member to get information on by name, ID, or mention. If none specified it defaults to you.
         """
-        member = member or cast(discord.Member, ctx.author)
+        if member is None:
+            if ctx.guild is None:
+                raise commands.BadArgument("You did not specify a member.")
+
+            assert isinstance(ctx.author, discord.Member)
+
+            member = ctx.author
 
         if member.guild != ctx.guild:
             raise commands.BadArgument("You can only retrieve information on members in the current server.")
@@ -460,12 +468,12 @@ class Info(Cog):
         await ctx.send(embed=embed)
 
     @commands.command()
-    async def user_info(self, ctx: Context, *, user: Optional[User] = None) -> None:
+    async def user_info(self, ctx: Context, *, user: User | None = None) -> None:
         """Get information on a user.
 
         `user[Optional]`: The user to get information on by name, ID, or mention. If none specified it defaults to you.
         """
-        user = user or cast(User, ctx.author)
+        user = user or ctx.author
 
         if isinstance(user, discord.Member) and user.guild == ctx.guild:
             return await ctx.invoke(self.member_info, member=user)
@@ -523,7 +531,7 @@ class Info(Cog):
         return embed
 
     @commands.command()
-    async def message_info(self, ctx: Context, *, message: Optional[Message] = None) -> None:
+    async def message_info(self, ctx: Context, *, message: Message | None = None) -> None:
         """Get information on a message.
 
         `message`: The message to get information on, either by ID, or the jump url. If none specified defaults to the message sent to invoke this command or the message it replied to.
@@ -539,7 +547,6 @@ class Info(Cog):
                     raise commands.BadArgument("Could not resolve message reference.")
             else:
                 message = ctx.message
-            message = cast(discord.Message, message)
 
         embed = self._message_info(message)
         await ctx.send(embed=embed)
@@ -564,7 +571,7 @@ class Info(Cog):
             )
         embed.add_field(
             name="Channel:",
-            value=str(invite.channel) if isinstance(invite.channel, get_args(GuildChannel)) else "Unknown",
+            value=str(invite.channel) if isinstance(invite.channel, GuildChannel) else "Unknown",
         )
         embed.add_field(name="Uses:", value=str(invite.uses or "Unknown"))
         embed.add_field(name="Max Uses:", value=str(invite.max_uses or "Infinite"))
@@ -581,7 +588,7 @@ class Info(Cog):
         await ctx.send(embed=embed)
 
     @classmethod
-    def _colour_info(cls, colour: discord.Colour, filename: Optional[str] = None) -> discord.Embed:
+    def _colour_info(cls, colour: discord.Colour, filename: str | None = None) -> discord.Embed:
         embed = discord.Embed(colour=colour)
         embed.set_author(name=f"Information on: {colour}")
 
@@ -593,7 +600,7 @@ class Info(Cog):
         return embed
 
     @commands.command()
-    async def colour_info(self, ctx: Context, *, colour: Optional[discord.Colour] = None) -> None:
+    async def colour_info(self, ctx: Context, *, colour: discord.Colour | None = None) -> None:
         """Get information on a colour.
 
         `colour:` The colour to get information on by hex or integer value. defaults to a random colour.
@@ -608,7 +615,7 @@ class Info(Cog):
         await ctx.send(embed=embed, file=discord.File(image, filename))
 
     @commands.command()
-    async def get(self, ctx: Context, *, item: Union[DiscordObject, discord.Colour]) -> None:
+    async def get(self, ctx: Context, *, item: DiscordObject | discord.Colour) -> None:
         """Get information on something.
 
         `item`: The item to get information on; items are looked in the following order: Guild, Role, Channel, User, Emoji, Message, Invite, Colour.
@@ -620,17 +627,17 @@ class Info(Cog):
         elif isinstance(item, discord.Role):
             return await ctx.invoke(self.role_info, role=item)
 
-        elif isinstance(item, get_args(GuildChannel)):
-            return await ctx.invoke(self.channel_info, channel=item)  # type: ignore
+        elif isinstance(item, GuildChannel):
+            return await ctx.invoke(self.channel_info, channel=item)
 
-        elif isinstance(item, get_args(User)):
-            return await ctx.invoke(self.user_info, user=item)  # type: ignore
+        elif isinstance(item, User):
+            return await ctx.invoke(self.user_info, user=item)
 
-        elif isinstance(item, get_args(DiscordEmoji)):
-            return await ctx.invoke(self.emoji_info, emoji=item)  # type: ignore
+        elif isinstance(item, DiscordEmoji):
+            return await ctx.invoke(self.emoji_info, emoji=item)
 
-        elif isinstance(item, get_args(Message)):
-            return await ctx.invoke(self.message_info, message=item)  # type: ignore
+        elif isinstance(item, Message):
+            return await ctx.invoke(self.message_info, message=item)
 
         elif isinstance(item, discord.Invite):
             return await ctx.invoke(self.invite_info, invite=item)
@@ -643,7 +650,7 @@ class Info(Cog):
     # endregion: Object info
 
     @commands.command()
-    async def source(self, ctx: Context, *, command: Optional[commands.Command] = None) -> None:
+    async def source(self, ctx: Context, *, command: commands.Command | None = None) -> None:
         if command is None:
             await ctx.send(f"<{GITHUB_URL}{BOT_CONFIG.SOURCE.CUSTOM}>")
             return
@@ -719,8 +726,8 @@ class Get(discord.app_commands.Group):
 
         if isinstance(channel_, discord.TextChannel):
             embed = Info._text_channel_info(channel_)
-        elif isinstance(channel_, get_args(VocalGuildChannel)):
-            embed = Info._vocal_channel_info(channel_)  # type: ignore
+        elif isinstance(channel_, VocalGuildChannel):
+            embed = Info._vocal_channel_info(channel_)
         elif isinstance(channel_, discord.CategoryChannel):
             embed = Info._category_channel_info(channel_)
         else:

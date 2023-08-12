@@ -3,13 +3,16 @@ from __future__ import annotations
 import os
 import pathlib
 from collections.abc import Callable
-from typing import Any, Generic, Optional, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 import discord
 import yaml
 from discord.utils import MISSING
 
 from .utils.files import get_base_dir
+
+if TYPE_CHECKING:
+    from _typeshed import StrPath
 
 __all__ = (
     "CONFIG",
@@ -60,7 +63,7 @@ def _get_object(type_: type[S], *getters: tuple[Callable[[Any, int], S | None], 
     return obj
 
 
-def env_var_constructor(loader: yaml.Loader, node: yaml.ScalarNode) -> Optional[str]:
+def env_var_constructor(loader: yaml.Loader, node: yaml.ScalarNode) -> str | None:
     if node.id != "scalar":
         raise TypeError("Expected a string")
 
@@ -107,14 +110,14 @@ class Config(yaml.YAMLObject):
 CONFIG: Any = Config()
 
 
-def load_config(file: Union[str, pathlib.Path], bot: discord.Client) -> Config:
+def load_config(file: StrPath, bot: discord.Client) -> Config:
     with open(file, encoding="utf-8") as f:
         config = yaml.load(f, Loader=yaml.FullLoader)
     config._bot = bot
     return config
 
 
-def update_config(config: Config, file: Union[str, pathlib.Path]) -> None:
+def update_config(config: Config, file: StrPath) -> None:
     with open(file, encoding="utf-8") as f:
         config.update(yaml.load(f, Loader=yaml.FullLoader))
 

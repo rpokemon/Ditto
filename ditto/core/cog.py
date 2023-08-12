@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, ClassVar, List, Type, TypeVar
+from typing import TYPE_CHECKING, Any, ClassVar, TypeVar
 
 import discord
 from discord.ext import commands
@@ -17,13 +17,13 @@ CogT = TypeVar("CogT", bound="Cog")
 class CogMeta(commands.CogMeta):
     __cog_hidden__: ClassVar[bool]
 
-    def __new__(cls: Type[CogMeta], *args: Any, **kwargs: Any) -> CogMeta:
+    def __new__(cls: type[CogMeta], *args: Any, **kwargs: Any) -> CogMeta:
         name, bases, attrs = args
 
         hidden = kwargs.pop("hidden", False)
         attrs["__cog_hidden__"] = hidden
 
-        return super().__new__(cls, name, bases, attrs, **kwargs)  # type: ignore
+        return super().__new__(cls, name, bases, attrs, **kwargs)
 
     @property
     def hidden(self) -> bool:

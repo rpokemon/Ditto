@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import sys
+from collections.abc import Callable, Coroutine
 from functools import cached_property
-from typing import TYPE_CHECKING, Any, Callable, Coroutine, Dict, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar
 from urllib.parse import quote
 
 import aiohttp
@@ -40,7 +41,7 @@ class WebServerMixin:
             return
 
         self.app: Application = Application(middlewares=[normalize_path_middleware()])
-        self._permission_checks: Dict[str, Callable[[BotBase, discord.User], Coro[bool]]] = {}
+        self._permission_checks: dict[str, Callable[[BotBase, discord.User], Coro[bool]]] = {}
 
         self.storage: PostgresStorage = PostgresStorage(self, cookie_name="session")
         aiohttp_session.setup(self.app, self.storage)

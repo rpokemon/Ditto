@@ -30,8 +30,6 @@
     PREFIX: !ENV BOT_PREFIX
     TOKEN: !ENV BOT_TOKEN
     IGNORE_BOTS: yes
-    SYNC_GLOBAL_COMMANDS: yes
-    SYNC_GUILD_COMMANDS: no
     # INTENTS:  # Map a dictionary of intents
 
   EMOJI: !Config
@@ -46,9 +44,9 @@
     LOG_TO_FILE: no
   
   DATABASE: !Config
-    # Database Settings: Set either a DSN or Hostname, Username, Password and Database
     DISABLED: yes
     APPLICATION_NAME: ~
+    # Database Settings: Set either a DSN or Hostname, Username, Password and Database
     DSN: !ENV POSTGRES_DSN
     HOSTNAME: ~
     USERNAME: ~

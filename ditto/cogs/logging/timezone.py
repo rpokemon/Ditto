@@ -1,7 +1,6 @@
 import datetime
 import zoneinfo
-from typing import Any, Optional, Union, cast, get_args
-from unittest.mock import NonCallableMagicMock
+from typing import Any
 
 import discord
 from discord.ext import commands, menus
@@ -26,15 +25,13 @@ class Timezone(Cog):
         return discord.PartialEmoji(name="\N{WORLD MAP}")
 
     @commands.group(aliases=["time"], invoke_without_command=True)
-    async def timezone(self, ctx: Context, *, argument: Optional[Union[zoneinfo.ZoneInfo, User]] = None) -> None:
+    async def timezone(self, ctx: Context, *, argument: zoneinfo.ZoneInfo | User | None = None) -> None:
         """Get the current time for a user or time zone."""
         if argument is None:
             argument = zoneinfo.ZoneInfo("UTC")
 
-        if isinstance(argument, get_args(User)):
-            return await ctx.invoke(self.timezone_get, user=argument)  # type: ignore
-
-        argument = cast(zoneinfo.ZoneInfo, argument)
+        if isinstance(argument, User):
+            return await ctx.invoke(self.timezone_get, user=argument)
 
         embed = discord.Embed(title=human_friendly_timestamp(datetime.datetime.now(tz=argument)))
         embed.set_author(name=f"Time in {argument}")
@@ -42,10 +39,10 @@ class Timezone(Cog):
         await ctx.reply(embed=embed)
 
     @timezone.command(name="get")
-    async def timezone_get(self, ctx: Context, *, user: Optional[User] = None) -> None:
+    async def timezone_get(self, ctx: Context, *, user: User | None = None) -> None:
         """Get a user's time zone."""
         if user is None:
-            user = cast(User, ctx.author)
+            user = ctx.author
 
         async with ctx.db as connection:
             timezone = await TimeZones.get_timezone(connection, user)
@@ -120,8 +117,8 @@ class _Timezone(discord.app_commands.Group, name="timezone"):
     async def get(
         self,
         interaction: discord.Interaction,
-        timezone: Optional[discord.app_commands.Transform[zoneinfo.ZoneInfo, ZoneInfoTransformer]],
-        user: Optional[User],
+        timezone: discord.app_commands.Transform[zoneinfo.ZoneInfo, ZoneInfoTransformer] | None,
+        user: User | None,
         private: bool = True,
     ) -> None:
         """Get the current time for a user or time zone."""

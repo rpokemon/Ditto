@@ -1,5 +1,4 @@
 import zoneinfo
-from typing import Optional
 
 import asyncpg
 from donphan import Column, SQLType, Table
@@ -32,7 +31,7 @@ class TimeZones(Table, schema="core"):
     time_zone: Column[SQLType.Text] = Column(nullable=False)
 
     @classmethod
-    async def get_timezone(cls, connection: asyncpg.Connection, /, user: User) -> Optional[zoneinfo.ZoneInfo]:
+    async def get_timezone(cls, connection: asyncpg.Connection, /, user: User) -> zoneinfo.ZoneInfo | None:
         record = await cls.fetch_row(connection, user_id=user.id)
         return zoneinfo.ZoneInfo(record["time_zone"]) if record is not None else None
 

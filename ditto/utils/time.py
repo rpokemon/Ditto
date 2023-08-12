@@ -1,6 +1,5 @@
 import datetime
 import zoneinfo
-from typing import Union
 
 import humanize
 
@@ -40,7 +39,7 @@ def human_friendly_timedelta(timedelta: datetime.timedelta) -> str:
     return humanize.naturaldelta(timedelta)
 
 
-def normalise_timedelta(delta: Union[float, datetime.timedelta]) -> datetime.timedelta:
+def normalise_timedelta(delta: float | datetime.timedelta) -> datetime.timedelta:
     if isinstance(delta, (int, float)):
         return datetime.timedelta(seconds=delta)
     return delta

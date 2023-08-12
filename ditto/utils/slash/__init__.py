@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from functools import wraps
-from typing import TYPE_CHECKING, Any, Callable, Iterable, List, NoReturn, Optional, Type, TypeVar, Union
+from collections.abc import Callable, Iterable
+from typing import TYPE_CHECKING, TypeVar
 
 import discord
 from discord.utils import MISSING
@@ -56,7 +56,7 @@ def confirm(message: str, ephemeral: bool = True) -> Callable[[T], T]:
     return check
 
 
-def with_cog(cog: Type[Cog]) -> Callable[[T], T]:
+def with_cog(cog: type[Cog]) -> Callable[[T], T]:
     def decorator(command: T) -> T:
         command.__ditto_cog__ = cog  # type: ignore
         return command
@@ -64,9 +64,7 @@ def with_cog(cog: Type[Cog]) -> Callable[[T], T]:
     return decorator
 
 
-def available_commands(
-    tree: discord.app_commands.CommandTree, guild: Optional[discord.Guild] = None
-) -> List[ChatInputCommand]:
+def available_commands(tree: discord.app_commands.CommandTree, guild: discord.Guild | None = None) -> list[ChatInputCommand]:
     # Global commands
     commands = tree.get_commands(guild=None, type=discord.AppCommandType.chat_input)
 
@@ -81,8 +79,8 @@ def add_commands(
     bot: BotBase,
     commands: Iterable[AppCommand],
     *,
-    guild: Optional[discord.abc.Snowflake] = MISSING,
-    guilds: List[discord.abc.Snowflake] = MISSING,
+    guild: discord.abc.Snowflake | None = MISSING,
+    guilds: list[discord.abc.Snowflake] = MISSING,
 ) -> None:
     for command in commands:
         bot.tree.add_command(command, guild=guild, guilds=guilds)
@@ -92,7 +90,7 @@ def remove_commands(
     bot: BotBase,
     commands: Iterable[AppCommand],
     *,
-    guild: Optional[discord.abc.Snowflake] = None,
+    guild: discord.abc.Snowflake | None = None,
 ) -> None:
     for command in commands:
         bot.tree.remove_command(

@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import inspect
 import io
-from typing import TYPE_CHECKING, Any, Literal, Optional, TypeVar, Union, overload
+from typing import TYPE_CHECKING, Any, Literal, TypeVar, overload
 
 import discord
 from discord.ext import commands
@@ -112,7 +112,7 @@ async def confirm(
     timeout: float = 60,
     delete_after: bool = False,
     **kwargs: Any,
-) -> Optional[bool]:
+) -> bool | None:
     message = await channel.send(*args, **kwargs)
     await bulk_add_reactions(message, *CONFIRM_REACTIONS)
 
@@ -135,7 +135,7 @@ async def download_attachment(message: discord.Message, *, index: int = 0) -> io
     return attachment
 
 
-async def fetch_previous_message(message: Message) -> Optional[discord.Message]:
+async def fetch_previous_message(message: Message) -> discord.Message | None:
     async for msg in message.channel.history(before=message, limit=1):
         return msg
     return None
@@ -162,9 +162,9 @@ async def prompt(
 async def prompt(
     *args: Any,
     context: Context = ...,
-    bot: Optional[BotBase] = ...,
-    channel: Optional[TextChannel] = ...,
-    user: Optional[User] = ...,
+    bot: BotBase | None = ...,
+    channel: TextChannel | None = ...,
+    user: User | None = ...,
     timeout: float = ...,
     max_tries: int = ...,
     confirm_after: bool = ...,
@@ -176,29 +176,27 @@ async def prompt(
 
 async def prompt(
     *args,
-    context: Optional[Context] = None,
-    bot: Optional[BotBase] = None,
-    channel: Optional[TextChannel] = None,
-    user: Optional[User] = None,
+    context: Context | None = None,
+    bot: BotBase | None = None,
+    channel: TextChannel | None = None,
+    user: User | None = None,
     converter: type[T] = str,
     timeout: float = 60,
     max_tries: int = 3,
     confirm_after: bool = False,
     delete_after: bool = False,
     **kwargs,
-) -> Union[T, str]:
+) -> T | str:
     if context is None:
         if None in (bot, channel, user):
             raise ValueError("Values; bot, channel and user cannot be None if no context passed.")
+        assert bot is not None
+        assert channel is not None
+        assert user is not None
     else:
         bot = bot or context.bot
         channel = channel or context.channel
         user = user or context.author
-
-    if TYPE_CHECKING:
-        assert isinstance(bot, BotBase)
-        assert isinstance(channel, TextChannel)
-        assert isinstance(user, User)
 
     message = await channel.send(*args, **kwargs)
 

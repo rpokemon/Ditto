@@ -1,4 +1,4 @@
-from typing import Generic, Optional, TypeVar
+from typing import Generic, TypeVar
 
 import discord
 
@@ -23,7 +23,7 @@ def disable_view(view: discord.ui.View) -> None:
 
 
 class Private(discord.ui.View):
-    def __init__(self, user: User, *, timeout: Optional[float] = 60):
+    def __init__(self, user: User, *, timeout: float | None = 60):
         super().__init__(timeout=timeout)
         self.user = user
 
@@ -35,9 +35,9 @@ class Private(discord.ui.View):
 
 
 class Prompt(Private):
-    def __init__(self, user: User, *, timeout: Optional[float] = 60):
+    def __init__(self, user: User, *, timeout: float | None = 60):
         super().__init__(user, timeout=timeout)
-        self.response: Optional[bool] = None
+        self.response: bool | None = None
 
     async def disable(self, interaction: discord.Interaction) -> None:
         disable_view(self)
@@ -61,7 +61,7 @@ class PageView(Private):
         source: PaginatorSource[str],
         user: User,
         *,
-        timeout: Optional[float] = 60,
+        timeout: float | None = 60,
         ephemeral: bool = False,
     ) -> None:
         super().__init__(user, timeout=timeout)
@@ -157,7 +157,7 @@ class EmbedPageView(PageView, Generic[EmbedT]):
         source: PaginatorSource[EmbedT],
         user: User,
         *,
-        timeout: Optional[float] = 60,
+        timeout: float | None = 60,
         ephemeral: bool = False,
     ) -> None:
         super().__init__(source, user, timeout=timeout, ephemeral=ephemeral)  # type: ignore

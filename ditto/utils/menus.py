@@ -1,4 +1,4 @@
-from typing import Generic, Optional, TypeVar
+from typing import Generic, TypeVar
 
 import discord
 from discord.ext import menus
@@ -18,7 +18,7 @@ class BaseChoiceMenu(menus.Menu, Generic[T]):
             raise RuntimeError("Too many options for choice menu.")
 
         self.options = options
-        self.selection: Optional[T] = None
+        self.selection: T | None = None
 
         for i, _ in enumerate(self.options, 1):
             emoji = f"{i}\ufe0f\N{COMBINING ENCLOSING KEYCAP}"
@@ -31,7 +31,7 @@ class BaseChoiceMenu(menus.Menu, Generic[T]):
         self.selection = self.options[int(str(payload.emoji)[0]) - 1]
         self.stop()
 
-    async def start(self, ctx, *, channel=None) -> Optional[T]:
+    async def start(self, ctx, *, channel=None) -> T | None:
         await super().start(ctx, channel=channel, wait=True)
         return self.selection
 

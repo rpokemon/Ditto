@@ -4,7 +4,7 @@ import datetime
 import io
 import random
 import re
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 
 import asyncpg
 import discord
@@ -55,7 +55,7 @@ class EmojiCacheMixin:
 
         self._not_found_emoji: discord.Emoji = CONFIG.EMOJI.NOT_FOUND
 
-    async def _find_guild(self, *, connection: Optional[asyncpg.Connection] = None) -> discord.Guild:
+    async def _find_guild(self, *, connection: asyncpg.Connection | None = None) -> discord.Guild:
         if TYPE_CHECKING:
             assert isinstance(self, BotBase)
         async with MaybeAcquire(connection, pool=self.pool) as connection:
@@ -78,7 +78,7 @@ class EmojiCacheMixin:
             return await self._find_guild(connection=connection)
 
     async def create_emoji(
-        self, name: str, image: io.BytesIO, *, connection: Optional[asyncpg.Connection] = None
+        self, name: str, image: io.BytesIO, *, connection: asyncpg.Connection | None = None
     ) -> discord.Emoji:
         if TYPE_CHECKING:
             assert isinstance(self, BotBase)
@@ -90,7 +90,7 @@ class EmojiCacheMixin:
 
         return emoji
 
-    async def create_user_emoji(self, user: User, *, connection: Optional[asyncpg.Connection] = None) -> discord.Emoji:
+    async def create_user_emoji(self, user: User, *, connection: asyncpg.Connection | None = None) -> discord.Emoji:
         if TYPE_CHECKING:
             assert isinstance(self, BotBase)
         name = re.sub(r"[^A-Za-z0-9_]", "", user.name[:28]) + str(user.discriminator)
@@ -102,9 +102,7 @@ class EmojiCacheMixin:
 
         return emoji
 
-    async def fetch_emoji(
-        self, emoji_id: Optional[int], *, connection: Optional[asyncpg.Connection] = None
-    ) -> discord.Emoji:
+    async def fetch_emoji(self, emoji_id: int | None, *, connection: asyncpg.Connection | None = None) -> discord.Emoji:
         if TYPE_CHECKING:
             assert isinstance(self, BotBase)
         if emoji_id is None:
@@ -124,9 +122,7 @@ class EmojiCacheMixin:
 
         return emoji
 
-    async def fetch_user_emoji(
-        self, user: Optional[User], *, connection: Optional[asyncpg.Connection] = None
-    ) -> discord.Emoji:
+    async def fetch_user_emoji(self, user: User | None, *, connection: asyncpg.Connection | None = None) -> discord.Emoji:
         if TYPE_CHECKING:
             assert isinstance(self, BotBase)
         if user is None:
@@ -143,7 +139,7 @@ class EmojiCacheMixin:
 
             return await self.create_user_emoji(user, connection=connection)
 
-    async def delete_emoji(self, emoji_id: int, *, connection: Optional[asyncpg.Connection] = None) -> None:
+    async def delete_emoji(self, emoji_id: int, *, connection: asyncpg.Connection | None = None) -> None:
         if TYPE_CHECKING:
             assert isinstance(self, BotBase)
         async with MaybeAcquire(connection, pool=self.pool) as connection:

@@ -1,7 +1,7 @@
 import asyncio
 import datetime
 from collections import Counter
-from typing import Any, Optional, TypedDict
+from typing import Any, TypedDict
 
 import asyncpg
 import discord
@@ -15,7 +15,7 @@ from ...utils.time import human_friendly_timestamp
 
 class CommandInvoke(TypedDict):
     message_id: int
-    guild_id: Optional[int]
+    guild_id: int | None
     channel_id: int
     user_id: int
     invoked_at: datetime.datetime
@@ -34,7 +34,7 @@ class Stats(Cog, hidden=True):
     def __init__(self, bot: BotBase) -> None:
         super().__init__(bot)
         self._command_stats: Counter[str] = Counter()
-        self._socket_stats: Counter[Optional[str]] = Counter()
+        self._socket_stats: Counter[str | None] = Counter()
         self._batch_lock = asyncio.Lock()
         self._batch_data: list[CommandInvoke] = []
 
@@ -104,7 +104,7 @@ class Stats(Cog, hidden=True):
 
     @commands.Cog.listener("on_command_completion")
     @commands.Cog.listener("on_command_error")
-    async def on_command(self, ctx: Context, error: Optional[BaseException] = None) -> None:
+    async def on_command(self, ctx: Context, error: BaseException | None = None) -> None:
         assert ctx.prefix is not None
 
         if ctx.command is None:

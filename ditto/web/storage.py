@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import datetime
 import uuid
-from typing import TYPE_CHECKING, Any, Callable, Optional
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any
 
 from aiohttp.web import Request, Response
 from aiohttp_session import AbstractStorage, Session
@@ -21,10 +22,10 @@ class PostgresStorage(AbstractStorage):
         bot: BotBase,
         *,
         cookie_name: str = "AIOHTTP_SESSION",
-        domain: Optional[str] = None,
-        max_age: Optional[int] = None,
+        domain: str | None = None,
+        max_age: int | None = None,
         path: str = "/",
-        secure: Optional[bool] = True,
+        secure: bool | None = True,
         httponly: bool = True,
         encoder: Callable[[Any], str] = _to_json,
         decoder: Callable[[str], Any] = _from_json,

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, Any, DefaultDict, Optional, Union
+from typing import TYPE_CHECKING, Any, DefaultDict
 
 import discord
 from discord.ext import commands
@@ -16,8 +16,6 @@ from .context import Context
 
 if TYPE_CHECKING:
     from .bot import BotBase
-else:
-    BotBase = Any
 
 
 __all__ = ("HelpView", "SlashHelpView", "ViewHelpCommand", "help")
@@ -26,7 +24,7 @@ __all__ = ("HelpView", "SlashHelpView", "ViewHelpCommand", "help")
 MISSING: Any = discord.utils.MISSING
 
 
-Command = Union[commands.Command[Any, ... if TYPE_CHECKING else Any, Any], ChatInputCommand]
+Command = commands.Command[Any, ... if TYPE_CHECKING else Any, Any] | ChatInputCommand
 
 
 class HelpEmbed(discord.Embed):
@@ -54,7 +52,7 @@ class FrontPage(PaginatorSource[discord.Embed]):
     def is_paginating(self) -> bool:
         return True
 
-    def get_max_pages(self) -> Optional[int]:
+    def get_max_pages(self) -> int | None:
         return 1
 
     async def get_page(self, page_number: int) -> discord.Embed:
@@ -92,9 +90,9 @@ class CommandListSource(EmbedPaginator):
 
 
 class HelpSelect(discord.ui.Select["HelpView"]):
-    def __init__(self, bot: BotBase, command_prefix: str, cogs: dict[Optional[Cog], list[Command]]) -> None:
-        self.commands: dict[Optional[Cog], list[Command]] = cogs
-        self.cogs: dict[str, Optional[Cog]] = {}
+    def __init__(self, bot: BotBase, command_prefix: str, cogs: dict[Cog | None, list[Command]]) -> None:
+        self.commands: dict[Cog | None, list[Command]] = cogs
+        self.cogs: dict[str, Cog | None] = {}
         self.bot: BotBase = bot
         self.command_prefix: str = command_prefix
 
@@ -138,8 +136,8 @@ class HelpView(EmbedPageView):
         user: User,
         source: PaginatorSource[discord.Embed],
         *,
-        cogs: dict[Optional[Cog], list[Command]] = MISSING,
-        timeout: Optional[float] = 180,
+        cogs: dict[Cog | None, list[Command]] = MISSING,
+        timeout: float | None = 180,
         ephemeral: bool = False,
     ) -> None:
         self.client: BotBase = bot
@@ -156,9 +154,9 @@ class HelpView(EmbedPageView):
     async def send(
         cls,
         ctx: Context,
-        source: Optional[PaginatorSource[discord.Embed]] = None,
+        source: PaginatorSource[discord.Embed] | None = None,
         *,
-        cogs: dict[Optional[Cog], list[Command]] = MISSING,
+        cogs: dict[Cog | None, list[Command]] = MISSING,
         dm_help: bool = False,
     ) -> None:
         channel = ctx.channel if not dm_help else ctx.author
@@ -181,7 +179,7 @@ class SlashHelpView(HelpView):
         bot: BotBase,
         source: PaginatorSource[discord.Embed],
         *,
-        cogs: dict[Optional[Cog], list[Command]] = MISSING,
+        cogs: dict[Cog | None, list[Command]] = MISSING,
         ephemeral: bool = True,
     ) -> None:
         assert interaction.user is not None
@@ -209,7 +207,7 @@ class ViewHelpCommand(commands.HelpCommand):
         )
 
     async def send_bot_help(self, mapping):
-        cogs = DefaultDict[Optional[Cog], list[commands.Command]](list)
+        cogs = DefaultDict[Cog | None, list[commands.Command]](list)
 
         for command in await self.filter_commands(self.context.bot.commands, sort=True):
             cogs[command.cog].append(command)
@@ -265,8 +263,8 @@ def slash_command_help(bot: BotBase, command: ChatInputCommand) -> discord.Embed
     return HelpEmbed(bot, "/", title=command.name, description=f"Syntax: `{syntax}`\n\n{command.description}\n\n{options}")
 
 
-def _get_commands(bot: BotBase, guild: Optional[discord.Guild]) -> dict[Optional[Cog], list[ChatInputCommand]]:
-    cogs = DefaultDict[Optional[Cog], list[ChatInputCommand]](list)
+def _get_commands(bot: BotBase, guild: discord.Guild | None) -> dict[Cog | None, list[ChatInputCommand]]:
+    cogs = DefaultDict[Cog | None, list[ChatInputCommand]](list)
 
     application_commands = available_commands(bot.tree, guild)
     for application_command in application_commands:
@@ -284,46 +282,42 @@ def _get_commands(bot: BotBase, guild: Optional[discord.Guild]) -> dict[Optional
     private="Whether to invoke this command privately.",
 )
 async def help(
-    interaction: discord.Interaction,
-    command: Optional[str],
+    interaction: discord.Interaction[BotBase],
+    command: str | None,
     private: bool = True,
 ) -> None:
     """Displays help about the bot, a command, or a category"""
-    bot: BotBase = interaction.client  # type: ignore
-
-    cogs = _get_commands(bot, interaction.guild)
+    cogs = _get_commands(interaction.client, interaction.guild)
 
     for cog in cogs:
         for application_command in cogs[cog]:
             if application_command.name == command:
                 # TODO: Display group command subcommands?
                 return await interaction.response.send_message(
-                    embed=slash_command_help(bot, application_command), ephemeral=private
+                    embed=slash_command_help(interaction.client, application_command), ephemeral=private
                 )
 
     # Send Bot Help
     if command is None:
-        source = FrontPage(bot, command_prefix="/")
-        return await SlashHelpView.send(interaction, bot, source, cogs=cogs, ephemeral=private)  # type: ignore
+        source = FrontPage(interaction.client, command_prefix="/")
+        return await SlashHelpView.send(interaction, interaction.client, source, cogs=cogs, ephemeral=private)  # type: ignore
 
     # Send Cog Help
-    if command in bot.cogs:
-        commands = cogs[bot.cogs[command]]
+    if command in interaction.client.cogs:
+        commands = cogs[interaction.client.cogs[command]]
         if commands:
-            source = CommandListSource(bot, "/", commands)
-            await SlashHelpView.send(interaction, bot, source, ephemeral=private)
+            source = CommandListSource(interaction.client, "/", commands)
+            await SlashHelpView.send(interaction, interaction.client, source, ephemeral=private)
 
     return await error(interaction, f'Could not find command or category with name "{command}"')
 
 
 @help.autocomplete("command")
-async def help_autocomplete_command(
-    interaction: discord.Interaction,
+async def _help_autocomplete_command(
+    interaction: discord.Interaction[BotBase],
     focused_value: str,
 ) -> list[discord.app_commands.Choice[str]]:
-    bot: BotBase = interaction.client  # type: ignore
-
-    cogs = _get_commands(bot, interaction.guild)
+    cogs = _get_commands(interaction.client, interaction.guild)
 
     value = (focused_value or "").lower()
     suggestions = []

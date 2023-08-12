@@ -3,7 +3,7 @@ from __future__ import annotations
 import datetime
 import json
 import zoneinfo
-from typing import TYPE_CHECKING, Any, Generic, Optional, TypeVar, cast
+from typing import TYPE_CHECKING, Any, Generic, TypeVar, cast
 
 import aiohttp
 import discord
@@ -60,7 +60,7 @@ class DatetimeConverter(commands.Converter[datetime.datetime]):
         /,
         *,
         timezone: datetime.tzinfo = datetime.timezone.utc,
-        now: Optional[datetime.datetime] = None,
+        now: datetime.datetime | None = None,
     ) -> list[tuple[datetime.datetime, int, int]]:
         now = now or datetime.datetime.now(datetime.timezone.utc)
 
@@ -94,7 +94,7 @@ class DatetimeConverter(commands.Converter[datetime.datetime]):
         /,
         *,
         timezone: datetime.tzinfo = datetime.timezone.utc,
-        now: Optional[datetime.datetime] = None,
+        now: datetime.datetime | None = None,
     ) -> list[tuple[datetime.datetime, int, int]]:
         now = now or datetime.datetime.now(datetime.timezone.utc)
 
