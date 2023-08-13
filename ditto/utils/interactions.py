@@ -37,11 +37,17 @@ def error(
     title: str = MISSING,
     colour: discord.Colour = MISSING,
 ) -> Coroutine[Any, Any, Any]:
+    if title is MISSING:
+        if interaction.type is discord.InteractionType.application_command:
+            title = f"Error with command {interaction.command.name}"  # type: ignore
+        else:
+            title = "Error with interaction"
+
     return send_message(
         interaction,
         embed=discord.Embed(
             colour=colour or discord.Colour.red(),
-            title=title or f"Error with command {interaction.data['name']}",  # type: ignore
+            title=title,
             description=message,
         ),
         ephemeral=True,
