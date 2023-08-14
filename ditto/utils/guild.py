@@ -1,5 +1,6 @@
 import asyncio
 import datetime
+from collections.abc import Callable
 from typing import Any
 
 import discord
@@ -25,6 +26,7 @@ async def fetch_audit_log_entry(
     user: User = MISSING,
     moderator: User = MISSING,
     action: discord.AuditLogAction = MISSING,
+    check: Callable[[discord.AuditLogEntry], bool] = lambda _: True,
     delta: float | datetime.timedelta = 1,
     retry: int = 3,
 ) -> discord.AuditLogEntry | None:
@@ -32,7 +34,7 @@ async def fetch_audit_log_entry(
     delta = normalise_timedelta(delta)
 
     async for entry in guild.audit_logs(action=action, user=moderator):
-        if (time - entry.created_at) < delta and (user is MISSING or entry.target == user):
+        if (time - entry.created_at) < delta and (user is MISSING or entry.target == user) and check(entry):
             return entry
 
     if retry > 0:
