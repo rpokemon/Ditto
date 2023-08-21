@@ -1,4 +1,4 @@
-from typing import Generic, TypeVar
+from typing import Any, Generic, TypeVar
 
 import discord
 
@@ -167,3 +167,9 @@ class EmbedPageView(PageView, Generic[EmbedT]):
 
     async def show_page(self, interaction: discord.Interaction, page: EmbedT) -> None:
         await interaction.response.edit_message(embed=page, view=self)
+
+    async def start(self, interaction: discord.Interaction, *args: Any, **kwargs: Any) -> None:
+        if len(self.source.pages) > 1:
+            await interaction.response.send_message(*args, embed=self.source.pages[0], view=self, **kwargs)
+        else:
+            await interaction.response.send_message(*args, embed=self.source.pages[0], **kwargs)
