@@ -4,7 +4,6 @@ from typing import Any
 
 import discord
 from discord.ext import commands, menus
-from donphan import MaybeAcquire
 
 from ... import CONFIG, BotBase, Cog, Context
 from ...db import TimeZones
@@ -133,7 +132,7 @@ class _Timezone(discord.app_commands.Group, name="timezone"):
             if user is None:
                 user = interaction.user
 
-            async with MaybeAcquire(pool=self.client.pool) as connection:
+            async with self.client.pool.acquire() as connection:
                 timezone = await TimeZones.get_timezone(connection, user)
 
             if timezone is None:
@@ -155,7 +154,7 @@ class _Timezone(discord.app_commands.Group, name="timezone"):
         timezone: discord.app_commands.Transform[zoneinfo.ZoneInfo, ZoneInfoTransformer],
     ) -> None:
         """Set your timezone."""
-        async with MaybeAcquire(pool=self.client.pool) as connection:
+        async with self.client.pool.acquire() as connection:
             await TimeZones.insert(
                 connection,
                 update_on_conflict=(TimeZones.time_zone,),

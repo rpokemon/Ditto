@@ -4,7 +4,6 @@ import datetime
 import zoneinfo
 
 import discord
-from donphan import MaybeAcquire
 
 from ..core.bot import BotBase
 from ..db.tables import TimeZones
@@ -43,7 +42,7 @@ class GuildTransformer(discord.app_commands.Transformer):
 
 class DatetimeTransformer(discord.app_commands.Transformer):
     async def transform(self, interaction: discord.Interaction[BotBase], value: str) -> datetime.datetime:
-        async with MaybeAcquire(pool=interaction.client.pool) as connection:
+        async with interaction.client.pool.acquire() as connection:
             timezone = await TimeZones.get_timezone(connection, interaction.user) or datetime.timezone.utc
 
         now = interaction.created_at.astimezone(tz=timezone)
@@ -60,7 +59,7 @@ class DatetimeTransformer(discord.app_commands.Transformer):
 
 class WhenAndWhatTransformer(discord.app_commands.Transformer):
     async def transform(self, interaction: discord.Interaction[BotBase], value: str) -> tuple[datetime.datetime, str]:
-        async with MaybeAcquire(pool=interaction.client.pool) as connection:
+        async with interaction.client.pool.acquire() as connection:
             timezone = await TimeZones.get_timezone(connection, interaction.user) or datetime.timezone.utc
 
         now = interaction.created_at.astimezone(tz=timezone)

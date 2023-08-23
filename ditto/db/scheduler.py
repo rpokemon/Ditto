@@ -8,7 +8,6 @@ from typing import TYPE_CHECKING, Any
 import asyncpg
 import discord
 from discord.ext import tasks
-from donphan import MaybeAcquire
 
 from .tables import Events
 
@@ -60,7 +59,11 @@ class EventSchedulerMixin:
         self._dispatch_task.add_exception_type(asyncpg.exceptions.PostgresConnectionError)
 
     async def setup_hook(self):
-        self._dispatch_task.start()
+        # this is a hack because >circular imports<
+        from ..config import CONFIG
+
+        if not CONFIG.DATABASE.DISABLED:
+            self._dispatch_task.start()
         await super().setup_hook()  # type: ignore
 
     async def schedule_event(self, time: datetime.datetime, type: str, /, *args: Any, **kwargs: Any) -> ScheduledEvent:
@@ -74,7 +77,7 @@ class EventSchedulerMixin:
 
         event = ScheduledEvent(None, now, time, type, list(args), dict(kwargs))
 
-        async with MaybeAcquire(pool=self.pool) as connection:
+        async with self.pool.acquire() as connection:
             (event.id,) = await Events.insert(
                 connection,
                 returning=(Events.id,),
@@ -117,20 +120,15 @@ class EventSchedulerMixin:
     async def _dispatch_task(self) -> None:
         if TYPE_CHECKING:
             assert isinstance(self, BotBase)
-        while not self.is_closed():
-            event = self.__event_scheduler__current = await self._wait_for_event()
 
-            now = datetime.datetime.now(tz=datetime.timezone.utc)
+        event = self.__event_scheduler__current = await self._wait_for_event()
+        await discord.utils.sleep_until(event.scheduled_for)
 
-            # if event is scheduled for the future
-            if event.scheduled_for >= now:
-                await discord.utils.sleep_until(event.scheduled_for)
+        if event.id is not None:
+            async with self.pool.acquire() as connection:
+                await Events.delete(connection, id=event.id)
 
-            if event.id is not None:
-                async with MaybeAcquire(pool=self.pool) as connection:
-                    await Events.delete(connection, id=event.id)
-
-            event.dispatch(self)
+        event.dispatch(self)
 
     @_dispatch_task.before_loop
     async def _before_dispatch_task(self):

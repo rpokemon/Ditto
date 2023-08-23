@@ -8,7 +8,6 @@ from typing import TYPE_CHECKING, Any
 from aiohttp.web import Request, Response
 from aiohttp_session import AbstractStorage, Session
 from discord.utils import _from_json, _to_json
-from donphan import MaybeAcquire
 
 from ..db.tables import HTTPSessions
 
@@ -82,7 +81,7 @@ class PostgresStorage(AbstractStorage):
             if session.max_age
             else None
         )
-        async with MaybeAcquire(pool=self.bot.pool) as conn:
+        async with self.bot.pool.acquire() as conn:
             await HTTPSessions.insert(
                 conn,
                 key=key,
