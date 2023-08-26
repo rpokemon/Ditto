@@ -13,13 +13,35 @@ __all__ = ("disable_view", "Prompt", "PageView", "EmbedPageView")
 EmbedT = TypeVar("EmbedT", bound=discord.Embed)
 
 
-def disable_view(view: discord.ui.View) -> None:
+def disable_view(view: discord.ui.View) -> discord.ui.View:
+    disabled = discord.ui.View(timeout=None)
+
     for item in view.children:
         if isinstance(item, discord.ui.Button):
-            item.disabled = True
+            disabled.add_item(
+                discord.ui.Button(
+                    style=item.style,
+                    label=item.label,
+                    disabled=True,
+                    url=item.url,
+                    emoji=item.emoji,
+                    row=item.row,
+                )
+            )
         elif isinstance(item, discord.ui.Select):
-            item.options.clear()
-            item.add_option(label=ZWSP, value=ZWSP, default=True)
+            disabled.add_item(
+                discord.ui.Select(
+                    placeholder=item.placeholder,
+                    options=[discord.SelectOption(label=ZWSP, value=ZWSP, default=True)],
+                    disabled=True,
+                    row=item.row,
+                )
+            )
+        else:
+            raise TypeError(f"Unknown item type {item.__class__.__name__}")
+
+    disabled.stop()
+    return disabled
 
 
 class Private(discord.ui.View):
@@ -40,8 +62,7 @@ class Prompt(Private):
         self.response: bool | None = None
 
     async def disable(self, interaction: discord.Interaction) -> None:
-        disable_view(self)
-        await interaction.response.edit_message(view=self)
+        await interaction.response.edit_message(view=disable_view(self))
         self.stop()
 
     @discord.ui.button(label="Yes", style=discord.ButtonStyle.red)
