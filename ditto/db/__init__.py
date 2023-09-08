@@ -27,7 +27,7 @@ async def setup_database() -> asyncpg.pool.Pool:
     if CONFIG.DATABASE.DISABLED:
         return MISSING
 
-    if hasattr(CONFIG.DATABASE, "DSN"):
+    if CONFIG.DATABASE.DSN is not None:
         dsn = CONFIG.DATABASE.DSN
     else:
         if not getattr(CONFIG.DATABASE, "HOSTNAME", False):

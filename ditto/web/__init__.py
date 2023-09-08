@@ -47,7 +47,7 @@ class WebServerMixin:
         aiohttp_session.setup(self.app, self.storage)
 
         self.user_agent: str = USER_AGENT.format(
-            CONFIG.APP_NAME, CONFIG.URL, CONFIG.VERSION, sys.version_info, aiohttp.__version__
+            CONFIG.APP_NAME, CONFIG.WEB.URL, CONFIG.VERSION, sys.version_info, aiohttp.__version__
         )
 
         self.policy: DiscordAuthorizationPolicy = DiscordAuthorizationPolicy(self)
@@ -67,6 +67,7 @@ class WebServerMixin:
     def auth_uri(self) -> str:
         if TYPE_CHECKING:
             assert isinstance(self, BotBase)
+            assert CONFIG.APPLICATION.REDIRECT_URI is not None
         return AUTH_URI.format(self.application_id, quote(CONFIG.APPLICATION.REDIRECT_URI))
 
     async def connect(self, *args: Any, **kwargs: Any) -> None:

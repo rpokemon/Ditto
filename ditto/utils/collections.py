@@ -71,21 +71,21 @@ class TimedDict(dict[T, V]):
             except KeyError:
                 pass
 
-        def __contains__(self, key: Any) -> bool:
-            self.__cleanup()
-            return super().__contains__(key)
+    def __contains__(self, key: Any) -> bool:
+        self.__cleanup()
+        return super().__contains__(key)
 
-        def __setitem__(self, key: T, value: V):
-            super().__setitem__(key, value)
-            self._state[key] = datetime.datetime.now(tz=datetime.timezone.utc)
+    def __setitem__(self, key: T, value: V):
+        super().__setitem__(key, value)
+        self._state[key] = datetime.datetime.now(tz=datetime.timezone.utc)
 
-        def __getitem__(self, key: T) -> V:
-            self.__cleanup()
-            return super().__getitem__(key)
+    def __getitem__(self, key: T) -> V:
+        self.__cleanup()
+        return super().__getitem__(key)
 
-        def get(self, key: T, default: V | None = None) -> V | None:
-            self.__cleanup()
-            return super().get(key, default)
+    def get(self, key: T, default: V | None = None) -> V | None:
+        self.__cleanup()
+        return super().get(key, default)
 
 
 class TimedSet(set[T]):

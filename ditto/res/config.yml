@@ -20,7 +20,7 @@
   WEB: !Config
     DISABLED: yes
     HOST: 'localhost'
-    PORT: '8080'
+    PORT: 8080
     URL: ~
     TEMPLATE_DIR: 'web/templates'
     STATIC_DIR: 'web/static'
