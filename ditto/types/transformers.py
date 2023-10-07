@@ -77,9 +77,12 @@ class DatetimeTransformer(discord.app_commands.Transformer):
 
         parsed_times = await DatetimeConverter.parse(value, timezone=timezone, now=now)
 
+        if len(parsed_times) != 1:
+            return []
+
         return [
-            discord.app_commands.Choice(name=human_friendly_timestamp(when), value=when.isoformat())
-            for when, _, _ in parsed_times
+            discord.app_commands.Choice(name=human_friendly_timestamp(when), value=value[start:end])
+            for when, start, end in parsed_times
         ]
 
 
