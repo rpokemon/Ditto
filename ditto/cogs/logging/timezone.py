@@ -59,13 +59,7 @@ class Timezone(Cog):
     async def timezone_set(self, ctx: Context, *, timezone: zoneinfo.ZoneInfo) -> None:
         """Set your time zone."""
         async with ctx.db as connection:
-            await TimeZones.insert(
-                connection,
-                update_on_conflict=(TimeZones.time_zone,),
-                returning=None,
-                user_id=ctx.author.id,
-                time_zone=str(timezone),
-            )
+            await TimeZones.set_timezone(connection, ctx.author, timezone)
 
         local_time = human_friendly_timestamp(datetime.datetime.now(tz=timezone))
         embed = discord.Embed(title=f"Local Time: {local_time}")
@@ -155,13 +149,7 @@ class _Timezone(discord.app_commands.Group, name="timezone"):
     ) -> None:
         """Set your timezone."""
         async with self.client.pool.acquire() as connection:
-            await TimeZones.insert(
-                connection,
-                update_on_conflict=(TimeZones.time_zone,),
-                returning=None,
-                user_id=interaction.user.id,
-                time_zone=str(timezone),
-            )
+            await TimeZones.set_timezone(connection, interaction.user, timezone)
 
         local_time = human_friendly_timestamp(datetime.datetime.now(tz=timezone))
         embed = discord.Embed(title=f"Local Time: {local_time}")

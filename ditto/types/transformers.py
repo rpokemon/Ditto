@@ -7,7 +7,7 @@ import discord
 
 from ..core.bot import BotBase
 from ..db.tables import TimeZones
-from ..utils.time import ALL_TIMEZONES
+from ..utils.time import ALL_TIMEZONES, human_friendly_timestamp
 from .converters import DatetimeConverter
 
 __all__ = (
@@ -42,8 +42,11 @@ class GuildTransformer(discord.app_commands.Transformer):
 
 class DatetimeTransformer(discord.app_commands.Transformer):
     async def transform(self, interaction: discord.Interaction[BotBase], value: str) -> datetime.datetime:
-        async with interaction.client.pool.acquire() as connection:
-            timezone = await TimeZones.get_timezone(connection, interaction.user) or datetime.timezone.utc
+        if interaction.user.id in TimeZones._cache:
+            timezone = TimeZones._cache[interaction.user.id]
+        else:
+            async with interaction.client.pool.acquire() as connection:
+                timezone = await TimeZones.get_timezone(connection, interaction.user) or datetime.timezone.utc
 
         now = interaction.created_at.astimezone(tz=timezone)
 
@@ -56,11 +59,38 @@ class DatetimeTransformer(discord.app_commands.Transformer):
 
         return parsed_times[0][0]
 
+    async def autocomplete(
+        self,
+        interaction: discord.Interaction[BotBase],
+        value: str | None,
+    ) -> list[discord.app_commands.Choice[str]]:
+        if value is None:
+            return []
+
+        if interaction.user.id in TimeZones._cache:
+            timezone = TimeZones._cache[interaction.user.id]
+        else:
+            async with interaction.client.pool.acquire() as connection:
+                timezone = await TimeZones.get_timezone(connection, interaction.user) or datetime.timezone.utc
+
+        now = interaction.created_at.astimezone(tz=timezone)
+
+        parsed_times = await DatetimeConverter.parse(value, timezone=timezone, now=now)
+
+        return [
+            discord.app_commands.Choice(name=human_friendly_timestamp(when), value=when.isoformat())
+            for when, _, _ in parsed_times
+        ]
+
 
 class WhenAndWhatTransformer(discord.app_commands.Transformer):
     async def transform(self, interaction: discord.Interaction[BotBase], value: str) -> tuple[datetime.datetime, str]:
-        async with interaction.client.pool.acquire() as connection:
-            timezone = await TimeZones.get_timezone(connection, interaction.user) or datetime.timezone.utc
+        if interaction.user.id in TimeZones._cache:
+            timezone = TimeZones._cache[interaction.user.id]
+        else:
+            async with interaction.client.pool.acquire() as connection:
+                timezone = await TimeZones.get_timezone(connection, interaction.user) or datetime.timezone.utc
+
 
         now = interaction.created_at.astimezone(tz=timezone)
 

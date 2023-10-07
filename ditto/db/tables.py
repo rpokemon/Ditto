@@ -1,3 +1,4 @@
+from typing import ClassVar
 import zoneinfo
 
 import asyncpg
@@ -27,11 +28,31 @@ class Commands(Table, schema="logging"):
 
 
 class TimeZones(Table, schema="core"):
+    _cache: ClassVar[dict[int, zoneinfo.ZoneInfo]] = {}
+
     user_id: Column[SQLType.BigInt] = Column(primary_key=True)
     time_zone: Column[SQLType.Text] = Column(nullable=False)
 
     @classmethod
+    async def set_timezone(cls, connection: asyncpg.Connection, /, user: User, timezone: zoneinfo.ZoneInfo | None) -> None:
+        if timezone is not None:
+            await TimeZones.insert(
+                connection,
+                update_on_conflict=(TimeZones.time_zone,),
+                returning=None,
+                user_id=user.id,
+                time_zone=str(timezone),
+            )
+            cls._cache[user.id] = timezone
+        else:
+            await TimeZones.delete(connection, user_id=user.id)
+            cls._cache.pop(user.id, None)
+
+    @classmethod
     async def get_timezone(cls, connection: asyncpg.Connection, /, user: User) -> zoneinfo.ZoneInfo | None:
+        if user.id in cls._cache:
+            return cls._cache[user.id]
+
         record = await cls.fetch_row(connection, user_id=user.id)
         return zoneinfo.ZoneInfo(record["time_zone"]) if record is not None else None
 
