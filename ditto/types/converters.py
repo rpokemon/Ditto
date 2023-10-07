@@ -129,7 +129,7 @@ class DatetimeConverter(commands.Converter[datetime.datetime]):
                     elif time["dim"] == "duration":
                         times.append(
                             (
-                                datetime.datetime.now(datetime.timezone.utc)
+                                datetime.datetime.now(timezone)
                                 + datetime.timedelta(seconds=time["value"]["normalized"]["value"]),
                                 time["start"],
                                 time["end"],
