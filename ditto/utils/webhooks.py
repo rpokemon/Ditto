@@ -23,10 +23,9 @@ class EmbedWebhookLogger:
         # setup loop
         self._loop.start()
 
-    def log(self, embed: discord.Embed,files: list[discord.File]|None=None) -> None:
+    def log(self, embed: discord.Embed,files: list[discord.File]=[]) -> None:
         self._to_log.append(embed)
-        if files is not None:
-            self._files_to_log.append(*files)
+        self._files_to_log.extend(files)
 
     @tasks.loop(seconds=5)
     async def _loop(self) -> None:
