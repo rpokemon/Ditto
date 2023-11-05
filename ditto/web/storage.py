@@ -118,9 +118,13 @@ class PostgresStorage(AbstractStorage):
         key = uuid.UUID(str(cookie))
         now = datetime.datetime.now(datetime.timezone.utc)
 
-        async with self.bot.pool.acquire() as conn:
-            # WHERE (expires_at is NULL or expires_at > NOW()) AND key = key
-            session = await HTTPSessions.fetch_row(conn, expires_at=None, or_expires_at__gt=now, key=key)
+        cached_record = HTTPSessions.get_cached(key=key)
+        if cached_record is not None and (cached_record["expires_at"] is None or cached_record["expires_at"] > now):
+            session = cached_record
+        else:
+            async with self.bot.pool.acquire() as conn:
+                # WHERE (expires_at is NULL or expires_at > NOW()) AND key = key
+                session = await HTTPSessions.fetch_row(conn, expires_at=None, or_expires_at__gt=now, key=key)
 
         if session is None:
             return Session(None, data=None, new=True, max_age=self.max_age)

@@ -47,11 +47,12 @@ class Context(commands.Context[BotT]):
         return user_in_guild(guild, self.author)
 
     async def get_timezone(self) -> zoneinfo.ZoneInfo | None:
-        if self.author.id in TimeZones._cache:
-            return TimeZones._cache[self.author.id]
-        else:
-            async with self.db as connection:
-                return await TimeZones.get_timezone(connection, self.author)
+        cached_record = TimeZones.get_cached(user_id=self.author.id)
+        if cached_record is not None:
+            return zoneinfo.ZoneInfo(cached_record["timezone"])
+
+        async with self.db as connection:
+            return await TimeZones.get_timezone(connection, self.author)
 
     async def fetch_previous_message(self) -> discord.Message | None:
         return await fetch_previous_message(self.message)

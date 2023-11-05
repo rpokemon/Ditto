@@ -42,8 +42,9 @@ class GuildTransformer(discord.app_commands.Transformer):
 
 class DatetimeTransformer(discord.app_commands.Transformer):
     async def transform(self, interaction: discord.Interaction[BotBase], value: str) -> datetime.datetime:
-        if interaction.user.id in TimeZones._cache:
-            timezone = TimeZones._cache[interaction.user.id]
+        cached_record = TimeZones.get_cached(user_id=interaction.user.id)
+        if cached_record is not None:
+            timezone = zoneinfo.ZoneInfo(cached_record["timezone"])
         else:
             async with interaction.client.pool.acquire() as connection:
                 timezone = await TimeZones.get_timezone(connection, interaction.user) or datetime.timezone.utc
@@ -67,8 +68,9 @@ class DatetimeTransformer(discord.app_commands.Transformer):
         if value is None:
             return []
 
-        if interaction.user.id in TimeZones._cache:
-            timezone = TimeZones._cache[interaction.user.id]
+        cached_record = TimeZones.get_cached(user_id=interaction.user.id)
+        if cached_record is not None:
+            timezone = zoneinfo.ZoneInfo(cached_record["timezone"])
         else:
             async with interaction.client.pool.acquire() as connection:
                 timezone = await TimeZones.get_timezone(connection, interaction.user) or datetime.timezone.utc
@@ -88,8 +90,9 @@ class DatetimeTransformer(discord.app_commands.Transformer):
 
 class WhenAndWhatTransformer(discord.app_commands.Transformer):
     async def transform(self, interaction: discord.Interaction[BotBase], value: str) -> tuple[datetime.datetime, str]:
-        if interaction.user.id in TimeZones._cache:
-            timezone = TimeZones._cache[interaction.user.id]
+        cached_record = TimeZones.get_cached(user_id=interaction.user.id)
+        if cached_record is not None:
+            timezone = zoneinfo.ZoneInfo(cached_record["timezone"])
         else:
             async with interaction.client.pool.acquire() as connection:
                 timezone = await TimeZones.get_timezone(connection, interaction.user) or datetime.timezone.utc

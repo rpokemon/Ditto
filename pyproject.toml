@@ -13,7 +13,7 @@ include = ["ditto/res/*"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-donphan = ">=4.10.3"
+donphan = {git = "https://github.com/bijij/donphan", branch = "vnext"}
 discord-ext-menus = {git = "https://github.com/rapptz/discord-ext-menus"}
 "discord.py" = ">=2.2.0"
 PyYAML = ">=5.4.1"

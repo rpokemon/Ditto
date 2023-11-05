@@ -38,8 +38,8 @@ class Stats(Cog, hidden=True):
         self._batch_lock = asyncio.Lock()
         self._batch_data: list[CommandInvoke] = []
 
-        self.bulk_insert.add_exception_type(asyncpg.exceptions.PostgresConnectionError)
-        self.bulk_insert.start()
+        self.bulk_insert_task.add_exception_type(asyncpg.exceptions.PostgresConnectionError)
+        self.bulk_insert_task.start()
 
     async def cog_check(self, ctx: Context) -> bool:
         return await commands.is_owner().predicate(ctx)
@@ -50,7 +50,8 @@ class Stats(Cog, hidden=True):
         embed = EmbedPaginator[discord.Embed](colour=ctx.me.colour, max_fields=10)
         embed.set_author(name="Command History:", icon_url=ctx.me.display_avatar.url)
 
-        commands = await Commands.fetch(order_by=(Commands.invoked_at, "DESC"), limit=100)
+        async with self.bot.pool.acquire() as connection:
+            commands = await Commands.fetch(connection, order_by=(Commands.invoked_at, "DESC"), limit=100)
 
         if commands:
             for command in commands:
@@ -129,12 +130,16 @@ class Stats(Cog, hidden=True):
             )
 
     @tasks.loop(seconds=15)
-    async def bulk_insert(self) -> None:
+    async def bulk_insert_task(self) -> None:
         async with self._batch_lock:
             if self._batch_data:
                 async with self.bot.pool.acquire() as connection:
                     await Commands.insert_many(connection, None, *self._batch_data)  # type: ignore
                     self._batch_data.clear()
+
+    @bulk_insert_task.before_loop
+    async def before_bulk_insert_task(self):
+        await self.bot.wait_until_ready()
 
 
 async def setup(bot: BotBase):

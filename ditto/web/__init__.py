@@ -11,7 +11,9 @@ import aiohttp
 import aiohttp_jinja2
 import aiohttp_security
 import aiohttp_session
+import asyncpg
 import discord
+from discord.ext import tasks
 import jinja2
 from aiohttp.web import (
     Application,
@@ -29,6 +31,7 @@ from aiohttp.web import (
 from aiohttp.web_runner import TCPSite
 
 from ..config import CONFIG
+from ..db.tables import HTTPSessions
 from .auth import AUTH_URI, USER_AGENT, DiscordAuthorizationPolicy, validate_login
 from .storage import InMemoryStorage, PostgresStorage
 
@@ -61,6 +64,8 @@ class WebServerMixin:
             self.storage = InMemoryStorage(cookie_name="session")
         else:
             self.storage = PostgresStorage(self, cookie_name="session")
+            self._web_db_cleanup_task.add_exception_type(asyncpg.exceptions.PostgresConnectionError)
+            self._web_db_cleanup_task.start()
 
         aiohttp_session.setup(self.app, self.storage)
 
@@ -102,6 +107,9 @@ class WebServerMixin:
 
             self._web_site = TCPSite(self._web_runner, CONFIG.WEB.HOST, CONFIG.WEB.PORT)
             await self._web_site.start()
+
+            if not CONFIG.DATABASE.DISABLED:
+                await self._web_db_cleanup_task.start()
 
         await super().connect(*args, **kwargs)  # type: ignore
 
@@ -199,3 +207,17 @@ class WebServerMixin:
             return func
 
         return decorator
+
+    @tasks.loop(minutes=15)
+    async def _web_db_cleanup_task(self) -> None:
+        if TYPE_CHECKING:
+            assert isinstance(self, BotBase)
+
+        async with self.pool.acquire() as connection:
+            await HTTPSessions.delete_where(connection, "expires_at < NOW()")
+
+    @_web_db_cleanup_task.before_loop
+    async def _before_web_db_cleanup_task(self):
+        if TYPE_CHECKING:
+            assert isinstance(self, BotBase)
+        await self.wait_until_ready()
