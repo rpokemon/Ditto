@@ -94,7 +94,6 @@ class WhenAndWhatTransformer(discord.app_commands.Transformer):
             async with interaction.client.pool.acquire() as connection:
                 timezone = await TimeZones.get_timezone(connection, interaction.user) or datetime.timezone.utc
 
-
         now = interaction.created_at.astimezone(tz=timezone)
 
         # Strip some common stuff

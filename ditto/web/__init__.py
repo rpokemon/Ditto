@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sys
+from asyncio import wait_for
 from collections.abc import Callable, Coroutine
 from functools import cached_property
 from typing import TYPE_CHECKING, Any, TypeVar
@@ -12,12 +13,24 @@ import aiohttp_security
 import aiohttp_session
 import discord
 import jinja2
-from aiohttp.web import Application, AppRunner, HTTPFound, HTTPOk, Request, Response, get, normalize_path_middleware, static
+from aiohttp.web import (
+    Application,
+    AppRunner,
+    HTTPFound,
+    HTTPOk,
+    HTTPServiceUnavailable,
+    Request,
+    Response,
+    get,
+    normalize_path_middleware,
+    static,
+    json_response,
+)
 from aiohttp.web_runner import TCPSite
 
 from ..config import CONFIG
 from .auth import AUTH_URI, USER_AGENT, DiscordAuthorizationPolicy, validate_login
-from .storage import PostgresStorage
+from .storage import InMemoryStorage, PostgresStorage
 
 if TYPE_CHECKING:
     from ..core.bot import BotBase
@@ -43,7 +56,12 @@ class WebServerMixin:
         self.app: Application = Application(middlewares=[normalize_path_middleware()])
         self._permission_checks: dict[str, Callable[[BotBase, discord.User], Coro[bool]]] = {}
 
-        self.storage: PostgresStorage = PostgresStorage(self, cookie_name="session")
+        self.storage: aiohttp_session.AbstractStorage
+        if CONFIG.DATABASE.DISABLED:
+            self.storage = InMemoryStorage(cookie_name="session")
+        else:
+            self.storage = PostgresStorage(self.pool, cookie_name="session")
+
         aiohttp_session.setup(self.app, self.storage)
 
         self.user_agent: str = USER_AGENT.format(
@@ -58,7 +76,10 @@ class WebServerMixin:
                 static("/static", CONFIG.WEB.STATIC_DIR),
                 get("/login", self._web_login),
                 get("/logout", self._web_logout),
-                get("/health", self._web_health),
+                get("/api/appinfo", self._web_appinfo),
+                get("/api/health", self._web_health),
+                get("/api/health/live", self._web_health_live),
+                get("/api/health/ready", self._web_health_ready),
             ]
         )
 
@@ -98,7 +119,70 @@ class WebServerMixin:
         await aiohttp_security.forget(request, redirect)
         return redirect
 
+    async def _web_appinfo(self, request: Request) -> Response:
+        if TYPE_CHECKING:
+            assert isinstance(self, BotBase)
+
+        return json_response(
+            {
+                "name": CONFIG.APP_NAME,
+                "version": CONFIG.VERSION,
+                "start_time": self.start_time.isoformat(),
+            }
+        )
+
+    async def _check_db_health(self) -> bool | None:
+        if TYPE_CHECKING:
+            assert isinstance(self, BotBase)
+
+        if CONFIG.DATABASE.DISABLED:
+            return None
+
+        # Check if we can query the database
+        try:
+            await self.pool.fetchval("SELECT 1")
+        except:
+            return False
+
+        return True
+
+    async def _check_discord_health(self) -> bool | None:
+        if TYPE_CHECKING:
+            assert isinstance(self, BotBase)
+
+        if not self.is_ready():
+            return None
+
+        # Check if we're receiving socket events
+        try:
+            await wait_for(self.wait_for("socket_event_type"), 5)
+        except:
+            return False
+
+        return True
+
     async def _web_health(self, request: Request) -> Response:
+        if TYPE_CHECKING:
+            assert isinstance(self, BotBase)
+
+        body = {
+            "database": await self._check_db_health(),
+            "discord": await self._check_discord_health(),
+        }
+
+        status_code = HTTPOk.status_code if all(body.values()) else HTTPServiceUnavailable.status_code
+        return json_response(body, status=status_code)
+
+    async def _web_health_live(self, request: Request) -> Response:
+        return HTTPOk()
+
+    async def _web_health_ready(self, request: Request) -> Response:
+        if await self._check_db_health() is False:
+            return HTTPServiceUnavailable()
+
+        if not await self._check_discord_health():
+            return HTTPServiceUnavailable()
+
         return HTTPOk()
 
     def add_permission_check(self, permission: str, check: Callable[[BotBase, discord.User], Coro[bool]]) -> None:
