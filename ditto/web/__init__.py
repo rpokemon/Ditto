@@ -60,7 +60,7 @@ class WebServerMixin:
         if CONFIG.DATABASE.DISABLED:
             self.storage = InMemoryStorage(cookie_name="session")
         else:
-            self.storage = PostgresStorage(self.pool, cookie_name="session")
+            self.storage = PostgresStorage(self, cookie_name="session")
 
         aiohttp_session.setup(self.app, self.storage)
 

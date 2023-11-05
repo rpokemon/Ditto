@@ -3,14 +3,16 @@ from __future__ import annotations
 import datetime
 import uuid
 from collections.abc import Callable
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-import asyncpg
 from aiohttp.web import Request, Response
 from aiohttp_session import AbstractStorage, Session
 from discord.utils import _from_json, _to_json
 
 from ..db.tables import HTTPSessions
+
+if TYPE_CHECKING:
+    from ..core.bot import BotBase
 
 
 class InMemoryStorage(AbstractStorage):
@@ -84,7 +86,7 @@ class InMemoryStorage(AbstractStorage):
 class PostgresStorage(AbstractStorage):
     def __init__(
         self,
-        pool: asyncpg.pool.Pool,
+        bot: BotBase,
         *,
         cookie_name: str = "AIOHTTP_SESSION",
         domain: str | None = None,
@@ -95,7 +97,7 @@ class PostgresStorage(AbstractStorage):
         encoder: Callable[[Any], str] = _to_json,
         decoder: Callable[[str], Any] = _from_json,
     ):
-        self.pool: asyncpg.pool.Pool = pool
+        self.bot: BotBase = bot
         super().__init__(
             cookie_name=cookie_name,
             domain=domain,
@@ -116,7 +118,7 @@ class PostgresStorage(AbstractStorage):
         key = uuid.UUID(str(cookie))
         now = datetime.datetime.now(datetime.timezone.utc)
 
-        async with self.pool.acquire() as conn:
+        async with self.bot.pool.acquire() as conn:
             # WHERE (expires_at is NULL or expires_at > NOW()) AND key = key
             session = await HTTPSessions.fetch_row(conn, expires_at=None, or_expires_at__gt=now, key=key)
 
@@ -148,7 +150,7 @@ class PostgresStorage(AbstractStorage):
             else None
         )
 
-        async with self.pool.acquire() as conn:
+        async with self.bot.pool.acquire() as conn:
             await HTTPSessions.insert(
                 conn,
                 key=key,
