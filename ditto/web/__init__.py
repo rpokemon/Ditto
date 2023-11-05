@@ -12,7 +12,7 @@ import aiohttp_security
 import aiohttp_session
 import discord
 import jinja2
-from aiohttp.web import Application, AppRunner, HTTPFound, Request, Response, get, normalize_path_middleware, static
+from aiohttp.web import Application, AppRunner, HTTPFound, HTTPOk, Request, Response, get, normalize_path_middleware, static
 from aiohttp.web_runner import TCPSite
 
 from ..config import CONFIG
@@ -58,6 +58,7 @@ class WebServerMixin:
                 static("/static", CONFIG.WEB.STATIC_DIR),
                 get("/login", self._web_login),
                 get("/logout", self._web_logout),
+                get("/health", self._web_health),
             ]
         )
 
@@ -96,6 +97,9 @@ class WebServerMixin:
         redirect = HTTPFound("/")
         await aiohttp_security.forget(request, redirect)
         return redirect
+
+    async def _web_health(self, request: Request) -> Response:
+        return HTTPOk()
 
     def add_permission_check(self, permission: str, check: Callable[[BotBase, discord.User], Coro[bool]]) -> None:
         self._permission_checks[permission] = check
