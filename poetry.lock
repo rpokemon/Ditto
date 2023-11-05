@@ -510,7 +510,7 @@ docs = ["sphinx (>=3.5.3)", "sphinxcontrib-websupport (>=1.2.4)", "sphinxcontrib
 type = "git"
 url = "https://github.com/bijij/donphan"
 reference = "vnext"
-resolved_reference = "3b9c4658f4dfa11c75b0865470df43574c67bc26"
+resolved_reference = "f667041f6eb8d6a66924fa538dc5ce0da8fe766d"
 
 [[package]]
 name = "exceptiongroup"

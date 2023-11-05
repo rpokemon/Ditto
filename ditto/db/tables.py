@@ -27,7 +27,7 @@ class Commands(Table, schema="logging"):
     failed: Column[SQLType.Boolean]
 
 
-class TimeZones(CachedTable, schema="core", max_cache_size=128):
+class TimeZones(CachedTable, schema="core", max_cache_size=128, cache_no_record=True):
     user_id: Column[SQLType.BigInt] = Column(primary_key=True)
     time_zone: Column[SQLType.Text] = Column(nullable=False)
 
