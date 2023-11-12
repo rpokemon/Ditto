@@ -33,7 +33,7 @@ class EmbedWebhookLogger:
         while self._to_log:
             embeds = []
 
-            while len(embeds) < MAX_EMBEDS:
+            while len(embeds) < MAX_EMBEDS and self._to_log:
                 next = self._to_log[0]
                 if sum(map(len, embeds)) + len(next) > MAX_MESSAGE_LENGTH:
                     break
