@@ -64,8 +64,6 @@ class WebServerMixin:
             self.storage = InMemoryStorage(cookie_name="session")
         else:
             self.storage = PostgresStorage(self, cookie_name="session")
-            self._web_db_cleanup_task.add_exception_type(asyncpg.exceptions.PostgresConnectionError)
-            self._web_db_cleanup_task.start()
 
         aiohttp_session.setup(self.app, self.storage)
 
@@ -109,7 +107,8 @@ class WebServerMixin:
             await self._web_site.start()
 
             if not CONFIG.DATABASE.DISABLED:
-                await self._web_db_cleanup_task.start()
+                self._web_db_cleanup_task.add_exception_type(asyncpg.exceptions.PostgresConnectionError)
+                self._web_db_cleanup_task.start()
 
         await super().connect(*args, **kwargs)  # type: ignore
 
