@@ -7,6 +7,9 @@ from discord.ext import tasks
 __all__ = ("EmbedWebhookLogger",)
 
 
+MAX_MESSAGE_LENGTH = 6000
+MAX_EMBEDS = 10
+
 class EmbedWebhookLogger:
     _to_log: list[discord.Embed]
 
@@ -19,6 +22,7 @@ class EmbedWebhookLogger:
         self._webhook = discord.Webhook.from_url(self._webhook_url, session=self._session)
 
         # setup loop
+        self._loop.add_exception_type(discord.HTTPException)
         self._loop.start()
 
     def log(self, embed: discord.Embed) -> None:
@@ -27,5 +31,12 @@ class EmbedWebhookLogger:
     @tasks.loop(seconds=5)
     async def _loop(self) -> None:
         while self._to_log:
-            embeds = [self._to_log.pop(0) for _ in range(min(10, len(self._to_log)))]
+            embeds = []
+
+            while len(embeds) < MAX_EMBEDS:
+                next = self._to_log[0]
+                if sum(map(len, embeds)) + len(next) > MAX_MESSAGE_LENGTH:
+                    break
+                embeds.append(self._to_log.pop(0))
+
             await self._webhook.send(embeds=embeds)
