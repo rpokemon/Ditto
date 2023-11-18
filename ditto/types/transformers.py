@@ -44,7 +44,7 @@ class DatetimeTransformer(discord.app_commands.Transformer):
     async def transform(self, interaction: discord.Interaction[BotBase], value: str) -> datetime.datetime:
         cached_record = TimeZones.get_cached(user_id=interaction.user.id)
         if cached_record is not None:
-            timezone = zoneinfo.ZoneInfo(cached_record["timezone"])
+            timezone = zoneinfo.ZoneInfo(cached_record["time_zone"])
         else:
             async with interaction.client.pool.acquire() as connection:
                 timezone = await TimeZones.get_timezone(connection, interaction.user) or datetime.timezone.utc
@@ -70,7 +70,7 @@ class DatetimeTransformer(discord.app_commands.Transformer):
 
         cached_record = TimeZones.get_cached(user_id=interaction.user.id)
         if cached_record is not None:
-            timezone = zoneinfo.ZoneInfo(cached_record["timezone"])
+            timezone = zoneinfo.ZoneInfo(cached_record["time_zone"])
         else:
             async with interaction.client.pool.acquire() as connection:
                 timezone = await TimeZones.get_timezone(connection, interaction.user) or datetime.timezone.utc
@@ -92,7 +92,7 @@ class WhenAndWhatTransformer(discord.app_commands.Transformer):
     async def transform(self, interaction: discord.Interaction[BotBase], value: str) -> tuple[datetime.datetime, str]:
         cached_record = TimeZones.get_cached(user_id=interaction.user.id)
         if cached_record is not None:
-            timezone = zoneinfo.ZoneInfo(cached_record["timezone"])
+            timezone = zoneinfo.ZoneInfo(cached_record["time_zone"])
         else:
             async with interaction.client.pool.acquire() as connection:
                 timezone = await TimeZones.get_timezone(connection, interaction.user) or datetime.timezone.utc

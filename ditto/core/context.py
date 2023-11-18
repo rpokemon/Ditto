@@ -49,7 +49,7 @@ class Context(commands.Context[BotT]):
     async def get_timezone(self) -> zoneinfo.ZoneInfo | None:
         cached_record = TimeZones.get_cached(user_id=self.author.id)
         if cached_record is not None:
-            return zoneinfo.ZoneInfo(cached_record["timezone"])
+            return zoneinfo.ZoneInfo(cached_record["time_zone"])
 
         async with self.db as connection:
             return await TimeZones.get_timezone(connection, self.author)
