@@ -1,5 +1,5 @@
 import datetime
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 from collections.abc import Callable
 from typing import Any, TypeVar
 
@@ -114,26 +114,28 @@ class TimedSet(set[T]):
         self._state[key] = datetime.datetime.now(tz=datetime.timezone.utc)
 
 
-class LRUDict(dict[T, V]):
+class LRUDict(OrderedDict[T, V]):
     def __init__(self, max_size: int = 1024, *args, **kwargs):
         if max_size <= 0:
             raise ValueError("Maximum cache size must be greater than 0.")
+
         self.max_size = max_size
         super().__init__(*args, **kwargs)
-        self.__cleanup()
 
-    def __cleanup(self):
-        while len(self) > self.max_size:
-            del self[next(iter(self))]
-
-    def __getitem__(self, key: Any) -> Any:
+    def __getitem__(self, key: T) -> V:
         value = super().__getitem__(key)
-        self.__cleanup()
+        self.move_to_end(key)
+
         return value
 
-    def __setitem__(self, key: Any, value: Any):
+    def __setitem__(self, key: T, value: V) -> None:
+        if key in self:
+            self.move_to_end(key)
+
         super().__setitem__(key, value)
-        self.__cleanup()
+
+        if len(self) > self.max_size:
+            self.popitem(last=False)
 
 
 class TimedLRUDict(LRUDict[T, V], TimedDict[T, V]):

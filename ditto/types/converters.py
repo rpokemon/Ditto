@@ -232,9 +232,9 @@ class EnumConverter(commands.Converter[discord.Enum], Generic[ET]):
     @classmethod
     async def convert(cls, ctx: Context, argument: str) -> ET:
         value = int(argument) if argument.isdigit() else argument
-        value = try_enum(cls._type, value)
+        value = try_enum(cls._type, value)  # type: ignore
         if value == argument:
-            raise commands.BadArgument(f"Could not convert to Enum: {cls._type.__name__}")
+            raise commands.BadArgument(f"Could not convert to Enum: {cls._type.__name__}")  # type: ignore
         return value
 
 

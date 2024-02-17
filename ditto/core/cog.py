@@ -23,7 +23,7 @@ class CogMeta(commands.CogMeta):
         hidden = kwargs.pop("hidden", False)
         attrs["__cog_hidden__"] = hidden
 
-        return super().__new__(cls, name, bases, attrs, **kwargs)
+        return super().__new__(cls, name, bases, attrs, **kwargs)  # type: ignore
 
     @property
     def hidden(self) -> bool:
