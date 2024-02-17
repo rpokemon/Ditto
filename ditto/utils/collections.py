@@ -138,18 +138,42 @@ class LRUDict(OrderedDict[T, V]):
             self.popitem(last=False)
 
 
-class TimedLRUDict(LRUDict[T, V], TimedDict[T, V]):
+# Alternate implementation to avoid MRO issues
+class _LRUDict(dict[T, V]):
+    def __init__(self, max_size: int = 1024, *args, **kwargs):
+        if max_size <= 0:
+            raise ValueError("Maximum cache size must be greater than 0.")
+        self.max_size = max_size
+        super().__init__(*args, **kwargs)
+        self.__cleanup()
+
+    def __cleanup(self):
+        while len(self) > self.max_size:
+            del self[next(iter(self))]
+
+    def __getitem__(self, key: Any) -> Any:
+        value = super().__getitem__(key)
+        self.__setitem__(key, value)
+        self.__cleanup()
+        return value
+
+    def __setitem__(self, key: Any, value: Any):
+        super().__setitem__(key, value)
+        self.__cleanup()
+
+
+class TimedLRUDict(_LRUDict[T, V], TimedDict[T, V]):
     def __init__(self, expires_after: datetime.timedelta, max_size: int = 1024, *args, **kwargs):
         super().__init__(max_size, expires_after, *args, **kwargs)
 
 
-class LRUDefaultDict(LRUDict[T, V], defaultdict[T, V]):
+class LRUDefaultDict(_LRUDict[T, V], defaultdict[T, V]):
     def __init__(self, default_factory: Callable[[], V] | None = None, max_size: int = 1024, *args, **kwargs):
         super().__init__(max_size, *args, **kwargs)
         self.default_factory = default_factory
 
 
-class TimedLRUDefaultDict(LRUDict[T, V], TimedDict[T, V], defaultdict[T, V]):
+class TimedLRUDefaultDict(_LRUDict[T, V], TimedDict[T, V], defaultdict[T, V]):
     def __init__(
         self, default_factory: Callable[[], V], expires_after: datetime.timedelta, max_size: int = 1024, *args, **kwargs
     ):
