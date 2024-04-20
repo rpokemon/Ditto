@@ -225,5 +225,7 @@ async def prompt(
     try:
         if delete_after and isinstance(channel, discord.TextChannel):
             await channel.delete_messages(to_delete)
-    finally:
-        return result
+    except Exception:
+        pass
+    
+    return result
