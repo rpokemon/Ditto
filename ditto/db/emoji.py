@@ -104,7 +104,12 @@ class EmojiCacheMixin:
 
             await Emoji.update_record(connection, record, last_fetched=datetime.datetime.now(datetime.timezone.utc))  # type: ignore
 
-            emoji = self.get_emoji(emoji_id)
+            emoji = None
+            try:
+                emoji = self.get_emoji(emoji_id) or await self.fetch_application_emoji(emoji_id)
+            except discord.NotFound:
+                pass
+
             if emoji is None:
                 await Emoji.delete_record(connection, record)  # type: ignore
                 raise RuntimeError("Emoji in cache was deleted.")
