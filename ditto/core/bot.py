@@ -114,7 +114,7 @@ class BotBase(commands.bot.BotBase, WebServerMixin, EmojiCacheMixin, EventSchedu
             guilds.add(discord.Object(id=guild_id))
 
         for guild in guilds:
-            payload = [cmd.to_dict() for cmd in self.tree.get_commands(guild=guild)]
+            payload = [cmd.to_dict(self.tree) for cmd in self.tree.get_commands(guild=guild)]
             guild_id = str(guild.id) if guild is not None else "-1"
 
             if command_cache.get(guild_id) != payload:
@@ -267,9 +267,7 @@ class BotBase(commands.bot.BotBase, WebServerMixin, EmojiCacheMixin, EventSchedu
         await super().close()
 
 
-class Bot(BotBase, commands.Bot):
-    ...
+class Bot(BotBase, commands.Bot): ...
 
 
-class AutoShardedBot(BotBase, commands.AutoShardedBot):
-    ...
+class AutoShardedBot(BotBase, commands.AutoShardedBot): ...

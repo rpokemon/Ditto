@@ -1,5 +1,5 @@
-from typing import ClassVar
 import zoneinfo
+from typing import ClassVar
 
 import asyncpg
 from donphan import CachedTable, Column, SQLType, Table
@@ -60,13 +60,17 @@ class Events(Table, schema="core"):
 
 class Emoji(CachedTable, schema="core"):
     emoji_id: Column[SQLType.BigInt] = Column(primary_key=True)
-    guild_id: Column[SQLType.BigInt] = Column(index=True, nullable=False)
     last_fetched: Column[SQLType.Timestamp] = Column(default="NOW()")
+
+    @classmethod
+    async def count(cls, connection: asyncpg.Connection) -> int:
+        return await connection.fetchval(f"SELECT COUNT(*) FROM {cls._name}")  # type: ignore
 
 
 class UserEmoji(CachedTable, schema="core"):
     emoji_id: Column[SQLType.BigInt] = Column(primary_key=True, references=Emoji.emoji_id, cascade=True)
     user_id: Column[SQLType.BigInt] = Column(index=True, unique=True)
+    avatar_hash: Column[SQLType.Text] = Column(nullable=True)
 
 
 class HTTPSessions(CachedTable, schema="web", max_cache_size=128):

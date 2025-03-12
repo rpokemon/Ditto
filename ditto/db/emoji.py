@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import datetime
 import io
-import random
 import re
 from typing import TYPE_CHECKING, Any
 
@@ -23,7 +22,7 @@ if TYPE_CHECKING:
 __all__ = ("EmojiCacheMixin",)
 
 
-async def create_user_image(user: User) -> io.BytesIO:
+async def create_user_image(user: User) -> tuple[io.BytesIO, str]:
     avatar = Image.open(await download_avatar(user, size=128, static=True))
 
     if avatar.mode != "RGBA":
@@ -46,7 +45,7 @@ async def create_user_image(user: User) -> io.BytesIO:
     avatar.save(out_fp, format="png")
     out_fp.seek(0)
 
-    return out_fp
+    return out_fp, user.display_avatar.key
 
 
 class EmojiCacheMixin:
@@ -55,27 +54,10 @@ class EmojiCacheMixin:
 
         self._not_found_emoji: discord.Emoji = CONFIG.EMOJI.NOT_FOUND
 
-    async def _find_guild(self, *, connection: asyncpg.Connection | None = None) -> discord.Guild:
-        if TYPE_CHECKING:
-            assert isinstance(self, BotBase)
-        async with MaybeAcquire(connection, pool=self.pool) as connection:
-            free_spaces = {}
-            for guild in CONFIG.EMOJI.GUILDS:
-                total_free = guild.emoji_limit - sum(not e.animated for e in guild.emojis)
-                if total_free > CONFIG.EMOJI.LEAVE_FREE:
-                    free_spaces[guild] = total_free
-
-            if free_spaces:
-                guilds = random.sample(list(free_spaces.keys()), counts=list(free_spaces.values()), k=1)
-                return guilds[0]
-
-            # Otherwise delete the oldest emoji
-            record = await Emoji.fetch_row(connection, order_by=(Emoji.last_fetched, "ASC"))
-            if record is None:
-                raise RuntimeError("Emoji cache simultaneously empty and full.")
-            await self.delete_emoji(record["emoji_id"], connection=connection)
-
-            return await self._find_guild(connection=connection)
+        if CONFIG.EMOJI.CACHE_SIZE < 1:
+            raise ValueError("Emoji cache size must be greater than 0.")
+        if CONFIG.EMOJI.CACHE_SIZE > 1000:
+            raise ValueError("Emoji cache size must be less than 1000.")
 
     async def create_emoji(
         self, name: str, image: io.BytesIO, *, connection: asyncpg.Connection | None = None
@@ -83,10 +65,17 @@ class EmojiCacheMixin:
         if TYPE_CHECKING:
             assert isinstance(self, BotBase)
         async with MaybeAcquire(connection, pool=self.pool) as connection:
-            guild = await self._find_guild(connection=connection)
-            emoji = await guild.create_custom_emoji(name=name, image=image.read())
 
-            await Emoji.insert(connection, emoji_id=emoji.id, guild_id=guild.id)
+            # Delete the oldest emojis if the cache is full
+            while await Emoji.count(connection) >= CONFIG.EMOJI.CACHE_SIZE:
+                record = await Emoji.fetch_row(connection, order_by=(Emoji.last_fetched, "ASC"))
+                if record is None:
+                    raise RuntimeError("Emoji cache simultaneously empty and full.")
+                await self.delete_emoji(record["emoji_id"], connection=connection)
+
+            emoji = await self.create_application_emoji(name=name, image=image.read())
+
+            await Emoji.insert(connection, emoji_id=emoji.id)
 
         return emoji
 
@@ -94,11 +83,11 @@ class EmojiCacheMixin:
         if TYPE_CHECKING:
             assert isinstance(self, BotBase)
         name = re.sub(r"[^A-Za-z0-9_]", "", user.name[:28]) + str(user.discriminator)
-        image = await create_user_image(user)
+        image, hash = await create_user_image(user)
 
         async with MaybeAcquire(connection, pool=self.pool) as connection:
             emoji = await self.create_emoji(name, image, connection=connection)
-            await UserEmoji.insert(connection, emoji_id=emoji.id, user_id=user.id)
+            await UserEmoji.insert(connection, emoji_id=emoji.id, user_id=user.id, avatar_hash=hash)
 
         return emoji
 
@@ -113,11 +102,11 @@ class EmojiCacheMixin:
             if record is None:
                 raise ValueError(f"Emoji with ID: {emoji_id} not in cache.")
 
-            await Emoji.update_record(connection, record, last_fetched=datetime.datetime.now(datetime.timezone.utc))
+            await Emoji.update_record(connection, record, last_fetched=datetime.datetime.now(datetime.timezone.utc))  # type: ignore
 
             emoji = self.get_emoji(emoji_id)
             if emoji is None:
-                await Emoji.delete_record(connection, record)
+                await Emoji.delete_record(connection, record)  # type: ignore
                 raise RuntimeError("Emoji in cache was deleted.")
 
         return emoji
@@ -132,10 +121,13 @@ class EmojiCacheMixin:
             record = await UserEmoji.fetch_row(connection, user_id=user.id)
 
             if record is not None:
-                try:
-                    return await self.fetch_emoji(record["emoji_id"], connection=connection)
-                except RuntimeError:
-                    await UserEmoji.delete_record(connection, record)
+                if record["avatar_hash"] == user.display_avatar.key:
+                    try:
+                        return await self.fetch_emoji(record["emoji_id"], connection=connection)
+                    except RuntimeError:
+                        pass
+
+                await UserEmoji.delete_record(connection, record)  # type: ignore
 
             return await self.create_user_emoji(user, connection=connection)
 
@@ -151,4 +143,4 @@ class EmojiCacheMixin:
             if emoji is not None:
                 await emoji.delete()
 
-            await Emoji.delete_record(connection, record)
+            await Emoji.delete_record(connection, record)  # type: ignore

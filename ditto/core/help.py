@@ -257,7 +257,7 @@ def slash_command_help(bot: BotBase, command: ChatInputCommand) -> discord.Embed
     syntax = f"/{command.name}"
 
     options = ""
-    for option in command.to_dict()["options"]:
+    for option in command.to_dict(bot.tree)["options"]:
         options += f"`{option['name']}`: {option['description']}\n"
 
     return HelpEmbed(bot, "/", title=command.name, description=f"Syntax: `{syntax}`\n\n{command.description}\n\n{options}")
@@ -293,9 +293,10 @@ async def help(
         for application_command in cogs[cog]:
             if application_command.name == command:
                 # TODO: Display group command subcommands?
-                return await interaction.response.send_message(
+                await interaction.response.send_message(
                     embed=slash_command_help(interaction.client, application_command), ephemeral=private
                 )
+                return
 
     # Send Bot Help
     if command is None:

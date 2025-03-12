@@ -34,8 +34,7 @@
 
   EMOJI: !Config
     NOT_FOUND: ~
-    LEAVE_FREE: 5
-    GUILDS: []
+    CACHE_SIZE: 250
 
   LOGGING: !Config
     LOG_LEVEL: !ENV LOG_LEVEL
