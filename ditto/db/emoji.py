@@ -82,7 +82,15 @@ class EmojiCacheMixin:
     async def create_user_emoji(self, user: User, *, connection: asyncpg.Connection | None = None) -> discord.Emoji:
         if TYPE_CHECKING:
             assert isinstance(self, BotBase)
-        name = re.sub(r"[^A-Za-z0-9_]", "", user.name[:28]) + str(user.discriminator)
+
+        if isinstance(user, discord.Member):
+            user = user._user
+
+        if user.discriminator == '0':
+            name = re.sub(r"[^A-Za-z0-9_]", "", user.name)[:32]
+        else:
+            name = re.sub(r"[^A-Za-z0-9_]", "", user.name)[:28] + user.discriminator
+
         image, hash = await create_user_image(user)
 
         async with MaybeAcquire(connection, pool=self.pool) as connection:
@@ -122,6 +130,9 @@ class EmojiCacheMixin:
         if user is None:
             return await self.fetch_emoji(None, connection=connection)
 
+        if isinstance(user, discord.Member):
+            user = user._user
+
         async with MaybeAcquire(connection, pool=self.pool) as connection:
             record = await UserEmoji.fetch_row(connection, user_id=user.id)
 
@@ -132,7 +143,9 @@ class EmojiCacheMixin:
                     except RuntimeError:
                         pass
 
-                await UserEmoji.delete_record(connection, record)  # type: ignore
+                    await UserEmoji.delete_record(connection, record)  # type: ignore
+                else:
+                    await self.delete_emoji(record["emoji_id"], connection=connection)
 
             return await self.create_user_emoji(user, connection=connection)
 
@@ -147,5 +160,11 @@ class EmojiCacheMixin:
             emoji = self.get_emoji(emoji_id)
             if emoji is not None:
                 await emoji.delete()
+            else:
+                try:
+                    emoji = await self.fetch_application_emoji(emoji_id)
+                    await emoji.delete()
+                except discord.NotFound:
+                    pass
 
             await Emoji.delete_record(connection, record)  # type: ignore
