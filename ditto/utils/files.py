@@ -9,4 +9,9 @@ def get_base_dir(module: types.ModuleType | None = None) -> pathlib.Path:
         file = module.__file__
     if file is None:
         raise RuntimeError("Could not determine the base directory.")
-    return pathlib.Path(file).parent.relative_to(pathlib.Path.cwd())
+
+
+    try:
+        return pathlib.Path(file).parent.relative_to(pathlib.Path.cwd())
+    except ValueError:
+        return pathlib.Path(file).parent
