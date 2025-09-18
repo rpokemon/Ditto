@@ -62,7 +62,7 @@ class TimedDict(dict[T, V]):
 
     def __cleanup(self):
         now = datetime.datetime.now(tz=datetime.timezone.utc)
-        for key in super().keys():
+        for key in list(super().__iter__()):
             try:
                 delta = now - self._state[key]
                 if delta > self.expires_after:
